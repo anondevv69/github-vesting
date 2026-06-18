@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.env.local
+frontend/dist/
+frontend/node_modules/
+artifacts/
+cache/
+typechain-types/
+coverage/
