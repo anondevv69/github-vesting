@@ -136,7 +136,7 @@ export function VestingSetupPage() {
     setBusy(true);
     setError(null);
     try {
-      const client = createPublicClient({ chain: activeChain, transport: http() });
+      const client = createPublicClient({ chain: activeChain, transport: http(IS_TESTNET ? "https://sepolia.base.org" : "https://mainnet.base.org") });
       const addr = form.tokenAddress as Address;
       const [symbol, decimals, balance] = await Promise.all([
         client.readContract({ address: addr, abi: ERC20_ABI, functionName: "symbol" }),
@@ -178,7 +178,8 @@ export function VestingSetupPage() {
     }
 
     try {
-      const publicClient = createPublicClient({ chain: activeChain, transport: http("https://base-sepolia-rpc.publicnode.com") });
+      const rpcUrl = IS_TESTNET ? "https://sepolia.base.org" : "https://mainnet.base.org";
+      const publicClient = createPublicClient({ chain: activeChain, transport: http(rpcUrl) });
 
       const decimals = form.tokenDecimals;
       const amount = BigInt(parseFloat(form.lockAmount) * 10 ** decimals);
@@ -207,8 +208,12 @@ export function VestingSetupPage() {
       // Skip waiting for receipt - user confirmed in MetaMask, that's enough
       console.log("Approve tx sent:", approveTxHash);
 
-      // Step 2: lock - use viem to encode the data, send via MetaMask
-      const repoIdBytes32 = "0x" + Buffer.from(form.repoFullName).toString("hex").padEnd(64, "0");
+      // Step 2: lock - encode repoId without Buffer (browser-compatible)
+      const repoIdHex = Array.from(new TextEncoder().encode(form.repoFullName))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("")
+        .padStart(64, "0");
+      const repoIdBytes32 = "0x" + repoIdHex;
       const lockData = "0x7b4e3b9e" + // lock() function selector
         repoIdBytes32.slice(2).padStart(64, "0") +
         tokenAddr.slice(2).padStart(64, "0") +
