@@ -1,0 +1,38 @@
+{
+  "name": "github-vesting",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GitHub-activity-gated token vesting bot + escrow oracle for Bankr tokens",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "compile:contracts": "hardhat compile",
+    "deploy:base": "hardhat run contracts/deploy/deployGitEscrow.ts --network base",
+    "deploy:base-sepolia": "hardhat run contracts/deploy/deployGitEscrow.ts --network baseSepolia"
+  },
+  "dependencies": {
+    "@octokit/app": "^15.1.0",
+    "@octokit/rest": "^21.0.0",
+    "@solana/spl-token": "^0.4.9",
+    "@solana/web3.js": "^1.98.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@hardhat/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "hardhat": "^2.22.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.5.0"
+  }
+}
