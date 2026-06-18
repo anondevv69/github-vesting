@@ -12,8 +12,11 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { createPublicClient, createWalletClient, http, parseAbi, type Address } from "viem";
-import { base } from "viem/chains";
+import { createPublicClient, http, parseAbi, type Address } from "viem";
+import { base, baseSepolia } from "viem/chains";
+
+const IS_TESTNET = import.meta.env.VITE_CHAIN === "base-sepolia";
+const activeChain = IS_TESTNET ? baseSepolia : base;
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const GIT_ESCROW_ADDRESS = import.meta.env.VITE_GIT_ESCROW_ADDRESS as Address | undefined;
@@ -58,19 +61,34 @@ export function VestingSetupPage() {
   const [githubUser, setGithubUser] = useState<GitHubUser | null>(null);
   const [form, setForm] = useState<FormState>({
     repoFullName: "",
-    tokenAddress: "",
+    tokenAddress: import.meta.env.VITE_MOCK_TOKEN_ADDRESS ?? "",
     tokenSymbol: "",
     tokenDecimals: 18,
     tokenBalance: "0",
     lockAmount: "",
     totalPushes: 100,
     pushesPerMilestone: 10,
-    chain: "base",
+    chain: IS_TESTNET ? "base-sepolia" : "base",
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lockTxHash, setLockTxHash] = useState<string | null>(null);
   const [installationId, setInstallationId] = useState<number | null>(null);
+
+  // Restore wallet connection on page load if already connected.
+  useEffect(() => {
+    async function checkExistingWallet() {
+      if (!(window as Window & { ethereum?: unknown }).ethereum) return;
+      try {
+        const eth = (window as Window & { ethereum: { request: (args: { method: string }) => Promise<string[]> } }).ethereum;
+        const accounts = await eth.request({ method: "eth_accounts" });
+        if (accounts && accounts.length > 0) {
+          setWallet(accounts[0] as Address);
+        }
+      } catch { /* ignore */ }
+    }
+    void checkExistingWallet();
+  }, []);
 
   // Parse GitHub OAuth callback params.
   useEffect(() => {
@@ -118,7 +136,7 @@ export function VestingSetupPage() {
     setBusy(true);
     setError(null);
     try {
-      const client = createPublicClient({ chain: base, transport: http() });
+      const client = createPublicClient({ chain: activeChain, transport: http() });
       const addr = form.tokenAddress as Address;
       const [symbol, decimals, balance] = await Promise.all([
         client.readContract({ address: addr, abi: ERC20_ABI, functionName: "symbol" }),
@@ -139,61 +157,81 @@ export function VestingSetupPage() {
   }
 
   async function handleLockTokens() {
-    if (!wallet || !GIT_ESCROW_ADDRESS) {
-      setError("Escrow contract address not configured.");
+    console.log("handleLockTokens:", { wallet, GIT_ESCROW_ADDRESS });
+    if (!wallet) {
+      setError("Connect your wallet first.");
+      setBusy(false);
+      return;
+    }
+    if (!GIT_ESCROW_ADDRESS) {
+      setError("Escrow contract address not configured: " + JSON.stringify(import.meta.env));
+      setBusy(false);
       return;
     }
     setBusy(true);
     setError(null);
+
+    if (!window.ethereum) {
+      setError("MetaMask not detected. Please install MetaMask.");
+      setBusy(false);
+      return;
+    }
+
     try {
-      const eth = (window as Window & { ethereum: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum;
-      const walletClient = createWalletClient({
-        account: wallet,
-        chain: base,
-        transport: http(),
-      });
-      const publicClient = createPublicClient({ chain: base, transport: http() });
+      const publicClient = createPublicClient({ chain: activeChain, transport: http("https://base-sepolia-rpc.publicnode.com") });
 
       const decimals = form.tokenDecimals;
       const amount = BigInt(parseFloat(form.lockAmount) * 10 ** decimals);
       const tokenAddr = form.tokenAddress as Address;
 
-      // Step 1: approve
-      const approveTx = await walletClient.writeContract({
-        address: tokenAddr,
-        abi: ERC20_ABI,
-        functionName: "approve",
-        args: [GIT_ESCROW_ADDRESS, amount],
-        account: wallet,
-      });
-      await publicClient.waitForTransactionReceipt({ hash: approveTx });
+      // Step 1: approve - use MetaMask directly via eth_sendTransaction
+      const approveData = "0x095ea7b3000000000000000000000000" + GIT_ESCROW_ADDRESS.slice(2).toLowerCase() + amount.toString(16).padStart(64, "0");
+      console.log("Sending approve tx, from:", wallet, "to:", tokenAddr);
 
-      // Step 2: lock
-      const repoIdBytes32 = await publicClient.readContract({
-        address: GIT_ESCROW_ADDRESS,
-        abi: ESCROW_ABI,
-        functionName: "encodeRepoId",
-        args: [form.repoFullName],
-      });
+      let approveTxHash;
+      try {
+        approveTxHash = await window.ethereum.request({
+          method: "eth_sendTransaction",
+          params: [{
+            from: wallet,
+            to: tokenAddr,
+            data: approveData,
+          }],
+        }) as string;
+      } catch (err: any) {
+        console.error("Approve tx error:", err);
+        setError("MetaMask error: " + (err?.message || err?.code || JSON.stringify(err)));
+        setBusy(false);
+        return;
+      }
+      // Skip waiting for receipt - user confirmed in MetaMask, that's enough
+      console.log("Approve tx sent:", approveTxHash);
 
-      const lockTx = await walletClient.writeContract({
-        address: GIT_ESCROW_ADDRESS,
-        abi: ESCROW_ABI,
-        functionName: "lock",
-        args: [
-          repoIdBytes32 as `0x${string}`,
-          tokenAddr,
-          amount,
-          BigInt(form.totalPushes),
-          BigInt(form.pushesPerMilestone),
-        ],
-        account: wallet,
-      });
-      await publicClient.waitForTransactionReceipt({ hash: lockTx });
-      setLockTxHash(lockTx);
+      // Step 2: lock - use viem to encode the data, send via MetaMask
+      const repoIdBytes32 = "0x" + Buffer.from(form.repoFullName).toString("hex").padEnd(64, "0");
+      const lockData = "0x7b4e3b9e" + // lock() function selector
+        repoIdBytes32.slice(2).padStart(64, "0") +
+        tokenAddr.slice(2).padStart(64, "0") +
+        amount.toString(16).padStart(64, "0") +
+        BigInt(form.totalPushes).toString(16).padStart(64, "0") +
+        BigInt(form.pushesPerMilestone).toString(16).padStart(64, "0");
+
+      console.log("Sending lock tx, data:", lockData);
+      const lockTxHash = await window.ethereum.request({
+        method: "eth_sendTransaction",
+        params: [{
+          from: wallet,
+          to: GIT_ESCROW_ADDRESS,
+          data: lockData,
+        }],
+      }) as string;
+      console.log("Lock tx sent:", lockTxHash);
+      setLockTxHash(lockTxHash);
       setStep(6);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Lock transaction failed");
+    } catch (e: any) {
+      console.error("handleLockTokens error:", e);
+      const errMsg = e?.message || e?.reason || JSON.stringify(e);
+      setError("Lock transaction failed: " + errMsg);
     } finally {
       setBusy(false);
     }
@@ -441,7 +479,7 @@ export function VestingSetupPage() {
           {lockTxHash && (
             <p className="muted">
               Lock tx:{" "}
-              <a href={`https://basescan.org/tx/${lockTxHash}`} target="_blank" rel="noreferrer">
+              <a href={`${IS_TESTNET ? "https://sepolia.basescan.org" : "https://basescan.org"}/tx/${lockTxHash}`} target="_blank" rel="noreferrer">
                 {lockTxHash.slice(0, 10)}…
               </a>
             </p>

@@ -34,5 +34,8 @@ export const env = {
 
   // Frontend / CORS
   FRONTEND_URL: optional("FRONTEND_URL", "http://localhost:5173"),
+  // Public-facing URL of this backend — used for OAuth callback redirect_uri.
+  // Set to the ngrok URL when running locally, or the deployed URL in prod.
+  SERVER_URL: optional("SERVER_URL", "http://localhost:3000"),
   SESSION_SECRET: required("SESSION_SECRET"),
 };

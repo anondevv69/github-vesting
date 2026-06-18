@@ -12,11 +12,14 @@
     "typecheck": "tsc --noEmit",
     "compile:contracts": "hardhat compile",
     "deploy:base": "hardhat run contracts/deploy/deployGitEscrow.ts --network base",
-    "deploy:base-sepolia": "hardhat run contracts/deploy/deployGitEscrow.ts --network baseSepolia"
+    "deploy:base-sepolia": "hardhat run contracts/deploy/deployGitEscrow.ts --network baseSepolia",
+    "deploy:base": "hardhat run contracts/deploy/deployGitEscrow.ts --network base",
+    "deploy:mock-token": "hardhat run contracts/deploy/deployMockERC20.ts --network baseSepolia"
   },
   "dependencies": {
-    "@octokit/app": "^15.1.0",
-    "@octokit/rest": "^21.0.0",
+    "@octokit/app": "^13.1.8",
+    "@octokit/rest": "^20.1.2",
+    "@openzeppelin/contracts": "^5.6.1",
     "@solana/spl-token": "^0.4.9",
     "@solana/web3.js": "^1.98.0",
     "cors": "^2.8.5",
@@ -26,7 +29,7 @@
     "viem": "^2.21.0"
   },
   "devDependencies": {
-    "@hardhat/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",

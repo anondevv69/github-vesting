@@ -19,7 +19,7 @@ export function handleOAuthRedirect(req: Request, res: Response): void {
 
   const params = new URLSearchParams({
     client_id: env.GITHUB_CLIENT_ID,
-    redirect_uri: `${env.FRONTEND_URL}/api/oauth/github/callback`,
+    redirect_uri: `${env.SERVER_URL}/api/oauth/github/callback`,
     scope: SCOPES,
     state,
   });
