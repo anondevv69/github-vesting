@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+const IS_TESTNET = import.meta.env.VITE_CHAIN === "base-sepolia";
+const explorerBase = IS_TESTNET ? "https://sepolia.basescan.org" : "https://basescan.org";
 
 type StatusResponse = {
   ok: boolean;
@@ -137,7 +139,7 @@ export function VestingStatusPage() {
 
       <p className="muted" style={{ marginTop: "2rem" }}>
         Lock tx:{" "}
-        <a href={`https://basescan.org/tx/${grant.onChainTxHash}`} target="_blank" rel="noreferrer">
+        <a href={`${explorerBase}/tx/${grant.onChainTxHash}`} target="_blank" rel="noreferrer">
           {grant.onChainTxHash.slice(0, 10)}…
         </a>
         {" · "}Started {new Date(grant.createdAt).toLocaleDateString()}
