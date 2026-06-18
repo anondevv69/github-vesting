@@ -11,12 +11,16 @@ const app = express();
 // ─── Raw body capture (needed for GitHub webhook signature verification) ──────
 app.use(
   (req, res, next) => {
-    let data: Buffer[] = [];
-    req.on("data", (chunk: Buffer) => data.push(chunk));
-    req.on("end", () => {
-      (req as express.Request & { rawBody?: Buffer }).rawBody = Buffer.concat(data);
+    if (req.path === "/api/webhook/github") {
+      let data: Buffer[] = [];
+      req.on("data", (chunk: Buffer) => data.push(chunk));
+      req.on("end", () => {
+        (req as express.Request & { rawBody?: Buffer }).rawBody = Buffer.concat(data);
+        next();
+      });
+    } else {
       next();
-    });
+    }
   },
 );
 
