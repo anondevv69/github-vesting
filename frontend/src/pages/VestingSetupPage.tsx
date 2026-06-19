@@ -30,14 +30,6 @@ const ESCROW_ABI = parseAbi([
 // Bankr DERC20 tokens implement a "locked pool" guard that blocks
 // transferFrom to a pool address. We detect them at runtime by
 // probing for the `isPoolUnlocked()` view function.
-const ERC20_EXTENDED_ABI = parseAbi([
-  "function approve(address spender, uint256 amount) returns (bool)",
-  "function decimals() view returns (uint8)",
-  "function symbol() view returns (string)",
-  "function balanceOf(address) view returns (uint256)",
-  "function allowance(address owner, address spender) view returns (uint256)",
-  "function lockPool(address) external",
-]);
 
 const ERC20_ABI = parseAbi([
   "function approve(address spender, uint256 amount) returns (bool)",
@@ -131,7 +123,7 @@ export function VestingSetupPage() {
     setBusy(true);
     setError(null);
     try {
-      const eth = (window as Window & { ethereum: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> }) }).ethereum;
+      const eth = (window as Window & { ethereum: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum;
       const accounts = await eth.request({ method: "eth_requestAccounts" }) as string[];
       setWallet(accounts[0] as Address);
 
