@@ -222,17 +222,26 @@ export function VestingSetupPage() {
         BigInt(form.pushesPerMilestone).toString(16).padStart(64, "0");
 
       console.log("Sending lock tx, data:", lockData);
-      const lockTxHash = await window.ethereum.request({
-        method: "eth_sendTransaction",
-        params: [{
-          from: wallet,
-          to: GIT_ESCROW_ADDRESS,
-          data: lockData,
-        }],
-      }) as string;
-      console.log("Lock tx sent:", lockTxHash);
-      setLockTxHash(lockTxHash);
-      setStep(6);
+      let lockTxHash;
+      try {
+        lockTxHash = await window.ethereum.request({
+          method: "eth_sendTransaction",
+          params: [{
+            from: wallet,
+            to: GIT_ESCROW_ADDRESS,
+            data: lockData,
+            value: "0x0",
+          }],
+        }) as string;
+        console.log("Lock tx sent:", lockTxHash);
+        setLockTxHash(lockTxHash);
+        setStep(6);
+      } catch (err: any) {
+        console.error("Lock tx error:", err);
+        setError("Lock transaction rejected: " + (err?.message || err?.code || "Unknown error"));
+        setBusy(false);
+        return;
+      }
     } catch (e: any) {
       console.error("handleLockTokens error:", e);
       const errMsg = e?.message || e?.reason || JSON.stringify(e);
