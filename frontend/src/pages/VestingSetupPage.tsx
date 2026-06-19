@@ -251,7 +251,7 @@ export function VestingSetupPage() {
         const domain = {
           name: "BankrSpace",
           version: "1",
-          chainId: BigInt(activeChain.id),
+          chainId: activeChain.id,
           verifyingContract: tokenAddr,
         };
         const types = {
