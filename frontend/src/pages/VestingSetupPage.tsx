@@ -266,9 +266,9 @@ export function VestingSetupPage() {
         const message = {
           owner: wallet,
           spender: GIT_ESCROW_ADDRESS,
-          value: amount,
-          nonce,
-          deadline,
+          value: amount.toString(),
+          nonce: nonce.toString(),
+          deadline: deadline.toString(),
         };
         console.log("Requesting permit signature from MetaMask…");
         const sig = await window.ethereum.request({
