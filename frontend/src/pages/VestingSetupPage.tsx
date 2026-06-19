@@ -233,10 +233,6 @@ export function VestingSetupPage() {
       // via lockWithPermit().
       const useStreaming = isBankrToken;
 
-      // Step 1: For non-streaming tokens, send a normal approve tx.
-      // For streaming tokens, sign a permit off-chain (no gas, no
-      // separate tx) and pass the signature to lockWithPermit.
-      let approveTxHash: string | null = null;
       // Step 1: Send approve tx (works for both standard ERC-20s and
       // Bankr-style tokens that support standard approve).
       const approveData = "0x095ea7b3000000000000000000000000" + GIT_ESCROW_ADDRESS.slice(2).toLowerCase() + amount.toString(16).padStart(64, "0");
