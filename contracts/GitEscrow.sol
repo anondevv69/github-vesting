@@ -62,6 +62,9 @@ contract GitEscrow is Ownable, ReentrancyGuard {
         /// The highest push milestone already paid out (milestones counted from 1).
         uint256 lastPaidMilestone;
         bool active;
+        /// If true, tokens are pulled from recipient's wallet per milestone
+        /// (streaming-allowance model). If false, tokens were pre-funded.
+        bool streaming;
         uint64 lockedAt;
     }
 
@@ -118,14 +121,15 @@ contract GitEscrow is Ownable, ReentrancyGuard {
         uint256 tokensPerMile = amount / milestones;
         require(tokensPerMile > 0, "GitEscrow: token per milestone rounds to 0");
 
-        // Try standard transferFrom; if it fails (e.g. Bankr tokens with locked pool),
-        // fall back to tracking an allowance-based vesting schedule instead.
-        try IERC20(token).transferFrom(msg.sender, address(this), amount) returns (bool ok) {
-            require(ok, "GitEscrow: transferFrom returned false");
+// Try to pull tokens upfront. For normal ERC-20s this works.
+// For Bankr DERC20 tokens (or any token with a locked-pool guard
+// around the receiver), this reverts. In that case the recipient
+// should call lockAllowance() instead so we record the grant
+// without taking custody of the tokens.
+        try this._tryPull(token, msg.sender, amount) {
+            // tokens are now in escrow
         } catch {
-            // For tokens with locked pools (like Bankr), we instead track the allowance
-            // and require the recipient to release tokens via their own vesting mechanism.
-            // The recipient maintains control and must call our release() helper.
+            revert("GitEscrow: pull failed - use lockAllowance for restricted tokens");
         }
 
         grants[repoId] = VestingGrant({
@@ -138,6 +142,70 @@ contract GitEscrow is Ownable, ReentrancyGuard {
             tokensPerMilestone: tokensPerMile,
             lastPaidMilestone: 0,
             active: true,
+            streaming: false,
+            lockedAt: uint64(block.timestamp)
+        });
+
+        allRepoIds.push(repoId);
+
+        emit Locked(repoId, msg.sender, token, amount, totalPushes, pushesPerMile, tokensPerMile);
+    }
+
+    /// @dev External helper so we can use try/catch around the token call.
+    function _tryPull(address token, address from, uint256 amount) external {
+        require(msg.sender == address(this), "GitEscrow: internal");
+        IERC20(token).safeTransferFrom(from, address(this), amount);
+    }
+
+    /**
+     * @notice Streaming-approval lock for tokens with restricted transferFrom
+     *         (e.g. Bankr DERC20 tokens with a locked pool that prevents the
+     *         escrow contract from receiving tokens).
+     *
+     *         The recipient must `approve` this contract for `amount` tokens
+     *         BEFORE calling. The contract pulls tokens per milestone as
+     *         releases happen, so the recipient's wallet retains custody
+     *         until each payout.
+     *
+     *         Compatible with all ERC-20s (including ones with locked pools),
+     *         because it only requires the standard `approve` + `transferFrom`
+     *         to succeed at release time, not at lock time.
+     */
+    function lockAllowance(
+        bytes32 repoId,
+        address token,
+        uint256 amount,
+        uint256 totalPushes,
+        uint256 pushesPerMile
+    ) external nonReentrant {
+        require(!grants[repoId].active, "GitEscrow: repoId already active");
+        require(token != address(0), "GitEscrow: zero token");
+        require(amount > 0, "GitEscrow: zero amount");
+        require(totalPushes > 0 && pushesPerMile > 0, "GitEscrow: bad push params");
+        require(pushesPerMile <= totalPushes, "GitEscrow: interval > total");
+        require(totalPushes % pushesPerMile == 0, "GitEscrow: uneven milestones");
+
+        uint256 milestones = totalPushes / pushesPerMile;
+        uint256 tokensPerMile = amount / milestones;
+        require(tokensPerMile > 0, "GitEscrow: token per milestone rounds to 0");
+
+        // Verify the recipient has approved us for at least `amount`.
+        require(
+            IERC20(token).allowance(msg.sender, address(this)) >= amount,
+            "GitEscrow: insufficient allowance"
+        );
+
+        grants[repoId] = VestingGrant({
+            recipient: msg.sender,
+            token: token,
+            totalLocked: amount,
+            totalReleased: 0,
+            totalPushesRequired: totalPushes,
+            pushesPerMilestone: pushesPerMile,
+            tokensPerMilestone: tokensPerMile,
+            lastPaidMilestone: 0,
+            active: true,
+            streaming: true,
             lockedAt: uint64(block.timestamp)
         });
 
@@ -181,7 +249,26 @@ contract GitEscrow is Ownable, ReentrancyGuard {
             g.active = false;
         }
 
-        IERC20(g.token).safeTransfer(g.recipient, payout);
+        // Streaming-allowance: pull tokens from recipient to the oracle, then
+// the oracle forwards them to the recipient via a regular `transfer`.
+// We use the oracle (msg.sender) as the intermediate to avoid sending
+// tokens directly into the escrow contract, which is essential for
+// Bankr DERC20 tokens that block transfers to the pool (escrow) address.
+// The recipient must keep an allowance >= remaining balance for this
+// to succeed at each milestone.
+// Pre-funded: tokens are already in escrow, just send them out.
+        if (g.streaming) {
+            IERC20(g.token).safeTransferFrom(g.recipient, msg.sender, payout);
+            require(
+                IERC20(g.token).balanceOf(msg.sender) >= payout,
+                "GitEscrow: oracle did not receive"
+            );
+            // The oracle EOA must then send the tokens to the recipient
+            // off-chain. The oracle bot handles this step after each
+            // release() call.
+        } else {
+            IERC20(g.token).safeTransfer(g.recipient, payout);
+        }
 
         emit Released(repoId, g.recipient, payout, milestonesEarned, g.totalReleased);
     }

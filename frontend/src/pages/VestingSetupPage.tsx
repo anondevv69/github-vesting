@@ -23,8 +23,12 @@ const GIT_ESCROW_ADDRESS = import.meta.env.VITE_GIT_ESCROW_ADDRESS as Address | 
 
 const ESCROW_ABI = parseAbi([
   "function lock(bytes32 repoId, address token, uint256 amount, uint256 totalPushes, uint256 pushesPerMile) external",
+  "function lockAllowance(bytes32 repoId, address token, uint256 amount, uint256 totalPushes, uint256 pushesPerMile) external",
   "function encodeRepoId(string calldata ownerSlashRepo) view returns (bytes32)",
 ]);
+
+// Bankr DERC20 token address - uses streaming-allowance flow.
+const BANKR_SPACE_TOKEN = "0xef703b860a6d422fa00cc67bbbb2662297cb6ba3";
 
 const ERC20_ABI = parseAbi([
   "function approve(address spender, uint256 amount) returns (bool)",
@@ -74,6 +78,7 @@ export function VestingSetupPage() {
   const [error, setError] = useState<string | null>(null);
   const [lockTxHash, setLockTxHash] = useState<string | null>(null);
   const [installationId, setInstallationId] = useState<number | null>(null);
+  const [isBankrToken, setIsBankrToken] = useState(false);
 
   // Restore wallet connection on page load if already connected.
   useEffect(() => {
@@ -185,9 +190,16 @@ export function VestingSetupPage() {
       const amount = BigInt(Math.floor(parseFloat(form.lockAmount) * 10 ** decimals));
       const tokenAddr = form.tokenAddress as Address;
 
+      // Detect Bankr / restricted tokens that use the streaming-allowance flow.
+      // For these tokens, transferFrom to the escrow reverts because the
+      // contract blocks transfers to a "locked pool" address. Instead, the
+      // user pre-approves the escrow, and tokens stay in their wallet
+      // until each milestone release pulls them.
+      const isBankrToken = tokenAddr.toLowerCase() === BANKR_SPACE_TOKEN.toLowerCase();
+
       // Step 1: approve - use MetaMask directly via eth_sendTransaction
       const approveData = "0x095ea7b3000000000000000000000000" + GIT_ESCROW_ADDRESS.slice(2).toLowerCase() + amount.toString(16).padStart(64, "0");
-      console.log("Sending approve tx, from:", wallet, "to:", tokenAddr);
+      console.log("Sending approve tx, from:", wallet, "to:", tokenAddr, "isBankrToken:", isBankrToken);
 
       let approveTxHash;
       try {
@@ -205,19 +217,19 @@ export function VestingSetupPage() {
         setBusy(false);
         return;
       }
-      // Skip waiting for receipt - user confirmed in MetaMask, that's enough
       console.log("Approve tx sent:", approveTxHash);
 
-      // Step 2: lock - compute keccak256 of owner/repo for repoId
+      // Step 2: lock or lockAllowance - compute keccak256 of owner/repo for repoId
       const repoIdBytes32 = keccak256(toBytes(form.repoFullName));
-      const lockData = "0x7b4e3b9e" + // lock() function selector
+      const lockSelector = isBankrToken ? "0xf2bc8198" : "0xc9c2dca6"; // lockAllowance or lock
+      const lockData = lockSelector +
         repoIdBytes32.slice(2).padStart(64, "0") +
         tokenAddr.slice(2).padStart(64, "0") +
         amount.toString(16).padStart(64, "0") +
         BigInt(form.totalPushes).toString(16).padStart(64, "0") +
         BigInt(form.pushesPerMilestone).toString(16).padStart(64, "0");
 
-      console.log("Sending lock tx, data:", lockData);
+      console.log("Sending lock tx, data:", lockData, "isBankrToken:", isBankrToken);
       let lockTxHash;
       try {
         lockTxHash = await window.ethereum.request({
@@ -231,6 +243,7 @@ export function VestingSetupPage() {
         }) as string;
         console.log("Lock tx sent:", lockTxHash);
         setLockTxHash(lockTxHash);
+        setIsBankrToken(isBankrToken);
         setStep(6);
       } catch (err: any) {
         console.error("Lock tx error:", err);
@@ -270,6 +283,7 @@ export function VestingSetupPage() {
           tokensPerMilestone,
           onChainTxHash: lockTxHash,
           installationId,
+          streaming: isBankrToken,
         }),
       });
       const data = await res.json() as { ok: boolean; error?: string };
