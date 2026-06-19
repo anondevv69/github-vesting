@@ -237,99 +237,39 @@ export function VestingSetupPage() {
       // For streaming tokens, sign a permit off-chain (no gas, no
       // separate tx) and pass the signature to lockWithPermit.
       let approveTxHash: string | null = null;
-      let permitSig: { v: number; r: `0x${string}`; s: `0x${string}`; deadline: bigint } | null = null;
-
-      if (useStreaming) {
-        // EIP-2612 permit: read the token's actual DOMAIN_SEPARATOR so our
-        // typed-data signature matches exactly what permit() will compute.
-        const [nonce, domainSeparator] = await Promise.all([
-          publicClient.readContract({
-            address: tokenAddr,
-            abi: parseAbi(["function nonces(address) view returns (uint256)"]),
-            functionName: "nonces",
-            args: [wallet],
-          }),
-          publicClient.readContract({
-            address: tokenAddr,
-            abi: parseAbi(["function DOMAIN_SEPARATOR() view returns (bytes32)"]),
-            functionName: "DOMAIN_SEPARATOR",
-          }),
-        ]) as [bigint, `0x${string}`];
-
-        const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600); // 1 hour
-        // Pass domainSeparator directly so MetaMask uses the token's exact domain.
-        const domain = { domainSeparator };
-        const types = {
-          Permit: [
-            { name: "owner", type: "address" },
-            { name: "spender", type: "address" },
-            { name: "value", type: "uint256" },
-            { name: "nonce", type: "uint256" },
-            { name: "deadline", type: "uint256" },
-          ],
-        };
-        const message = {
-          owner: wallet,
-          spender: GIT_ESCROW_ADDRESS,
-          value: amount.toString(),
-          nonce: nonce.toString(),
-          deadline: deadline.toString(),
-        };
-        console.log("Requesting permit signature from MetaMask…");
-        const sig = await window.ethereum.request({
-          method: "eth_signTypedData_v4",
-          params: [wallet, JSON.stringify({ domain, types, primaryType: "Permit", message })],
+      // Step 1: Send approve tx (works for both standard ERC-20s and
+      // Bankr-style tokens that support standard approve).
+      const approveData = "0x095ea7b3000000000000000000000000" + GIT_ESCROW_ADDRESS.slice(2).toLowerCase() + amount.toString(16).padStart(64, "0");
+      console.log("Sending approve tx, from:", wallet, "to:", tokenAddr);
+      let approveTxHash;
+      try {
+        approveTxHash = await window.ethereum.request({
+          method: "eth_sendTransaction",
+          params: [{ from: wallet, to: tokenAddr, data: approveData }],
         }) as string;
-        const r = sig.slice(0, 66) as `0x${string}`;
-        const s = ("0x" + sig.slice(66, 130)) as `0x${string}`;
-        const v = parseInt(sig.slice(130, 132), 16);
-        permitSig = { v, r, s, deadline };
-        console.log("Permit signed:", { v, r, s });
-      } else {
-        // Standard approve flow.
-        const approveData = "0x095ea7b3000000000000000000000000" + GIT_ESCROW_ADDRESS.slice(2).toLowerCase() + amount.toString(16).padStart(64, "0");
-        console.log("Sending approve tx, from:", wallet, "to:", tokenAddr);
-        try {
-          approveTxHash = await window.ethereum.request({
-            method: "eth_sendTransaction",
-            params: [{ from: wallet, to: tokenAddr, data: approveData }],
-          }) as string;
-        } catch (err: any) {
-          console.error("Approve tx error:", err);
-          setError("MetaMask error: " + (err?.message || err?.code || JSON.stringify(err)));
-          setBusy(false);
-          return;
-        }
-        console.log("Approve tx sent:", approveTxHash);
-        // Wait for the approve to confirm before sending the lock.
-        await publicClient.waitForTransactionReceipt({ hash: approveTxHash as `0x${string}` });
-        console.log("Approve confirmed, sending lock tx");
+      } catch (err: any) {
+        console.error("Approve tx error:", err);
+        setError("Approve rejected: " + (err?.message || err?.code || JSON.stringify(err)));
+        setBusy(false);
+        return;
       }
+      console.log("Approve tx sent:", approveTxHash);
+      // Wait for the approve to confirm before sending the lock.
+      await publicClient.waitForTransactionReceipt({ hash: approveTxHash as `0x${string}` });
+      console.log("Approve confirmed, sending lock tx");
 
       // Step 2: lock - compute keccak256 of owner/repo for repoId
       const repoIdBytes32 = keccak256(toBytes(form.repoFullName));
-      let lockData: string;
-      if (useStreaming && permitSig) {
-        // lockWithPermit(bytes32,address,uint256,uint256,uint256,uint256,uint8,bytes32,bytes32)
-        lockData = "0x1492ffa0" +
-          repoIdBytes32.slice(2).padStart(64, "0") +
-          tokenAddr.slice(2).padStart(64, "0") +
-          amount.toString(16).padStart(64, "0") +
-          BigInt(form.totalPushes).toString(16).padStart(64, "0") +
-          BigInt(form.pushesPerMilestone).toString(16).padStart(64, "0") +
-          permitSig.deadline.toString(16).padStart(64, "0") +
-          permitSig.v.toString(16).padStart(64, "0") +
-          permitSig.r.slice(2).padStart(64, "0") +
-          permitSig.s.slice(2).padStart(64, "0");
-      } else {
-        // lock(bytes32,address,uint256,uint256,uint256)
-        lockData = "0xc9c2dca6" +
-          repoIdBytes32.slice(2).padStart(64, "0") +
-          tokenAddr.slice(2).padStart(64, "0") +
-          amount.toString(16).padStart(64, "0") +
-          BigInt(form.totalPushes).toString(16).padStart(64, "0") +
-          BigInt(form.pushesPerMilestone).toString(16).padStart(64, "0");
-      }
+      // useStreaming: lockAllowance records the grant without pulling tokens
+      // upfront (the escrow never holds tokens, which sidesteps Bankr's
+      // pool-transfer restriction). Non-streaming: lock() pulls tokens in.
+      const lockSelector = useStreaming ? "0xf2bc8198" : "0xc9c2dca6";
+      const lockData = lockSelector +
+        repoIdBytes32.slice(2).padStart(64, "0") +
+        tokenAddr.slice(2).padStart(64, "0") +
+        amount.toString(16).padStart(64, "0") +
+        BigInt(form.totalPushes).toString(16).padStart(64, "0") +
+        BigInt(form.pushesPerMilestone).toString(16).padStart(64, "0");
 
       console.log("Sending lock tx, data:", lockData);
       let lockTxHash;
