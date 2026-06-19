@@ -38,6 +38,9 @@ export type GrantRecord = {
   onChainTxHash: string;
   installationId: number;
   status: "active" | "complete" | "cancelled";
+  /// true = streaming-allowance (tokens stay in recipient's wallet)
+  /// false = pre-funded (tokens are held in the escrow contract)
+  streaming: boolean;
   createdAt: string;
   updatedAt: string;
 };

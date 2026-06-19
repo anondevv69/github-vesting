@@ -38,6 +38,7 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     tokensPerMilestone,
     onChainTxHash,
     installationId,
+    streaming,
   } = body;
 
   if (
@@ -95,6 +96,7 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     onChainTxHash,
     installationId: Number(installationId),
     status: "active",
+    streaming: Boolean(streaming),
     createdAt: now,
     updatedAt: now,
   };
