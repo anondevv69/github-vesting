@@ -10,7 +10,7 @@ import { getGrant } from "../lib/redis";
 import { getRedis, KEYS } from "../lib/redis";
 
 export async function handleStatus(req: Request, res: Response): Promise<void> {
-  let repoId: string | undefined = req.params["repoId"];
+  let repoId: string | undefined = Array.isArray(req.params["repoId"]) ? req.params["repoId"][0] : req.params["repoId"];
 
   if (!repoId && req.query["repo"]) {
     const repoFullName = String(req.query["repo"]);
