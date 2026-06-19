@@ -131,9 +131,22 @@ export function VestingSetupPage() {
     setBusy(true);
     setError(null);
     try {
-      const eth = (window as Window & { ethereum: { request: (args: { method: string; params?: unknown[] }) => Promise<string[]> } }).ethereum;
-      const accounts = await eth.request({ method: "eth_requestAccounts" });
+      const eth = (window as Window & { ethereum: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> }) }).ethereum;
+      const accounts = await eth.request({ method: "eth_requestAccounts" }) as string[];
       setWallet(accounts[0] as Address);
+
+      // Verify the wallet is on the correct chain (Base or Base Sepolia).
+      const expectedChainId = IS_TESTNET ? "0x14a34" : "0x2105"; // 84532 / 8453
+      const currentChainId = await eth.request({ method: "eth_chainId" }) as string;
+      if (currentChainId !== expectedChainId) {
+        setError(
+          `Wrong network in MetaMask. Expected ${IS_TESTNET ? "Base Sepolia" : "Base"} (chain ${expectedChainId}), got ${currentChainId}. ` +
+          `Please switch networks in MetaMask and reconnect.`,
+        );
+        setBusy(false);
+        return;
+      }
+
       setStep(2);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Wallet connect failed");
