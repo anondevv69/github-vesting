@@ -27,14 +27,24 @@ const ESCROW_ABI = parseAbi([
   "function encodeRepoId(string calldata ownerSlashRepo) view returns (bytes32)",
 ]);
 
-// Bankr DERC20 token address - uses streaming-allowance flow.
-const BANKR_SPACE_TOKEN = "0xef703b860a6d422fa00cc67bbbb2662297cb6ba3";
+// Bankr DERC20 tokens implement a "locked pool" guard that blocks
+// transferFrom to a pool address. We detect them at runtime by
+// probing for the `isPoolUnlocked()` view function.
+const ERC20_EXTENDED_ABI = parseAbi([
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function decimals() view returns (uint8)",
+  "function symbol() view returns (string)",
+  "function balanceOf(address) view returns (uint256)",
+  "function allowance(address owner, address spender) view returns (uint256)",
+  "function lockPool(address) external",
+]);
 
 const ERC20_ABI = parseAbi([
   "function approve(address spender, uint256 amount) returns (bool)",
   "function decimals() view returns (uint8)",
   "function symbol() view returns (string)",
   "function balanceOf(address) view returns (uint256)",
+  "function allowance(address owner, address spender) view returns (uint256)",
 ]);
 
 type Step = 1 | 2 | 3 | 4 | 5 | 6;
@@ -148,12 +158,31 @@ export function VestingSetupPage() {
         client.readContract({ address: addr, abi: ERC20_ABI, functionName: "decimals" }),
         client.readContract({ address: addr, abi: ERC20_ABI, functionName: "balanceOf", args: [wallet] }),
       ]);
+
+      // Probe for Bankr DERC20 (locked-pool) interface by checking if
+      // the contract has bytecode at the lockPool(address) selector.
+      // We do this by attempting a static call to `isPoolUnlocked()` view
+      // (selector 0x5a9c4d63) — if it reverts with no data, it's a
+      // standard ERC-20. If it returns, it's Bankr-style.
+      let detectedBankr = false;
+      try {
+        await client.readContract({
+          address: addr,
+          abi: parseAbi(["function isPoolUnlocked() view returns (bool)"]),
+          functionName: "isPoolUnlocked",
+        });
+        detectedBankr = true;
+      } catch {
+        detectedBankr = false;
+      }
+
       setForm((f) => ({
         ...f,
         tokenSymbol: symbol as string,
         tokenDecimals: decimals as number,
         tokenBalance: ((balance as bigint) / BigInt(10 ** (decimals as number))).toString(),
       }));
+      setIsBankrToken(detectedBankr);
     } catch (e) {
       setError("Could not load token info — check the address.");
     } finally {
@@ -190,16 +219,16 @@ export function VestingSetupPage() {
       const amount = BigInt(Math.floor(parseFloat(form.lockAmount) * 10 ** decimals));
       const tokenAddr = form.tokenAddress as Address;
 
-      // Detect Bankr / restricted tokens that use the streaming-allowance flow.
+      // Use the runtime-detected Bankr status (set in loadTokenInfo).
       // For these tokens, transferFrom to the escrow reverts because the
       // contract blocks transfers to a "locked pool" address. Instead, the
       // user pre-approves the escrow, and tokens stay in their wallet
       // until each milestone release pulls them.
-      const isBankrToken = tokenAddr.toLowerCase() === BANKR_SPACE_TOKEN.toLowerCase();
+      const useStreaming = isBankrToken;
 
       // Step 1: approve - use MetaMask directly via eth_sendTransaction
       const approveData = "0x095ea7b3000000000000000000000000" + GIT_ESCROW_ADDRESS.slice(2).toLowerCase() + amount.toString(16).padStart(64, "0");
-      console.log("Sending approve tx, from:", wallet, "to:", tokenAddr, "isBankrToken:", isBankrToken);
+      console.log("Sending approve tx, from:", wallet, "to:", tokenAddr, "useStreaming:", useStreaming);
 
       let approveTxHash;
       try {
@@ -221,7 +250,7 @@ export function VestingSetupPage() {
 
       // Step 2: lock or lockAllowance - compute keccak256 of owner/repo for repoId
       const repoIdBytes32 = keccak256(toBytes(form.repoFullName));
-      const lockSelector = isBankrToken ? "0xf2bc8198" : "0xc9c2dca6"; // lockAllowance or lock
+      const lockSelector = useStreaming ? "0xf2bc8198" : "0xc9c2dca6"; // lockAllowance or lock
       const lockData = lockSelector +
         repoIdBytes32.slice(2).padStart(64, "0") +
         tokenAddr.slice(2).padStart(64, "0") +
@@ -229,7 +258,7 @@ export function VestingSetupPage() {
         BigInt(form.totalPushes).toString(16).padStart(64, "0") +
         BigInt(form.pushesPerMilestone).toString(16).padStart(64, "0");
 
-      console.log("Sending lock tx, data:", lockData, "isBankrToken:", isBankrToken);
+      console.log("Sending lock tx, data:", lockData, "useStreaming:", useStreaming);
       let lockTxHash;
       try {
         lockTxHash = await window.ethereum.request({
@@ -243,7 +272,6 @@ export function VestingSetupPage() {
         }) as string;
         console.log("Lock tx sent:", lockTxHash);
         setLockTxHash(lockTxHash);
-        setIsBankrToken(isBankrToken);
         setStep(6);
       } catch (err: any) {
         console.error("Lock tx error:", err);
