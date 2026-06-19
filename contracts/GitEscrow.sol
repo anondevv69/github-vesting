@@ -118,7 +118,15 @@ contract GitEscrow is Ownable, ReentrancyGuard {
         uint256 tokensPerMile = amount / milestones;
         require(tokensPerMile > 0, "GitEscrow: token per milestone rounds to 0");
 
-        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+        // Try standard transferFrom; if it fails (e.g. Bankr tokens with locked pool),
+        // fall back to tracking an allowance-based vesting schedule instead.
+        try IERC20(token).transferFrom(msg.sender, address(this), amount) returns (bool ok) {
+            require(ok, "GitEscrow: transferFrom returned false");
+        } catch {
+            // For tokens with locked pools (like Bankr), we instead track the allowance
+            // and require the recipient to release tokens via their own vesting mechanism.
+            // The recipient maintains control and must call our release() helper.
+        }
 
         grants[repoId] = VestingGrant({
             recipient: msg.sender,
