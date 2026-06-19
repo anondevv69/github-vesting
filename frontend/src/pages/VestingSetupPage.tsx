@@ -182,8 +182,7 @@ export function VestingSetupPage() {
       const publicClient = createPublicClient({ chain: activeChain, transport: http(rpcUrl) });
 
       const decimals = form.tokenDecimals;
-      // Use precise integer arithmetic
-      const amount = (BigInt(Math.floor(parseFloat(form.lockAmount) * 10 ** decimals));
+      const amount = BigInt(Math.floor(parseFloat(form.lockAmount) * 10 ** decimals));
       const tokenAddr = form.tokenAddress as Address;
 
       // Step 1: approve - use MetaMask directly via eth_sendTransaction
