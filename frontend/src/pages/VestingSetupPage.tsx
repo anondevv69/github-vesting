@@ -241,7 +241,15 @@ export function VestingSetupPage() {
       try {
         approveTxHash = await window.ethereum.request({
           method: "eth_sendTransaction",
-          params: [{ from: wallet, to: tokenAddr, data: approveData }],
+          params: [{
+            from: wallet,
+            to: tokenAddr,
+            data: approveData,
+            chainId: activeChain.id,
+            gas: "0x186A0", // 100k
+            maxFeePerGas: "0x5D21DBA00", // 25 gwei
+            maxPriorityFeePerGas: "0x3B9ACA00", // 1 gwei
+          }],
         }) as string;
       } catch (err: any) {
         console.error("Approve tx error:", err);
