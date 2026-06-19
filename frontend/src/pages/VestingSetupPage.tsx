@@ -248,6 +248,13 @@ export function VestingSetupPage() {
       }
       console.log("Approve tx sent:", approveTxHash);
 
+      // Wait for the approve receipt so the allowance is set on-chain
+      // before the lock tx simulates. Otherwise MetaMask sees stale
+      // state and refuses to broadcast the lock tx.
+      console.log("Waiting for approve receipt...");
+      await publicClient.waitForTransactionReceipt({ hash: approveTxHash as `0x${string}` });
+      console.log("Approve confirmed, sending lock tx");
+
       // Step 2: lock or lockAllowance - compute keccak256 of owner/repo for repoId
       const repoIdBytes32 = keccak256(toBytes(form.repoFullName));
       const lockSelector = useStreaming ? "0xf2bc8198" : "0xc9c2dca6"; // lockAllowance or lock
