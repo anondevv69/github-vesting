@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -193,6 +194,66 @@ contract GitEscrow is Ownable, ReentrancyGuard {
         require(
             IERC20(token).allowance(msg.sender, address(this)) >= amount,
             "GitEscrow: insufficient allowance"
+        );
+
+        grants[repoId] = VestingGrant({
+            recipient: msg.sender,
+            token: token,
+            totalLocked: amount,
+            totalReleased: 0,
+            totalPushesRequired: totalPushes,
+            pushesPerMilestone: pushesPerMile,
+            tokensPerMilestone: tokensPerMile,
+            lastPaidMilestone: 0,
+            active: true,
+            streaming: true,
+            lockedAt: uint64(block.timestamp)
+        });
+
+        allRepoIds.push(repoId);
+
+        emit Locked(repoId, msg.sender, token, amount, totalPushes, pushesPerMile, tokensPerMile);
+    }
+
+    /**
+     * @notice Lock with EIP-2612 permit signature (single-transaction flow).
+     *         The user signs a permit off-chain, the contract calls
+     *         IERC20Permit.permit() to set the allowance, then records
+     *         the grant in streaming mode.
+     *
+     *         This is required for tokens that block `approve()` calls
+     *         (e.g. Bankr DERC20 / Space) but do implement EIP-2612.
+     */
+    function lockWithPermit(
+        bytes32 repoId,
+        address token,
+        uint256 amount,
+        uint256 totalPushes,
+        uint256 pushesPerMile,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external nonReentrant {
+        require(!grants[repoId].active, "GitEscrow: repoId already active");
+        require(token != address(0), "GitEscrow: zero token");
+        require(amount > 0, "GitEscrow: zero amount");
+        require(totalPushes > 0 && pushesPerMile > 0, "GitEscrow: bad push params");
+        require(pushesPerMile <= totalPushes, "GitEscrow: interval > total");
+        require(totalPushes % pushesPerMile == 0, "GitEscrow: uneven milestones");
+
+        uint256 milestones = totalPushes / pushesPerMile;
+        uint256 tokensPerMile = amount / milestones;
+        require(tokensPerMile > 0, "GitEscrow: token per milestone rounds to 0");
+
+        // Set the allowance via EIP-2612 permit in the same transaction.
+        // This sidesteps any token-side `approve` restrictions.
+        IERC20Permit(token).permit(msg.sender, address(this), amount, deadline, v, r, s);
+
+        // Verify the allowance was actually set.
+        require(
+            IERC20(token).allowance(msg.sender, address(this)) >= amount,
+            "GitEscrow: permit did not set allowance"
         );
 
         grants[repoId] = VestingGrant({
