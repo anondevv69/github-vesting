@@ -240,20 +240,25 @@ export function VestingSetupPage() {
       let permitSig: { v: number; r: `0x${string}`; s: `0x${string}`; deadline: bigint } | null = null;
 
       if (useStreaming) {
-        // EIP-2612 permit signature (off-chain, no tx needed).
+        // EIP-2612 permit: read the token's actual DOMAIN_SEPARATOR so our
+        // typed-data signature matches exactly what permit() will compute.
+        const [nonce, domainSeparator] = await Promise.all([
+          publicClient.readContract({
+            address: tokenAddr,
+            abi: parseAbi(["function nonces(address) view returns (uint256)"]),
+            functionName: "nonces",
+            args: [wallet],
+          }),
+          publicClient.readContract({
+            address: tokenAddr,
+            abi: parseAbi(["function DOMAIN_SEPARATOR() view returns (bytes32)"]),
+            functionName: "DOMAIN_SEPARATOR",
+          }),
+        ]) as [bigint, `0x${string}`];
+
         const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600); // 1 hour
-        const nonce = await publicClient.readContract({
-          address: tokenAddr,
-          abi: parseAbi(["function nonces(address) view returns (uint256)"]),
-          functionName: "nonces",
-          args: [wallet],
-        }) as bigint;
-        const domain = {
-          name: "BankrSpace",
-          version: "1",
-          chainId: activeChain.id,
-          verifyingContract: tokenAddr,
-        };
+        // Pass domainSeparator directly so MetaMask uses the token's exact domain.
+        const domain = { domainSeparator };
         const types = {
           Permit: [
             { name: "owner", type: "address" },
