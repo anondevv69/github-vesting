@@ -12,7 +12,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { createPublicClient, http, parseAbi, type Address } from "viem";
+import { createPublicClient, http, parseAbi, keccak256, toBytes, type Address } from "viem";
 import { base, baseSepolia } from "viem/chains";
 
 const IS_TESTNET = import.meta.env.VITE_CHAIN === "base-sepolia";
@@ -208,12 +208,8 @@ export function VestingSetupPage() {
       // Skip waiting for receipt - user confirmed in MetaMask, that's enough
       console.log("Approve tx sent:", approveTxHash);
 
-      // Step 2: lock - encode repoId without Buffer (browser-compatible)
-      const repoIdHex = Array.from(new TextEncoder().encode(form.repoFullName))
-        .map(b => b.toString(16).padStart(2, "0"))
-        .join("")
-        .padStart(64, "0");
-      const repoIdBytes32 = "0x" + repoIdHex;
+      // Step 2: lock - compute keccak256 of owner/repo for repoId
+      const repoIdBytes32 = keccak256(toBytes(form.repoFullName));
       const lockData = "0x7b4e3b9e" + // lock() function selector
         repoIdBytes32.slice(2).padStart(64, "0") +
         tokenAddr.slice(2).padStart(64, "0") +
