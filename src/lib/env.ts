@@ -38,4 +38,8 @@ export const env = {
   // Set to the ngrok URL when running locally, or the deployed URL in prod.
   SERVER_URL: optional("SERVER_URL", "http://localhost:3000"),
   SESSION_SECRET: required("SESSION_SECRET"),
+
+  // GitLawb (optional — Base-native git for agents)
+  GITLAWB_NODE_URL: optional("GITLAWB_NODE_URL", "https://node.gitlawb.com"),
+  GITLAWB_WEBHOOK_SECRET: optional("GITLAWB_WEBHOOK_SECRET", ""),
 };

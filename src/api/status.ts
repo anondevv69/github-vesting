@@ -6,15 +6,21 @@
  */
 
 import type { Request, Response } from "express";
-import { getGrant } from "../lib/redis";
-import { getRedis, KEYS } from "../lib/redis";
+import { getGrant, getGrantByRepoFullName, getRedis, KEYS } from "../lib/redis";
+import { buildProgress } from "../lib/grantsHelper";
 
 export async function handleStatus(req: Request, res: Response): Promise<void> {
-  let repoId: string | undefined = Array.isArray(req.params["repoId"]) ? req.params["repoId"][0] : req.params["repoId"];
+  let repoId: string | undefined = Array.isArray(req.params["repoId"])
+    ? req.params["repoId"][0]
+    : req.params["repoId"];
 
   if (!repoId && req.query["repo"]) {
-    const repoFullName = String(req.query["repo"]);
-    repoId = Buffer.from(repoFullName).toString("hex");
+    const grant = await getGrantByRepoFullName(String(req.query["repo"]));
+    if (!grant) {
+      res.status(404).json({ ok: false, error: "No vesting grant found for this repo" });
+      return;
+    }
+    repoId = grant.repoId;
   }
 
   if (!repoId) {
@@ -34,24 +40,12 @@ export async function handleStatus(req: Request, res: Response): Promise<void> {
     try { return JSON.parse(entry); } catch { return entry; }
   });
 
-  const totalMilestones = Math.floor(grant.totalPushesRequired / grant.pushesPerMilestone);
-  const nextMilestoneAt = (grant.lastPaidMilestone + 1) * grant.pushesPerMilestone;
-  const progressPct = grant.totalPushesRequired > 0
-    ? Math.floor((grant.verifiedPushCount / grant.totalPushesRequired) * 100)
-    : 0;
+  const progress = buildProgress(grant);
 
   res.json({
     ok: true,
     grant,
-    progress: {
-      verifiedPushCount: grant.verifiedPushCount,
-      totalPushesRequired: grant.totalPushesRequired,
-      progressPct,
-      nextMilestoneAt: grant.verifiedPushCount >= grant.totalPushesRequired ? null : nextMilestoneAt,
-      milestonesCompleted: grant.lastPaidMilestone,
-      totalMilestones,
-      pushesUntilNextRelease: Math.max(0, nextMilestoneAt - grant.verifiedPushCount),
-    },
+    progress,
     recentPushes,
   });
 }
@@ -60,7 +54,7 @@ export async function handleStatus(req: Request, res: Response): Promise<void> {
  * GET /api/vesting/list
  * List all vesting grants (admin / public dashboard).
  */
-export async function handleList(req: Request, res: Response): Promise<void> {
+export async function handleList(_req: Request, res: Response): Promise<void> {
   const { listAllGrants } = await import("../lib/redis");
   const grants = await listAllGrants();
   res.json({ ok: true, grants });

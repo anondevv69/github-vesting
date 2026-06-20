@@ -1,0 +1,15 @@
+{
+  "escrowAddress": "0x76dd4C6ea986684CDf822eC0832e142A2D5C8165",
+  "chain": "base",
+  "chainId": 8453,
+  "supportedTokens": {
+    "Space": {
+      "symbol": "Space",
+      "address": "0xef703b860a6d422fa00cc67bbbb2662297cb6ba3",
+      "streaming": true
+    }
+  },
+  "setupPath": "/vesting/setup",
+  "dashboardPath": "/vesting/dashboard",
+  "statusPathTemplate": "/vesting/status?repo={ownerSlashRepo}"
+}
