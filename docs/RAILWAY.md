@@ -18,8 +18,9 @@
 | `BASE_RPC_URL` | Base RPC |
 | `SESSION_SECRET` | random string |
 
-4. Nixpacks runs `npm ci` once (install), then `npm run build` (no-op — avoids broken `tsc` on viem/ox), then `npm start` via **tsx**
-5. Health check: `GET /health`
+4. Nixpacks runs `npm ci` once (install), then `npm run build` (no-op), then `npm start` via **tsx**
+5. Health check: `GET /health` — returns 200 when the process is up; `configured: false` + `missingEnv` if vars are unset
+6. Bind host defaults to `0.0.0.0` (Railway). Set `PORT` automatically via Railway; do **not** hardcode it.
 
 **GitHub App webhook:** `https://YOUR-SERVER-URL/api/webhook/github`
 

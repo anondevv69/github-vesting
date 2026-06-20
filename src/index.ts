@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
-import { env } from "./lib/env";
+import { env, getMissingEnvVars } from "./lib/env";
 import { handleWebhook } from "./github/webhookHandler";
 import { handleRegister } from "./api/register";
 import { handleStatus, handleList } from "./api/status";
@@ -55,12 +55,23 @@ app.use(
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "github-vesting", ts: new Date().toISOString() });
+  const missing = getMissingEnvVars();
+  res.json({
+    ok: true,
+    service: "github-vesting",
+    configured: missing.length === 0,
+    ...(missing.length ? { missingEnv: missing } : {}),
+    ts: new Date().toISOString(),
+  });
 });
 
 app.get("/agent.md", (_req, res) => {
   const docPath = path.join(__dirname, "..", "docs", "agent.md");
-  res.type("text/markdown").send(fs.readFileSync(docPath, "utf8"));
+  try {
+    res.type("text/markdown").send(fs.readFileSync(docPath, "utf8"));
+  } catch {
+    res.status(404).type("text/plain").send("agent.md not found");
+  }
 });
 
 // ─── GitHub webhook (receives push events from installed repos) ───────────────
@@ -98,8 +109,12 @@ app.get("/api/agent/status", (req, res) => void handleAgentStatus(req, res));
 app.get("/api/agent/setup-link", (req, res) => void handleAgentSetupLink(req, res));
 
 // ─── Start ────────────────────────────────────────────────────────────────────
-app.listen(env.PORT, () => {
-  console.log(`[github-vesting] Server running on port ${env.PORT}`);
+app.listen(env.PORT, env.HOST, () => {
+  const missing = getMissingEnvVars();
+  console.log(`[github-vesting] Server running on ${env.HOST}:${env.PORT}`);
+  if (missing.length) {
+    console.warn(`[github-vesting] Missing env vars (API features limited): ${missing.join(", ")}`);
+  }
   console.log(`[github-vesting] Webhook URL: ${env.SERVER_URL}/api/webhook/github`);
   console.log(`[github-vesting] GitLawb webhook: ${env.SERVER_URL}/api/webhook/gitlawb`);
   console.log(`[github-vesting] Agent API: ${env.SERVER_URL}/api/agent/briefing`);
