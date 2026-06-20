@@ -7,6 +7,7 @@ import { base, baseSepolia } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { env } from "../lib/env";
 import { updateGrant, type GrantRecord } from "../lib/redis";
+import { repoIdToBytes32 } from "../lib/repoId";
 
 const GIT_ESCROW_ABI = parseAbi([
   "function release(bytes32 repoId, uint256 totalVerifiedPushes) external",
@@ -63,7 +64,7 @@ export async function triggerReleaseIfMilestone(
 
   try {
     const { publicClient, walletClient, account } = getClients(grant.chain);
-    const repoIdBytes32 = `0x${Buffer.from(repoId, "hex").toString("hex").padEnd(64, "0")}` as `0x${string}`;
+    const repoIdBytes32 = repoIdToBytes32(repoId);
 
     const hash = await walletClient.writeContract({
       address: env.GIT_ESCROW_ADDRESS as Address,

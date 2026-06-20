@@ -11,12 +11,90 @@
  */
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { createPublicClient, http, parseAbi, keccak256, toBytes, type Address } from "viem";
+import { useSearchParams, Link } from "react-router-dom";
+import { VestingNav } from "../components/VestingNav";
+import { VestingPathChart } from "../components/VestingPathChart";
+import {
+  createPublicClient,
+  createWalletClient,
+  custom,
+  http,
+  parseAbi,
+  parseUnits,
+  keccak256,
+  toBytes,
+  type Address,
+  type Hash,
+  type PublicClient,
+} from "viem";
 import { base, baseSepolia } from "viem/chains";
 
 const IS_TESTNET = import.meta.env.VITE_CHAIN === "base-sepolia";
 const activeChain = IS_TESTNET ? baseSepolia : base;
+const RPC_URL =
+  import.meta.env.VITE_BASE_RPC_URL ??
+  (IS_TESTNET ? "https://sepolia.base.org" : "https://mainnet.base.org");
+
+type EthereumProvider = {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+};
+
+async function ensureWalletChain(provider: EthereumProvider) {
+  const chainIdHex = `0x${activeChain.id.toString(16)}`;
+  try {
+    await provider.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: chainIdHex }],
+    });
+  } catch (err: unknown) {
+    const e = err as { code?: number };
+    if (e?.code !== 4902) throw err;
+    await provider.request({
+      method: "wallet_addEthereumChain",
+      params: [{
+        chainId: chainIdHex,
+        chainName: activeChain.name,
+        nativeCurrency: activeChain.nativeCurrency,
+        rpcUrls: [RPC_URL],
+        blockExplorerUrls: [activeChain.blockExplorers?.default.url],
+      }],
+    });
+  }
+}
+
+async function waitForTxConfirmation(
+  hash: Hash,
+  publicClient: PublicClient,
+  label: string,
+  timeoutMs = 120_000,
+) {
+  const explorer = IS_TESTNET ? "https://sepolia.basescan.org" : "https://basescan.org";
+  console.log(`Waiting for ${label} on Base…`, hash);
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    // Poll the public Base RPC only — MetaMask's provider can report local
+    // pending txs that never actually broadcast to the network.
+    const tx = await publicClient.getTransaction({ hash }).catch(() => null);
+    if (tx) {
+      console.log(`${label} found on Base, waiting for receipt…`);
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+        timeout: Math.max(15_000, timeoutMs - (Date.now() - start)),
+      });
+      if (receipt.status !== "success") {
+        throw new Error(`${label} reverted on-chain. See ${explorer}/tx/${hash}`);
+      }
+      console.log(`${label} confirmed`);
+      return receipt;
+    }
+    console.log(`${label} not on Base yet (${Math.round((Date.now() - start) / 1000)}s)…`);
+    await new Promise((resolve) => setTimeout(resolve, 3_000));
+  }
+  throw new Error(
+    `${label} never appeared on Base (${explorer}/tx/${hash}). ` +
+    "MetaMask likely queued it without broadcasting. Open MetaMask → Activity, cancel ALL pending Base transactions, then try again.",
+  );
+}
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const GIT_ESCROW_ADDRESS = import.meta.env.VITE_GIT_ESCROW_ADDRESS as Address | undefined;
@@ -42,6 +120,20 @@ const ERC20_ABI = parseAbi([
 
 type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
+type BankrFeeToken = {
+  address: string;
+  name: string;
+  symbol: string;
+  share: string;
+};
+
+const SCHEDULE_PRESETS = [
+  { label: "10 pushes → unlock all", totalPushes: 10, pushesPerMilestone: 10 },
+  { label: "20 pushes → unlock all", totalPushes: 20, pushesPerMilestone: 20 },
+  { label: "20 pushes → release every 5", totalPushes: 20, pushesPerMilestone: 5 },
+  { label: "50 pushes → every 10", totalPushes: 50, pushesPerMilestone: 10 },
+] as const;
+
 type GitHubUser = {
   login: string;
   id: number;
@@ -49,7 +141,10 @@ type GitHubUser = {
   avatarUrl: string;
 };
 
+type RepoPlatform = "github" | "gitlawb";
+
 type FormState = {
+  platform: RepoPlatform;
   repoFullName: string;
   tokenAddress: string;
   tokenSymbol: string;
@@ -67,21 +162,29 @@ export function VestingSetupPage() {
   const [wallet, setWallet] = useState<Address | null>(null);
   const [githubUser, setGithubUser] = useState<GitHubUser | null>(null);
   const [form, setForm] = useState<FormState>({
+    platform: "github",
     repoFullName: "",
     tokenAddress: import.meta.env.VITE_MOCK_TOKEN_ADDRESS ?? "",
     tokenSymbol: "",
     tokenDecimals: 18,
     tokenBalance: "0",
     lockAmount: "",
-    totalPushes: 100,
+    totalPushes: 10,
     pushesPerMilestone: 10,
     chain: IS_TESTNET ? "base-sepolia" : "base",
   });
+  const [bankrTokens, setBankrTokens] = useState<BankrFeeToken[]>([]);
+  const [bankrTokensLoading, setBankrTokensLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lockTxHash, setLockTxHash] = useState<string | null>(null);
   const [installationId, setInstallationId] = useState<number | null>(null);
   const [isBankrToken, setIsBankrToken] = useState(false);
+  const [txStatus, setTxStatus] = useState<string | null>(null);
+  const [allowanceReady, setAllowanceReady] = useState(false);
+  const [chainNonce, setChainNonce] = useState<number | null>(null);
+  const [gitlawbSetup, setGitlawbSetup] = useState<{ webhookUrl: string; webhookCommand: string } | null>(null);
+  const [gitlawbWebhookReady, setGitlawbWebhookReady] = useState(false);
 
   // Restore wallet connection on page load if already connected.
   useEffect(() => {
@@ -115,6 +218,33 @@ export function VestingSetupPage() {
       setError(decodeURIComponent(oauthError));
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!wallet || step < 3) return;
+    setBankrTokensLoading(true);
+    fetch(`${API_BASE}/api/bankr/fee-tokens?wallet=${wallet}`)
+      .then((r) => r.json() as Promise<{ ok: boolean; tokens?: BankrFeeToken[] }>)
+      .then((d) => setBankrTokens(d.tokens ?? []))
+      .catch(() => setBankrTokens([]))
+      .finally(() => setBankrTokensLoading(false));
+  }, [wallet, step]);
+
+  async function selectBankrToken(token: BankrFeeToken) {
+    setForm((f) => ({ ...f, tokenAddress: token.address, tokenSymbol: token.symbol }));
+    await loadTokenInfo(token.address);
+  }
+
+  useEffect(() => {
+    if (form.platform !== "gitlawb") return;
+    fetch(`${API_BASE}/api/gitlawb/setup`)
+      .then((r) => r.json() as Promise<{ ok: boolean; webhookUrl?: string; webhookCommand?: string }>)
+      .then((d) => {
+        if (d.ok && d.webhookUrl && d.webhookCommand) {
+          setGitlawbSetup({ webhookUrl: d.webhookUrl, webhookCommand: d.webhookCommand });
+        }
+      })
+      .catch(() => setGitlawbSetup(null));
+  }, [form.platform]);
 
   async function connectWallet() {
     if (!(window as Window & { ethereum?: unknown }).ethereum) {
@@ -152,13 +282,14 @@ export function VestingSetupPage() {
     window.location.href = `${API_BASE}/api/oauth/github`;
   }
 
-  async function loadTokenInfo() {
-    if (!form.tokenAddress || !wallet) return;
+  async function loadTokenInfo(addressOverride?: string) {
+    const tokenAddr = addressOverride ?? form.tokenAddress;
+    if (!tokenAddr || !wallet) return;
     setBusy(true);
     setError(null);
     try {
-      const client = createPublicClient({ chain: activeChain, transport: http(IS_TESTNET ? "https://sepolia.base.org" : "https://mainnet.base.org") });
-      const addr = form.tokenAddress as Address;
+      const client = createPublicClient({ chain: activeChain, transport: http(RPC_URL) });
+      const addr = tokenAddr as Address;
       const [symbol, decimals, balance] = await Promise.all([
         client.readContract({ address: addr, abi: ERC20_ABI, functionName: "symbol" }),
         client.readContract({ address: addr, abi: ERC20_ABI, functionName: "decimals" }),
@@ -196,122 +327,193 @@ export function VestingSetupPage() {
     }
   }
 
-  async function handleLockTokens() {
-    console.log("handleLockTokens:", { wallet, GIT_ESCROW_ADDRESS });
-    if (!wallet) {
-      setError("Connect your wallet first.");
-      setBusy(false);
+  useEffect(() => {
+    if (step !== 5 || !wallet || !GIT_ESCROW_ADDRESS || !form.lockAmount) return;
+    void (async () => {
+      try {
+        const readClient = createPublicClient({ chain: activeChain, transport: http(RPC_URL) });
+        const amount = parseUnits(form.lockAmount, form.tokenDecimals);
+        const [allowance, nonce] = await Promise.all([
+          readClient.readContract({
+            address: form.tokenAddress as Address,
+            abi: ERC20_ABI,
+            functionName: "allowance",
+            args: [wallet, GIT_ESCROW_ADDRESS],
+          }),
+          readClient.getTransactionCount({ address: wallet, blockTag: "pending" }),
+        ]);
+        setAllowanceReady(allowance >= amount);
+        setChainNonce(Number(nonce));
+      } catch {
+        setAllowanceReady(false);
+        setChainNonce(null);
+      }
+    })();
+  }, [step, wallet, form.lockAmount, form.tokenAddress, form.tokenDecimals]);
+
+  async function ensureMetaMaskOnActiveChain(provider: EthereumProvider) {
+    const chainIdHex = await provider.request({ method: "eth_chainId" });
+    const chainId = Number.parseInt(String(chainIdHex), 16);
+    if (chainId !== activeChain.id) {
+      throw new Error(
+        `MetaMask is on the wrong network (chain ${chainId}). Switch MetaMask to ${activeChain.name} and try again.`,
+      );
+    }
+  }
+
+  async function getBaseNonce(readClient: PublicClient, walletAddr: Address) {
+    const nonce = await readClient.getTransactionCount({
+      address: walletAddr,
+      blockTag: "pending",
+    });
+    setChainNonce(Number(nonce));
+    return nonce;
+  }
+
+  function getLockContext(provider: EthereumProvider) {
+    const readClient = createPublicClient({ chain: activeChain, transport: http(RPC_URL) });
+    const walletClient = createWalletClient({
+      chain: activeChain,
+      transport: custom(provider),
+      account: wallet!,
+    });
+    const amount = parseUnits(form.lockAmount, form.tokenDecimals);
+    const tokenAddr = form.tokenAddress as Address;
+    const lockFn = isBankrToken ? "lockAllowance" : "lock";
+    const repoIdSeed = form.platform === "gitlawb"
+      ? `gitlawb:${form.repoFullName.trim()}`
+      : form.repoFullName.trim();
+    const repoIdBytes32 = keccak256(toBytes(repoIdSeed));
+    const lockArgs = [
+      repoIdBytes32,
+      tokenAddr,
+      amount,
+      BigInt(form.totalPushes),
+      BigInt(form.pushesPerMilestone),
+    ] as const;
+    return { readClient, walletClient, amount, tokenAddr, lockFn, lockArgs };
+  }
+
+  async function handleApproveTokens() {
+    if (!wallet || !GIT_ESCROW_ADDRESS) return;
+    const provider = (window as Window & { ethereum?: EthereumProvider }).ethereum;
+    if (!provider) {
+      setError("MetaMask not detected.");
       return;
     }
-    if (!GIT_ESCROW_ADDRESS) {
-      setError("Escrow contract address not configured: " + JSON.stringify(import.meta.env));
-      setBusy(false);
-      return;
-    }
+
     setBusy(true);
     setError(null);
-
-    if (!window.ethereum) {
-      setError("MetaMask not detected. Please install MetaMask.");
-      setBusy(false);
-      return;
-    }
-
+    setTxStatus(null);
     try {
-      const rpcUrl = IS_TESTNET ? "https://sepolia.base.org" : "https://mainnet.base.org";
-      const publicClient = createPublicClient({ chain: activeChain, transport: http(rpcUrl) });
+      await ensureWalletChain(provider);
+      await ensureMetaMaskOnActiveChain(provider);
+      const { readClient, walletClient, amount, tokenAddr } = getLockContext(provider);
+      const nonce = await getBaseNonce(readClient, wallet);
 
-      const decimals = form.tokenDecimals;
-      const amount = BigInt(Math.floor(parseFloat(form.lockAmount) * 10 ** decimals));
-      const tokenAddr = form.tokenAddress as Address;
+      console.log("Simulating approve…", { amount: amount.toString(), nonce: Number(nonce) });
+      await readClient.simulateContract({
+        address: tokenAddr,
+        abi: ERC20_ABI,
+        functionName: "approve",
+        args: [GIT_ESCROW_ADDRESS, amount],
+        account: wallet,
+      });
 
-      // Use the runtime-detected Bankr status (set in loadTokenInfo).
-      // For these tokens, transferFrom to the escrow reverts because the
-      // contract blocks transfers to a "locked pool" address, AND the
-      // standard `approve()` call also reverts. So we use the
-      // EIP-2612 permit signature to set the allowance in a single tx
-      // via lockWithPermit().
-      const useStreaming = isBankrToken;
-
-      // Step 1: Send approve tx (works for both standard ERC-20s and
-      // Bankr-style tokens that support standard approve).
-      const approveData = "0x095ea7b3000000000000000000000000" + GIT_ESCROW_ADDRESS.slice(2).toLowerCase() + amount.toString(16).padStart(64, "0");
-      console.log("Sending approve tx, from:", wallet, "to:", tokenAddr);
-      let approveTxHash;
-      try {
-        approveTxHash = await window.ethereum.request({
-          method: "eth_sendTransaction",
-          params: [{
-            from: wallet,
-            to: tokenAddr,
-            data: approveData,
-            chainId: activeChain.id,
-            gas: "0x186A0", // 100k
-            maxFeePerGas: "0x5D21DBA00", // 25 gwei
-            maxPriorityFeePerGas: "0x3B9ACA00", // 1 gwei
-          }],
-        }) as string;
-      } catch (err: any) {
-        console.error("Approve tx error:", err);
-        setError("Approve rejected: " + (err?.message || err?.code || JSON.stringify(err)));
-        setBusy(false);
-        return;
-      }
+      setTxStatus(
+        `Confirm approve in MetaMask. Expected nonce: ${nonce}. ` +
+        "If MetaMask shows a higher nonce or 'deceptive request', cancel pending Base txs first.",
+      );
+      const approveTxHash = await walletClient.writeContract({
+        address: tokenAddr,
+        abi: ERC20_ABI,
+        functionName: "approve",
+        args: [GIT_ESCROW_ADDRESS, amount],
+        nonce,
+      });
       console.log("Approve tx sent:", approveTxHash);
-      // Wait for the approve to confirm before sending the lock.
-      await publicClient.waitForTransactionReceipt({ hash: approveTxHash as `0x${string}` });
-      console.log("Approve confirmed, sending lock tx");
 
-      // Step 2: lock - compute keccak256 of owner/repo for repoId
-      const repoIdBytes32 = keccak256(toBytes(form.repoFullName));
-      // useStreaming: lockAllowance records the grant without pulling tokens
-      // upfront (the escrow never holds tokens, which sidesteps Bankr's
-      // pool-transfer restriction). Non-streaming: lock() pulls tokens in.
-      const lockSelector = useStreaming ? "0xf2bc8198" : "0xc9c2dca6";
-      const lockData = lockSelector +
-        repoIdBytes32.slice(2).padStart(64, "0") +
-        tokenAddr.slice(2).padStart(64, "0") +
-        amount.toString(16).padStart(64, "0") +
-        BigInt(form.totalPushes).toString(16).padStart(64, "0") +
-        BigInt(form.pushesPerMilestone).toString(16).padStart(64, "0");
+      setTxStatus("Waiting for approve to confirm on Base…");
+      await waitForTxConfirmation(approveTxHash, readClient, "Approve");
 
-      console.log("Sending lock tx, data:", lockData);
-      let lockTxHash;
-      try {
-        lockTxHash = await window.ethereum.request({
-          method: "eth_sendTransaction",
-          params: [{
-            from: wallet,
-            to: GIT_ESCROW_ADDRESS,
-            data: lockData,
-            value: "0x0",
-          }],
-        }) as string;
-        console.log("Lock tx sent:", lockTxHash);
-        setLockTxHash(lockTxHash);
-        setStep(6);
-      } catch (err: any) {
-        console.error("Lock tx error:", err);
-        setError("Lock transaction rejected: " + (err?.message || err?.code || "Unknown error"));
-        setBusy(false);
-        return;
+      const allowance = await readClient.readContract({
+        address: tokenAddr,
+        abi: ERC20_ABI,
+        functionName: "allowance",
+        args: [wallet, GIT_ESCROW_ADDRESS],
+      });
+      if (allowance < amount) {
+        throw new Error("Approve confirmed but allowance is still too low.");
       }
-    } catch (e: any) {
-      console.error("handleLockTokens error:", e);
-      const errMsg = e?.message || e?.reason || JSON.stringify(e);
-      setError("Lock transaction failed: " + errMsg);
+      setAllowanceReady(true);
+      setTxStatus("Approve confirmed. Click 'Lock tokens' below.");
+    } catch (e: unknown) {
+      console.error("handleApproveTokens error:", e);
+      setError(e instanceof Error ? e.message : JSON.stringify(e));
     } finally {
       setBusy(false);
     }
   }
 
+  async function handleLockGrant() {
+    if (!wallet || !GIT_ESCROW_ADDRESS || !allowanceReady) return;
+    const provider = (window as Window & { ethereum?: EthereumProvider }).ethereum;
+    if (!provider) {
+      setError("MetaMask not detected.");
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    setTxStatus(null);
+    try {
+      await ensureWalletChain(provider);
+      await ensureMetaMaskOnActiveChain(provider);
+      const { readClient, walletClient, lockFn, lockArgs } = getLockContext(provider);
+      const nonce = await getBaseNonce(readClient, wallet);
+
+      console.log("Simulating lock via", lockFn);
+      await readClient.simulateContract({
+        address: GIT_ESCROW_ADDRESS,
+        abi: ESCROW_ABI,
+        functionName: lockFn,
+        args: lockArgs,
+        account: wallet,
+      });
+
+      setTxStatus("Confirm lock in MetaMask…");
+      const lockTxHash = await walletClient.writeContract({
+        address: GIT_ESCROW_ADDRESS,
+        abi: ESCROW_ABI,
+        functionName: lockFn,
+        args: lockArgs,
+        nonce,
+      });
+      console.log("Lock tx sent:", lockTxHash);
+
+      setTxStatus("Waiting for lock to confirm on Base…");
+      await waitForTxConfirmation(lockTxHash, readClient, "Lock");
+
+      setLockTxHash(lockTxHash);
+      setStep(6);
+    } catch (e: unknown) {
+      console.error("handleLockGrant error:", e);
+      setError(e instanceof Error ? e.message : JSON.stringify(e));
+    } finally {
+      setBusy(false);
+      setTxStatus(null);
+    }
+  }
+
   async function handleRegister() {
-    if (!wallet || !lockTxHash || !installationId || !githubUser) return;
+    if (!wallet || !lockTxHash) return;
+    if (form.platform === "github" && (!installationId || !githubUser)) return;
+    if (form.platform === "gitlawb" && !gitlawbWebhookReady) return;
     setBusy(true);
     setError(null);
     try {
       const milestones = form.totalPushes / form.pushesPerMilestone;
-      const lockAmountWei = BigInt(parseFloat(form.lockAmount) * 10 ** form.tokenDecimals);
+      const lockAmountWei = parseUnits(form.lockAmount, form.tokenDecimals);
       const tokensPerMilestone = (lockAmountWei / BigInt(milestones)).toString();
 
       const res = await fetch(`${API_BASE}/api/vesting/register`, {
@@ -319,6 +521,7 @@ export function VestingSetupPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           repoFullName: form.repoFullName,
+          platform: form.platform,
           recipient: wallet,
           token: form.tokenAddress,
           chain: form.chain,
@@ -327,14 +530,14 @@ export function VestingSetupPage() {
           pushesPerMilestone: form.pushesPerMilestone,
           tokensPerMilestone,
           onChainTxHash: lockTxHash,
-          installationId,
+          installationId: form.platform === "github" ? installationId : 0,
           streaming: isBankrToken,
         }),
       });
       const data = await res.json() as { ok: boolean; error?: string };
-      if (!data.ok) throw new Error(data.error ?? "Registration failed");
-      setStep(6);
+      if (!data.ok && res.status !== 409) throw new Error(data.error ?? "Registration failed");
       setError(null);
+      alert("Vesting activated! Push verified commits to your repo to release tokens.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Registration failed");
     } finally {
@@ -345,18 +548,21 @@ export function VestingSetupPage() {
   const milestonesCount = form.totalPushes > 0 && form.pushesPerMilestone > 0
     ? form.totalPushes / form.pushesPerMilestone
     : 0;
-  const tokensPerMilestone = milestonesCount > 0 && form.lockAmount
+  const tokensPerMilestoneDisplay = milestonesCount > 0 && form.lockAmount
     ? (parseFloat(form.lockAmount) / milestonesCount).toFixed(2)
     : "—";
+  const tokensPerMilestoneWei = milestonesCount > 0 && form.lockAmount
+    ? String(Math.floor((parseFloat(form.lockAmount) / milestonesCount) * 10 ** form.tokenDecimals))
+    : "0";
 
   return (
     <div className="vesting-setup-page">
+      <VestingNav />
       <header className="vesting-setup-page__header">
-        <h1>GitHub Vesting</h1>
+        <h1>Git Vesting</h1>
         <p className="muted">
-          Lock your tokens in escrow — earn them back as you ship code.
-          Every {form.pushesPerMilestone} verified pushes to production releases{" "}
-          {tokensPerMilestone} {form.tokenSymbol || "tokens"}.
+          Lock tokens — earn them back by shipping verified commits on <strong>GitHub</strong> or{" "}
+          <a href="https://gitlawb.com/start" target="_blank" rel="noreferrer">GitLawb</a>.
         </p>
       </header>
 
@@ -375,26 +581,63 @@ export function VestingSetupPage() {
       {/* Step 1: Connect wallet */}
       {step === 1 && (
         <section className="vesting-card">
-          <h2>Step 1 — Connect your wallet</h2>
+          <h2>Step 1 — Connect wallet & choose platform</h2>
           <p className="muted">Connect the wallet that is the fee recipient for your token.</p>
+          <div className="preset-row">
+            <button
+              type="button"
+              className={`preset-btn ${form.platform === "github" ? "active" : ""}`}
+              onClick={() => setForm((f) => ({ ...f, platform: "github" }))}
+            >
+              GitHub
+            </button>
+            <button
+              type="button"
+              className={`preset-btn ${form.platform === "gitlawb" ? "active" : ""}`}
+              onClick={() => setForm((f) => ({ ...f, platform: "gitlawb" }))}
+            >
+              GitLawb (agents / Base)
+            </button>
+          </div>
           <button className="btn btn-primary" onClick={() => void connectWallet()} disabled={busy}>
             {busy ? "Connecting…" : "Connect Wallet"}
           </button>
         </section>
       )}
 
-      {/* Step 2: Connect GitHub */}
-      {step === 2 && (
+      {step === 2 && form.platform === "github" && (
         <section className="vesting-card">
           <h2>Step 2 — Connect GitHub</h2>
-          <p className="muted">
-            Wallet connected: <code>{wallet}</code>
-          </p>
-          <p className="muted">
-            We need read access to your repo so our bot can verify your pushes.
-          </p>
+          <p className="muted">Wallet connected: <code>{wallet}</code></p>
+          <p className="muted">We need read access to your repo so our bot can verify your pushes.</p>
           <button className="btn btn-primary" onClick={connectGitHub}>
             Connect GitHub →
+          </button>
+        </section>
+      )}
+
+      {step === 2 && form.platform === "gitlawb" && (
+        <section className="vesting-card">
+          <h2>Step 2 — GitLawb identity</h2>
+          <p className="muted">Wallet connected: <code>{wallet}</code></p>
+          <p className="muted">
+            GitLawb uses a DID identity (no passwords). Install the CLI and create your agent identity:
+          </p>
+          <pre className="code-block">{`curl -fsSL https://gitlawb.com/install.sh | sh
+export GITLAWB_NODE=https://node.gitlawb.com
+gl identity new
+gl register
+gl repo create my-project`}</pre>
+          <p className="muted">
+            Docs:{" "}
+            <a href="https://gitlawb.com/start" target="_blank" rel="noreferrer">Get started</a>
+            {" · "}
+            <a href="https://gitlawb.com/agents" target="_blank" rel="noreferrer">Agents</a>
+            {" · "}
+            <a href="https://gitlawb.com/node/repos" target="_blank" rel="noreferrer">Browse repos</a>
+          </p>
+          <button className="btn btn-primary" onClick={() => setStep(3)}>
+            I have a GitLawb repo →
           </button>
         </section>
       )}
@@ -409,16 +652,49 @@ export function VestingSetupPage() {
             </p>
           )}
           <label>
-            GitHub repo (owner/repo)
+            {form.platform === "gitlawb" ? "GitLawb repo (ownerShort/repo)" : "GitHub repo (owner/repo)"}
             <input
               type="text"
-              placeholder="myorg/my-token-project"
+              placeholder={form.platform === "gitlawb" ? "z6Mk…/my-project" : "myorg/my-token-project"}
               value={form.repoFullName}
               onChange={(e) => setForm((f) => ({ ...f, repoFullName: e.target.value }))}
             />
           </label>
+          {form.platform === "gitlawb" && form.repoFullName.includes("/") && (
+            <p className="muted">
+              <a
+                href={`${API_BASE}/api/gitlawb/repo?repo=${encodeURIComponent(form.repoFullName)}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Verify repo on GitLawb node →
+              </a>
+            </p>
+          )}
+
+          {bankrTokensLoading && <p className="muted">Loading Bankr fee-recipient tokens…</p>}
+          {!bankrTokensLoading && bankrTokens.length > 0 && (
+            <div className="token-picker">
+              <p className="muted">Your Bankr fee-recipient tokens — pick one:</p>
+              <div className="token-picker__grid">
+                {bankrTokens.map((t) => (
+                  <button
+                    key={t.address}
+                    type="button"
+                    className={`token-chip ${form.tokenAddress.toLowerCase() === t.address.toLowerCase() ? "active" : ""}`}
+                    onClick={() => void selectBankrToken(t)}
+                  >
+                    <strong>{t.symbol || t.name || "Token"}</strong>
+                    <span>{t.address.slice(0, 6)}…{t.address.slice(-4)}</span>
+                    {t.share && <span className="muted">{t.share} share</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <label>
-            ERC-20 token address (Base)
+            Or paste ERC-20 address (Base)
             <input
               type="text"
               placeholder="0x…"
@@ -431,6 +707,8 @@ export function VestingSetupPage() {
             <p className="muted">
               Token: <strong>{form.tokenSymbol}</strong> · Your balance:{" "}
               <strong>{form.tokenBalance}</strong>
+              {" · "}
+              <Link to={`/vesting/token/${form.tokenAddress}`}>View locks on this token</Link>
             </p>
           )}
           <button
@@ -446,7 +724,7 @@ export function VestingSetupPage() {
       {/* Step 4: Vesting schedule */}
       {step === 4 && (
         <section className="vesting-card">
-          <h2>Step 4 — Vesting schedule</h2>
+          <h2>Step 4 — How many verified pushes?</h2>
           <label>
             Tokens to lock
             <input
@@ -457,18 +735,42 @@ export function VestingSetupPage() {
               onChange={(e) => setForm((f) => ({ ...f, lockAmount: e.target.value }))}
             />
           </label>
+
+          <p className="muted">Quick schedules:</p>
+          <div className="preset-row">
+            {SCHEDULE_PRESETS.map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                className={`preset-btn ${
+                  form.totalPushes === p.totalPushes && form.pushesPerMilestone === p.pushesPerMilestone
+                    ? "active"
+                    : ""
+                }`}
+                onClick={() =>
+                  setForm((f) => ({
+                    ...f,
+                    totalPushes: p.totalPushes,
+                    pushesPerMilestone: p.pushesPerMilestone,
+                  }))
+                }
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
           <label>
             Total verified pushes to unlock everything
             <input
               type="number"
-              min="10"
-              step="10"
+              min="1"
               value={form.totalPushes}
               onChange={(e) => setForm((f) => ({ ...f, totalPushes: Number(e.target.value) }))}
             />
           </label>
           <label>
-            Release every N pushes (milestone interval)
+            Release every N verified pushes
             <input
               type="number"
               min="1"
@@ -478,22 +780,18 @@ export function VestingSetupPage() {
               }
             />
           </label>
+          <p className="muted small">
+            Set release interval equal to total pushes for a single payout at the end.
+          </p>
 
-          <div className="vesting-preview">
-            <p>
-              <strong>{milestonesCount} milestones</strong> total ·{" "}
-              <strong>{tokensPerMilestone} {form.tokenSymbol}</strong> released per milestone
-            </p>
-            <p className="muted">
-              Every {form.pushesPerMilestone} verified pushes to production →{" "}
-              {tokensPerMilestone} {form.tokenSymbol} sent to your wallet automatically.
-              At {form.totalPushes} total pushes, all tokens are released.
-            </p>
-            <p className="muted">
-              Anti-spam rules: max 3 counted pushes per day · minimum 30 min between pushes ·
-              must have ≥10 lines of real code changed · force-pushes don't count.
-            </p>
-          </div>
+          {milestonesCount > 0 && form.lockAmount && (
+            <VestingPathChart
+              totalPushes={form.totalPushes}
+              pushesPerMilestone={form.pushesPerMilestone}
+              tokensPerMilestone={tokensPerMilestoneWei}
+              tokenSymbol={form.tokenSymbol || "tokens"}
+            />
+          )}
 
           <button
             className="btn btn-primary"
@@ -507,7 +805,7 @@ export function VestingSetupPage() {
             Review & Lock →
           </button>
           {form.totalPushes % form.pushesPerMilestone !== 0 && (
-            <p className="err small">Total pushes must be divisible by milestone interval.</p>
+            <p className="err small">Total pushes must divide evenly by release interval.</p>
           )}
         </section>
       )}
@@ -521,28 +819,63 @@ export function VestingSetupPage() {
             <p><strong>Token:</strong> {form.tokenSymbol} ({form.tokenAddress})</p>
             <p><strong>Lock:</strong> {form.lockAmount} {form.tokenSymbol}</p>
             <p>
-              <strong>Schedule:</strong> {tokensPerMilestone} {form.tokenSymbol} per{" "}
+              <strong>Schedule:</strong> {tokensPerMilestoneDisplay} {form.tokenSymbol} per{" "}
               {form.pushesPerMilestone} verified pushes ({milestonesCount} milestones,{" "}
               {form.totalPushes} total pushes)
             </p>
           </div>
           <p className="muted">
-            You will sign 2 transactions: (1) approve escrow, (2) lock tokens.
-            Tokens stay in the escrow contract until you reach push milestones.
-            You can cancel anytime to reclaim unreleased tokens.
+            Two steps: (1) approve escrow, (2) lock tokens.
+            {isBankrToken
+              ? " Bankr-style tokens use streaming allowance — tokens stay in your wallet until milestones hit."
+              : " Tokens stay in the escrow contract until milestones are hit."}
+            {" "}This is a commitment lock — tokens only release when verified pushes are completed.
           </p>
+          <div className="vesting-preview">
+            {chainNonce !== null && (
+              <p className="muted">
+                Your next Base transaction should use nonce <strong>{chainNonce}</strong>.
+                In the MetaMask popup, confirm the network is <strong>Base</strong> and the nonce matches.
+              </p>
+            )}
+            <p className="muted">
+              <strong>MetaMask says "deceptive request"?</strong> The spender{" "}
+              <a href={`https://basescan.org/address/${GIT_ESCROW_ADDRESS}`} target="_blank" rel="noreferrer">
+                {GIT_ESCROW_ADDRESS?.slice(0, 10)}…
+              </a>{" "}
+              is your GitEscrow contract. MetaMask flags new contracts — click through only if you trust this app.
+            </p>
+            <p className="muted">
+              Txs showing <strong>Failed</strong> or missing on{" "}
+              <a href="https://basescan.org" target="_blank" rel="noreferrer">Basescan</a>?
+              MetaMask → Activity → <strong>cancel all pending Base transactions</strong>.
+              Still stuck? Settings → Advanced → <strong>Clear activity tab data</strong> for this account.
+            </p>
+          </div>
+          {txStatus && <p className="muted">{txStatus}</p>}
+          {allowanceReady && !busy && (
+            <p className="muted">✓ Allowance set — ready to lock.</p>
+          )}
           <button
             className="btn btn-primary"
-            disabled={busy}
-            onClick={() => void handleLockTokens()}
+            disabled={busy || allowanceReady}
+            onClick={() => void handleApproveTokens()}
           >
-            {busy ? "Signing transactions…" : "Approve & Lock tokens →"}
+            {busy && !allowanceReady ? (txStatus ?? "Approving…") : "1. Approve escrow →"}
+          </button>
+          <button
+            className="btn btn-primary"
+            disabled={busy || !allowanceReady}
+            onClick={() => void handleLockGrant()}
+            style={{ marginLeft: "0.5rem" }}
+          >
+            {busy && allowanceReady ? (txStatus ?? "Locking…") : "2. Lock tokens →"}
           </button>
         </section>
       )}
 
-      {/* Step 6: Install GitHub App + register */}
-      {step === 6 && (
+      {/* Step 6: Activate (GitHub App or GitLawb webhook) */}
+      {step === 6 && form.platform === "github" && (
         <section className="vesting-card">
           <h2>Step 6 — Install GitHub App & activate</h2>
           {lockTxHash && (
@@ -558,7 +891,7 @@ export function VestingSetupPage() {
             receive push webhooks and verify your commits.
           </p>
           <a
-            href={`https://github.com/apps/bankr-vesting/installations/new`}
+            href="https://github.com/apps/bankr-vesting/installations/new"
             target="_blank"
             rel="noreferrer"
             className="btn btn-secondary"
@@ -577,6 +910,44 @@ export function VestingSetupPage() {
           <button
             className="btn btn-primary"
             disabled={!installationId || busy}
+            onClick={() => void handleRegister()}
+          >
+            {busy ? "Activating…" : "Activate vesting →"}
+          </button>
+        </section>
+      )}
+
+      {step === 6 && form.platform === "gitlawb" && (
+        <section className="vesting-card">
+          <h2>Step 6 — GitLawb webhook & activate</h2>
+          {lockTxHash && (
+            <p className="muted">
+              Lock tx:{" "}
+              <a href={`${IS_TESTNET ? "https://sepolia.basescan.org" : "https://basescan.org"}/tx/${lockTxHash}`} target="_blank" rel="noreferrer">
+                {lockTxHash.slice(0, 10)}…
+              </a>
+            </p>
+          )}
+          <p>
+            Register a push webhook on your GitLawb repo so verified pushes trigger vesting releases.
+          </p>
+          {gitlawbSetup && (
+            <pre className="code-block">{gitlawbSetup.webhookCommand.replace("YOUR_REPO", form.repoFullName.split("/")[1] ?? "my-project")}</pre>
+          )}
+          <p className="muted">
+            Webhook URL: <code>{gitlawbSetup?.webhookUrl ?? `${API_BASE}/api/webhook/gitlawb`}</code>
+          </p>
+          <label className="checkbox-row">
+            <input
+              type="checkbox"
+              checked={gitlawbWebhookReady}
+              onChange={(e) => setGitlawbWebhookReady(e.target.checked)}
+            />
+            I ran <code>gl webhook create</code> for this repo
+          </label>
+          <button
+            className="btn btn-primary"
+            disabled={!gitlawbWebhookReady || busy}
             onClick={() => void handleRegister()}
           >
             {busy ? "Activating…" : "Activate vesting →"}
@@ -604,6 +975,26 @@ export function VestingSetupPage() {
         .muted { color: #6b7280; font-size: 0.875rem; }
         .err { color: #dc2626; font-size: 0.875rem; }
         code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.8rem; }
+        .token-picker { margin: 1rem 0; }
+        .token-picker__grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+        .token-chip {
+          display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem;
+          padding: 0.6rem 0.85rem; border-radius: 0.5rem; border: 1px solid #d1d5db;
+          background: #fff; cursor: pointer; font-size: 0.8rem; text-align: left;
+        }
+        .token-chip.active { border-color: #7c3aed; background: #faf5ff; }
+        .preset-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        .preset-btn {
+          padding: 0.45rem 0.75rem; border-radius: 9999px; border: 1px solid #d1d5db;
+          background: #fff; cursor: pointer; font-size: 0.8rem;
+        }
+        .preset-btn.active { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+        .small { font-size: 0.8rem; }
+        .code-block {
+          background: #1e1b4b; color: #e9d5ff; padding: 1rem; border-radius: 0.5rem;
+          font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap;
+        }
+        .checkbox-row { display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; font-size: 0.9rem; }
       `}</style>
     </div>
   );

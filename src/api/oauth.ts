@@ -50,9 +50,9 @@ export async function handleOAuthCallback(req: Request, res: Response): Promise<
     const sessionData = encodeURIComponent(
       JSON.stringify({ login: user.login, id: user.id, name: user.name, avatarUrl: user.avatarUrl }),
     );
-    res.redirect(`${env.FRONTEND_URL}/vesting/setup?github_user=${sessionData}`);
+    res.redirect(`${env.FRONTEND_URL}/vesting/dashboard?github_user=${sessionData}`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    res.redirect(`${env.FRONTEND_URL}/vesting/setup?error=${encodeURIComponent(msg)}`);
+    res.redirect(`${env.FRONTEND_URL}/vesting/dashboard?error=${encodeURIComponent(msg)}`);
   }
 }

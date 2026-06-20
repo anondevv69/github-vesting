@@ -21,11 +21,18 @@ export const KEYS = {
   oauthState: (state: string) => `vesting:oauth:${state}`,
   installation: (installationId: number) => `vesting:install:${installationId}`,
   allGrants: () => `vesting:all_grants`,
+  repoByName: (platform: string, repoFullName: string) =>
+    `vesting:repo_name:${platform}:${repoFullName.toLowerCase()}`,
+  seenPushShas: (repoId: string) => `vesting:seen_shas:${repoId}`,
+  devReviews: (githubLogin: string) => `vesting:dev_reviews:${githubLogin.toLowerCase()}`,
 };
+
+import type { RepoPlatform } from "./repoId";
 
 export type GrantRecord = {
   repoId: string;
   repoFullName: string;
+  platform: RepoPlatform;
   recipient: string;
   token: string;
   chain: "base" | "base-sepolia";
@@ -37,6 +44,8 @@ export type GrantRecord = {
   lastPaidMilestone: number;
   onChainTxHash: string;
   installationId: number;
+  /** GitLawb owner DID (full did:key:…) when platform is gitlawb */
+  gitlawbOwnerDid?: string;
   status: "active" | "complete" | "cancelled";
   /// true = streaming-allowance (tokens stay in recipient's wallet)
   /// false = pre-funded (tokens are held in the escrow contract)
@@ -47,13 +56,42 @@ export type GrantRecord = {
 
 export async function saveGrant(grant: GrantRecord): Promise<void> {
   const redis = getRedis();
-  await redis.set(KEYS.grant(grant.repoId), JSON.stringify(grant));
+  const platform = grant.platform ?? "github";
+  await redis.set(KEYS.grant(grant.repoId), JSON.stringify({ ...grant, platform }));
   await redis.sadd(KEYS.allGrants(), grant.repoId);
+  await redis.set(KEYS.repoByName(platform, grant.repoFullName), grant.repoId);
+}
+
+export async function getGrantByRepoFullName(
+  repoFullName: string,
+  platform?: RepoPlatform,
+): Promise<GrantRecord | null> {
+  const redis = getRedis();
+
+  if (platform) {
+    const repoId = await redis.get(KEYS.repoByName(platform, repoFullName));
+    if (!repoId) return null;
+    return getGrant(repoId);
+  }
+
+  for (const p of ["github", "gitlawb"] as RepoPlatform[]) {
+    const repoId = await redis.get(KEYS.repoByName(p, repoFullName));
+    if (repoId) return getGrant(repoId);
+  }
+
+  // Legacy grants (pre-platform prefix)
+  const legacyId = await redis.get(`vesting:repo_name:${repoFullName.toLowerCase()}`);
+  if (legacyId) return getGrant(legacyId);
+
+  return null;
 }
 
 export async function getGrant(repoId: string): Promise<GrantRecord | null> {
   const raw = await getRedis().get(KEYS.grant(repoId));
-  return raw ? (JSON.parse(raw) as GrantRecord) : null;
+  if (!raw) return null;
+  const grant = JSON.parse(raw) as GrantRecord;
+  if (!grant.platform) grant.platform = "github";
+  return grant;
 }
 
 export async function updateGrant(repoId: string, patch: Partial<GrantRecord>): Promise<void> {

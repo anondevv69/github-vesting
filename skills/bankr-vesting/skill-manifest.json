@@ -1,0 +1,31 @@
+{
+  "name": "bankr-vesting",
+  "displayName": "GitHub Vesting",
+  "skillVersion": "1.0.0",
+  "defaultSiteUrl": "https://vest.bankr.space",
+  "VESTING_SITE_URL": "https://vest.bankr.space",
+  "apiBaseUrl": "https://api.vest.bankr.space",
+  "installUrl": "https://github.com/anondevv69/github-vesting",
+  "installCommand": "install GitHub Vesting skill at https://github.com/anondevv69/github-vesting/tree/main/skills/bankr-vesting",
+  "siteEnvVar": "VESTING_SITE_URL",
+  "apiEnvVar": "VESTING_API_URL",
+  "routingKeywords": [
+    "github vesting",
+    "vesting",
+    "lock tokens",
+    "vest my",
+    "vesting progress",
+    "verified pushes",
+    "milestone",
+    "release tokens",
+    "github-vesting",
+    "git escrow"
+  ],
+  "allReferences": [
+    "SKILL.md",
+    "ONE-LINE-INTENTS.md",
+    "AGENT-API.md",
+    "known-escrow.json"
+  ],
+  "bankrNote": "Reads: briefing, grants, status, setup-link. Writes (approve/lock) require web wizard link. Uses linked wallet in x-wallet-address header."
+}

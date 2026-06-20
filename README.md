@@ -45,7 +45,11 @@ src/
 frontend/
   src/pages/
     VestingSetupPage.tsx  6-step setup wizard
+    VestingDashboardPage.tsx  Wallet dashboard — all locks
     VestingStatusPage.tsx Live push progress dashboard
+
+skills/
+  bankr-vesting/          @bankrbot agent skill (SKILL.md + agent API docs)
 ```
 
 ---
@@ -97,11 +101,37 @@ npm run dev
 | Method | Path | Description |
 |--------|------|-------------|
 | `POST` | `/api/vesting/register` | Register a new vesting grant |
+| `GET`  | `/api/vesting/grants?recipient=0x…` | Grants for a wallet |
 | `GET`  | `/api/vesting/status?repo=owner/repo` | Get grant progress |
 | `GET`  | `/api/vesting/list` | List all active grants |
-| `POST` | `/api/webhook/github` | GitHub push webhook (internal) |
+| `POST` | `/api/webhook/github` | GitHub push webhook |
+| `POST` | `/api/webhook/gitlawb` | GitLawb push webhook |
 | `GET`  | `/api/oauth/github` | Begin GitHub OAuth |
 | `GET`  | `/api/oauth/github/callback` | OAuth callback |
+
+### Bankr agent API (@bankrbot skill)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/agent/briefing?wallet=0x…` | Tweet-friendly summary (`tweetReply`) |
+| `GET` | `/api/agent/grants?wallet=0x…` | Detailed grants for linked wallet |
+| `GET` | `/api/agent/status?repo=owner/repo` | Single-repo progress |
+| `GET` | `/api/agent/setup-link?wallet=0x…` | Setup wizard URL |
+
+Header: `x-wallet-address: 0x…` (optional alternative to query param).
+
+Skill package: [`skills/bankr-vesting/`](skills/bankr-vesting/SKILL.md)
+
+---
+
+## Deploy (Railway + Vercel)
+
+- **[docs/RAILWAY.md](docs/RAILWAY.md)** — backend + Redis + GitHub webhook
+- **[docs/VERCEL.md](docs/VERCEL.md)** — frontend wizard + dashboard
+- **[docs/GITLAWB.md](docs/GITLAWB.md)** — GitLawb agent repos + webhooks
+- **[docs/agent.md](docs/agent.md)** — Bankr agent API
+
+After deploy, update `skills/bankr-vesting/skill-manifest.json` with your public `apiBaseUrl` and `defaultSiteUrl`.
 
 ---
 
@@ -110,7 +140,7 @@ npm run dev
 | Rule | Value |
 |------|-------|
 | Target branch | `main`, `master`, `production`, `prod` |
-| Minimum lines changed | 10 |
+Anti-gaming rules in README - update MIN_LINES to 50
 | Max counted pushes/day | 3 |
 | Cooldown between pushes | 30 minutes |
 | Force-push | Rejected (doesn't count) |

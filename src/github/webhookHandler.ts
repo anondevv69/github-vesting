@@ -1,9 +1,9 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import type { Request, Response } from "express";
 import { env } from "../lib/env";
-import { getGrant, updateGrant, KEYS, getRedis } from "../lib/redis";
-import { verifyPush, recordVerifiedPush, type PushPayload } from "./pushVerifier";
-import { triggerReleaseIfMilestone } from "../oracle/releaseOracle";
+import { getGrantByRepoFullName } from "../lib/redis";
+import type { PushPayload } from "./pushVerifier";
+import { processPushForGrant } from "./processPush";
 
 /** Verify GitHub's HMAC-SHA256 webhook signature. */
 function verifySignature(body: Buffer, signature: string): boolean {
@@ -51,8 +51,7 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
     return;
   }
 
-  const repoId = Buffer.from(repoFullName).toString("hex");
-  const grant = await getGrant(repoId);
+  const grant = await getGrantByRepoFullName(repoFullName);
 
   if (!grant || grant.status !== "active") {
     // No active vesting grant for this repo — ignore silently.
@@ -62,29 +61,23 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
 
   console.log(`[webhook] push to ${repoFullName} — evaluating`);
 
-  const verifyResult = await verifyPush(repoId, payload);
+  const result = await processPushForGrant(grant, payload);
 
-  if (!verifyResult.accepted) {
-    console.log(`[webhook] push rejected: ${verifyResult.reason}`);
-    res.json({ ok: true, accepted: false, reason: verifyResult.reason });
+  if (!result.accepted) {
+    console.log(`[webhook] push rejected: ${result.reason}`);
+    res.json({ ok: true, accepted: false, reason: result.reason });
     return;
   }
 
-  const newPushCount = await recordVerifiedPush(repoId, payload, verifyResult);
-  await updateGrant(repoId, { verifiedPushCount: newPushCount });
-
   console.log(
-    `[webhook] push accepted for ${repoFullName}: total verified pushes = ${newPushCount}`,
+    `[webhook] push accepted for ${repoFullName}: total verified pushes = ${result.verifiedPushCount}`,
   );
-
-  // Check if a new milestone was hit and trigger on-chain release.
-  const releaseResult = await triggerReleaseIfMilestone(repoId, grant, newPushCount);
 
   res.json({
     ok: true,
     accepted: true,
-    reason: verifyResult.reason,
-    verifiedPushCount: newPushCount,
-    release: releaseResult,
+    reason: result.reason,
+    verifiedPushCount: result.verifiedPushCount,
+    release: result.release,
   });
 }

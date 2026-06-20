@@ -4,7 +4,10 @@
  */
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { VestingNav } from "../components/VestingNav";
+import { VestingPathChart } from "../components/VestingPathChart";
+import { formatTokens } from "../lib/format";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const IS_TESTNET = import.meta.env.VITE_CHAIN === "base-sepolia";
@@ -35,6 +38,7 @@ type StatusResponse = {
     milestonesCompleted: number;
     totalMilestones: number;
     pushesUntilNextRelease: number;
+    summary?: string;
   };
   recentPushes: Array<{
     ts: number;
@@ -45,6 +49,15 @@ type StatusResponse = {
     linesEstimate: number;
   }>;
 };
+
+function dedupePushes<T extends { sha: string }>(pushes: T[]): T[] {
+  const seen = new Set<string>();
+  return pushes.filter((p) => {
+    if (seen.has(p.sha)) return false;
+    seen.add(p.sha);
+    return true;
+  });
+}
 
 export function VestingStatusPage() {
   const [searchParams] = useSearchParams();
@@ -71,17 +84,35 @@ export function VestingStatusPage() {
 
   const { grant, progress, recentPushes } = data;
   const barWidth = `${progress.progressPct}%`;
+  const owner = grant.repoFullName.split("/")[0] ?? "";
+  const uniquePushes = dedupePushes(recentPushes);
 
   return (
     <div className="vesting-status">
+      <VestingNav />
       <h1>
         {grant.repoFullName}
         <span className={`status-badge ${grant.status}`}>{grant.status}</span>
       </h1>
       <p className="muted">
+        Dev <Link to={`/vesting/dev/${owner}`}>@{owner}</Link>
+        {" · "}
+        Token <Link to={`/vesting/token/${grant.token}`}>{grant.token.slice(0, 6)}…</Link>
+        {" · "}
         Recipient: <code>{grant.recipient.slice(0, 6)}…{grant.recipient.slice(-4)}</code>
         {" · "}Chain: {grant.chain}
       </p>
+
+      {progress.summary && <p className="schedule-summary">{progress.summary}</p>}
+
+      <VestingPathChart
+        totalPushes={grant.totalPushesRequired}
+        pushesPerMilestone={grant.pushesPerMilestone}
+        tokensPerMilestone={grant.tokensPerMilestone}
+        tokenSymbol="tokens"
+        verifiedPushCount={progress.verifiedPushCount}
+        milestonesPaid={progress.milestonesCompleted}
+      />
 
       <div className="progress-bar-outer">
         <div className="progress-bar-inner" style={{ width: barWidth }} />
@@ -100,8 +131,12 @@ export function VestingStatusPage() {
           <div className="stat-label">pushes until next release</div>
         </div>
         <div className="stat">
-          <div className="stat-value">{Number(grant.tokensPerMilestone) / 10 ** 18}</div>
-          <div className="stat-label">tokens per milestone</div>
+          <div className="stat-value">{formatTokens(grant.tokensPerMilestone)}</div>
+          <div className="stat-label">tokens per release</div>
+        </div>
+        <div className="stat">
+          <div className="stat-value">{formatTokens(grant.totalLocked)}</div>
+          <div className="stat-label">total locked</div>
         </div>
       </div>
 
@@ -120,8 +155,8 @@ export function VestingStatusPage() {
             </tr>
           </thead>
           <tbody>
-            {[...recentPushes].reverse().map((p, i) => (
-              <tr key={i}>
+            {uniquePushes.reverse().map((p) => (
+              <tr key={p.sha}>
                 <td>{new Date(p.ts).toLocaleString()}</td>
                 <td>@{p.pusher}</td>
                 <td><code>{p.branch}</code></td>
@@ -162,7 +197,8 @@ export function VestingStatusPage() {
         .pushes-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
         .pushes-table th { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid #e5e7eb; color: #6b7280; }
         .pushes-table td { padding: 0.5rem; border-bottom: 1px solid #f3f4f6; }
-        .muted { color: #6b7280; font-size: 0.875rem; }
+        .schedule-summary { font-size: 0.95rem; color: #374151; margin: 0.75rem 0; }
+        .vesting-status a { color: #7c3aed; text-decoration: none; }
         .err { color: #dc2626; }
         code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.8rem; }
       `}</style>
