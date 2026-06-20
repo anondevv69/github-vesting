@@ -18,7 +18,7 @@
 | `BASE_RPC_URL` | Base RPC |
 | `SESSION_SECRET` | random string |
 
-4. Railway/Railpack runs `npm ci` + `npm run build` (no-op — avoids broken `tsc` on viem/ox), then `npm start` via **tsx**
+4. Nixpacks runs `npm ci` once (install), then `npm run build` (no-op — avoids broken `tsc` on viem/ox), then `npm start` via **tsx**
 5. Health check: `GET /health`
 
 **GitHub App webhook:** `https://YOUR-SERVER-URL/api/webhook/github`
