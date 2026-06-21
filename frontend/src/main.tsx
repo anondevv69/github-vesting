@@ -18,7 +18,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Route path="/vesting/explore" element={<VestingExplorePage />} />
         <Route path="/vesting/token/:token" element={<VestingTokenPage />} />
         <Route path="/vesting/dev/:login" element={<VestingDevPage />} />
-        <Route path="/" element={<Navigate to="/vesting/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/vesting/explore" replace />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,

@@ -42,9 +42,9 @@ export function VestingExplorePage() {
     <div className="page">
       <VestingNav />
       <header>
-        <h1>Explore vesting locks</h1>
+        <h1>Explore</h1>
         <p className="muted">
-          Developers earn reputation by locking tokens, shipping verified pushes, and earning community reviews.
+          Live feed of all public vesting locks — who locked what, progress on pushes, and dev reputation.
         </p>
       </header>
 
