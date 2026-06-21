@@ -1,9 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 
 const links = [
-  { to: "/vesting/dashboard", label: "My locks" },
   { to: "/vesting/explore", label: "Explore" },
-  { to: "/vesting/setup", label: "New vesting" },
+  { to: "/vesting/dashboard", label: "My locks" },
+  { to: "/vesting/setup", label: "Create lock" },
 ];
 
 export function VestingNav() {
