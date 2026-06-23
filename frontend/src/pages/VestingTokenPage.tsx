@@ -34,7 +34,7 @@ export function VestingTokenPage() {
   }, [token]);
 
   return (
-    <div className="page">
+    <div className="vesting-page">
       <VestingNav />
       <header>
         <h1>Token locks</h1>
@@ -78,15 +78,10 @@ export function VestingTokenPage() {
       </div>
 
       <style>{`
-        .page { max-width: 760px; margin: 0 auto; padding: 0 1rem 2rem; font-family: system-ui, sans-serif; }
-        .muted { color: #6b7280; font-size: 0.9rem; }
         .small { font-size: 0.85rem; }
-        .err { color: #dc2626; }
         .list { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
         .card { border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem 1.25rem; }
         .card h3 { margin: 0 0 0.35rem; }
-        .card a { color: #7c3aed; text-decoration: none; }
-        code { background: #f3f4f6; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.8rem; }
       `}</style>
     </div>
   );

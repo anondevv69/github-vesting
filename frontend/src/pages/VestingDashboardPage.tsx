@@ -114,7 +114,7 @@ export function VestingDashboardPage() {
   }
 
   return (
-    <div className="vesting-dashboard">
+    <div className="vesting-page">
       <VestingNav />
       <header>
         <h1>My Vesting Locks</h1>
@@ -221,9 +221,6 @@ export function VestingDashboardPage() {
       </div>
 
       <style>{`
-        .vesting-dashboard { max-width: 720px; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; }
-        .muted { color: #6b7280; font-size: 0.9rem; }
-        .err { color: #dc2626; }
         .schedule-summary { font-size: 0.9rem; color: #374151; margin: 0.5rem 0; }
         .connect-row { display: flex; gap: 0.75rem; margin: 1.25rem 0; flex-wrap: wrap; }
         .btn { padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid #d1d5db; background: #fff; cursor: pointer; }

@@ -38,7 +38,7 @@ export function VestingExplorePage() {
   }, []);
 
   return (
-    <div className="page">
+    <div className="vesting-page">
       <VestingNav />
       <header>
         <h1>Explore</h1>
@@ -130,10 +130,8 @@ export function VestingExplorePage() {
       </div>
 
       <style>{`
-        .page { max-width: 760px; margin: 0 auto; padding: 0 1rem 2rem; font-family: system-ui, sans-serif; }
-        .muted { color: #6b7280; }
-        .small { font-size: 0.85rem; }
         .search { display: flex; flex-direction: column; gap: 0.5rem; margin: 1.25rem 0; }
+        .small { font-size: 0.85rem; }
         .search input { padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #d1d5db; }
         .btn-link { color: #7c3aed; font-size: 0.9rem; text-decoration: none; }
         .leaderboard { margin-bottom: 2rem; }
