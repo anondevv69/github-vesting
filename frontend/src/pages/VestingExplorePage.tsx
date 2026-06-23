@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { VestingNav } from "../components/VestingNav";
-import { DevReputationCard } from "../components/DevReputationCard";
 import type { DevReputation } from "../types/reputation";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
@@ -101,18 +100,6 @@ export function VestingExplorePage() {
         </section>
       )}
 
-      {!loading && leaderboard.length === 1 && (
-        <section className="leaderboard">
-          <h2>Featured developer</h2>
-          <Link to={`/vesting/dev/${leaderboard[0]!.githubLogin}`} className="featured-link">
-            <DevReputationCard
-              githubLogin={leaderboard[0]!.githubLogin}
-              reputation={leaderboard[0]!.reputation}
-            />
-          </Link>
-        </section>
-      )}
-
       <h2>All locks</h2>
       {!loading && grants.length === 0 && <p className="muted">No public locks yet.</p>}
 
@@ -163,7 +150,6 @@ export function VestingExplorePage() {
         .leaderboard-meta { flex: 1; display: flex; flex-direction: column; gap: 0.1rem; }
         .leaderboard-meta strong { font-size: 0.95rem; }
         .leaderboard-badges { font-size: 1.1rem; }
-        .featured-link { text-decoration: none; color: inherit; display: block; }
         .list { display: flex; flex-direction: column; gap: 1rem; }
         .card { border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem 1.25rem; }
         .card h3 { margin: 0 0 0.35rem; font-size: 1.05rem; }
