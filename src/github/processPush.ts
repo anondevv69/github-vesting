@@ -1,6 +1,6 @@
 import type { GrantRecord } from "../lib/redis";
 import { updateGrant } from "../lib/redis";
-import { verifyPush, recordVerifiedPush, type PushPayload } from "./pushVerifier";
+import { verifyPush, recordVerifiedPush, recordRejectedPush, type PushPayload } from "./pushVerifier";
 import { triggerReleaseIfMilestone } from "../oracle/releaseOracle";
 
 export type PushProcessResult = {
@@ -21,6 +21,7 @@ export async function processPushForGrant(
   const verifyResult = await verifyPush(repoId, payload, { ...options, platform });
 
   if (!verifyResult.accepted) {
+    await recordRejectedPush(repoId, payload, verifyResult.reason);
     return { accepted: false, reason: verifyResult.reason };
   }
 

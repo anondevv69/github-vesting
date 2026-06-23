@@ -29,25 +29,44 @@ import { handleGithubInstallationLookup } from "./api/githubInstall";
 
 const app = express();
 
+const WEBHOOK_PATHS = new Set(["/api/webhook/github", "/api/webhook/gitlawb"]);
+
+function isWebhookPath(path: string): boolean {
+  return WEBHOOK_PATHS.has(path);
+}
+
 // ─── Raw body capture (needed for GitHub webhook signature verification) ──────
 app.use(
   (req, res, next) => {
-    if (req.path === "/api/webhook/github" || req.path === "/api/webhook/gitlawb") {
-      let data: Buffer[] = [];
-      req.on("data", (chunk: Buffer) => data.push(chunk));
-      req.on("end", () => {
-        (req as express.Request & { rawBody?: Buffer }).rawBody = Buffer.concat(data);
-        next();
-      });
-    } else {
+    if (!isWebhookPath(req.path)) {
       next();
+      return;
     }
+    const chunks: Buffer[] = [];
+    req.on("data", (chunk: Buffer) => chunks.push(chunk));
+    req.on("error", next);
+    req.on("end", () => {
+      const rawBody = Buffer.concat(chunks);
+      (req as express.Request & { rawBody?: Buffer }).rawBody = rawBody;
+      try {
+        req.body = JSON.parse(rawBody.toString("utf8")) as unknown;
+      } catch {
+        req.body = {};
+      }
+      next();
+    });
   },
 );
 
 const allowedOrigins = getAllowedCorsOrigins();
 
-app.use(express.json());
+app.use((req, res, next) => {
+  if (isWebhookPath(req.path)) {
+    next();
+    return;
+  }
+  express.json()(req, res, next);
+});
 app.use(
   cors({
     origin(origin, callback) {
