@@ -310,23 +310,13 @@ contract GitEscrow is Ownable, ReentrancyGuard {
             g.active = false;
         }
 
-        // Streaming-allowance: pull tokens from recipient to the oracle, then
-// the oracle forwards them to the recipient via a regular `transfer`.
-// We use the oracle (msg.sender) as the intermediate to avoid sending
-// tokens directly into the escrow contract, which is essential for
-// Bankr DERC20 tokens that block transfers to the pool (escrow) address.
-// The recipient must keep an allowance >= remaining balance for this
-// to succeed at each milestone.
-// Pre-funded: tokens are already in escrow, just send them out.
+        // Streaming-allowance (Bankr DERC20): pull from recipient through the
+        // oracle, then immediately forward to the recipient in the same tx so
+        // tokens never sit on the oracle wallet.
+        // Pre-funded: tokens are already in escrow, send directly to recipient.
         if (g.streaming) {
             IERC20(g.token).safeTransferFrom(g.recipient, msg.sender, payout);
-            require(
-                IERC20(g.token).balanceOf(msg.sender) >= payout,
-                "GitEscrow: oracle did not receive"
-            );
-            // The oracle EOA must then send the tokens to the recipient
-            // off-chain. The oracle bot handles this step after each
-            // release() call.
+            IERC20(g.token).safeTransfer(g.recipient, payout);
         } else {
             IERC20(g.token).safeTransfer(g.recipient, payout);
         }

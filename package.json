@@ -13,7 +13,8 @@
     "compile:contracts": "hardhat compile",
     "deploy:base": "hardhat run contracts/deploy/deployGitEscrow.ts --network base",
     "deploy:base-sepolia": "hardhat run contracts/deploy/deployGitEscrow.ts --network baseSepolia",
-    "deploy:mock-token": "hardhat run contracts/deploy/deployMockERC20.ts --network baseSepolia"
+    "deploy:mock-token": "hardhat run contracts/deploy/deployMockERC20.ts --network baseSepolia",
+    "oracle:recover": "tsx scripts/recover-stuck-tokens.ts"
   },
   "dependencies": {
     "@octokit/app": "^13.1.8",
