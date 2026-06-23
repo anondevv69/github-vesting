@@ -87,7 +87,7 @@ export function VestingPathChart({
           Amending or re-pushing the same commit does not double-count.
         </li>
         <li>
-          <strong>Meaningful code only.</strong> ≥50 lines of real code (not docs/lockfiles), on{" "}
+          <strong>Meaningful code only.</strong> ≥3 lines of real code (not docs/lockfiles), on{" "}
           <code>main</code> / <code>production</code>. Max 3 counted pushes per day · 30 min apart.
         </li>
         <li>

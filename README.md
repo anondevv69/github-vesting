@@ -12,7 +12,7 @@ Lock your ERC-20 tokens in escrow on Base. Earn them back incrementally as you s
 4. Installs our GitHub App as a collaborator on their repo
 5. Every push to `main`/`production` is evaluated:
    - Must target a production branch
-   - Must have ≥10 lines of real code changed
+   - Must have ≥3 lines of real code changed
    - Force-pushes rejected; max 3 counted pushes per day
    - 30-minute cooldown between counted pushes
 6. When a milestone is hit → oracle wallet calls `GitEscrow.release()` → tokens sent automatically
@@ -140,7 +140,7 @@ After deploy, update `skills/bankr-vesting/skill-manifest.json` with your public
 | Rule | Value |
 |------|-------|
 | Target branch | `main`, `master`, `production`, `prod` |
-Anti-gaming rules in README - update MIN_LINES to 50
+| Min meaningful lines/push | 3 (estimated from code files) |
 | Max counted pushes/day | 3 |
 | Cooldown between pushes | 30 minutes |
 | Force-push | Rejected (doesn't count) |

@@ -14,7 +14,7 @@
 import { getRedis, KEYS } from "../lib/redis";
 
 const PRODUCTION_BRANCHES = new Set(["main", "master", "production", "prod"]);
-export const MIN_LINES_CHANGED = 50;
+export const MIN_LINES_CHANGED = 3;
 const MAX_PUSHES_PER_DAY = 3;
 const MIN_MINUTES_BETWEEN_PUSHES = 30;
 
