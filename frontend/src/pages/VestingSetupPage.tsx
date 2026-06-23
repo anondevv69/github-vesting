@@ -98,6 +98,7 @@ async function waitForTxConfirmation(
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const GIT_ESCROW_ADDRESS = import.meta.env.VITE_GIT_ESCROW_ADDRESS as Address | undefined;
+const GITHUB_APP_SLUG = import.meta.env.VITE_GITHUB_APP_SLUG ?? "bankr-vesting";
 
 const ESCROW_ABI = parseAbi([
   "function lock(bytes32 repoId, address token, uint256 amount, uint256 totalPushes, uint256 pushesPerMile) external",
@@ -179,6 +180,11 @@ export function VestingSetupPage() {
   const [error, setError] = useState<string | null>(null);
   const [lockTxHash, setLockTxHash] = useState<string | null>(null);
   const [installationId, setInstallationId] = useState<number | null>(null);
+  const [installCheck, setInstallCheck] = useState<{
+    ok: boolean;
+    message: string;
+    installedRepos?: string[];
+  } | null>(null);
   const [isBankrToken, setIsBankrToken] = useState(false);
   const [txStatus, setTxStatus] = useState<string | null>(null);
   const [allowanceReady, setAllowanceReady] = useState(false);
@@ -510,9 +516,34 @@ export function VestingSetupPage() {
     }
   }
 
+  useEffect(() => {
+    if (step !== 6 || form.platform !== "github" || !form.repoFullName.trim()) return;
+    const q = new URLSearchParams({ repo: form.repoFullName.trim() });
+    fetch(`${API_BASE}/api/github/installation?${q}`)
+      .then((r) => r.json() as Promise<{
+        ok: boolean;
+        installationId?: number;
+        error?: string;
+        hint?: string;
+        installedRepos?: string[];
+        repo?: string;
+      }>)
+      .then((d) => {
+        if (d.installationId) setInstallationId(d.installationId);
+        setInstallCheck({
+          ok: d.ok,
+          message: d.ok
+            ? `GitHub App can access ${d.repo ?? form.repoFullName}`
+            : [d.error, d.hint].filter(Boolean).join(" — "),
+          installedRepos: d.installedRepos,
+        });
+      })
+      .catch(() => setInstallCheck({ ok: false, message: "Could not verify GitHub App access" }));
+  }, [step, form.platform, form.repoFullName]);
+
   async function handleRegister() {
     if (!wallet || !lockTxHash) return;
-    if (form.platform === "github" && (!installationId || !githubUser)) return;
+    if (form.platform === "github" && !githubUser) return;
     if (form.platform === "gitlawb" && !gitlawbWebhookReady) return;
     setBusy(true);
     setError(null);
@@ -539,8 +570,22 @@ export function VestingSetupPage() {
           streaming: isBankrToken,
         }),
       });
-      const data = await res.json() as { ok: boolean; error?: string };
-      if (!data.ok && res.status !== 409) throw new Error(data.error ?? "Registration failed");
+      const data = await res.json() as {
+        ok: boolean;
+        error?: string;
+        hint?: string;
+        installedRepos?: string[];
+        repo?: string;
+      };
+      if (!data.ok && res.status !== 409) {
+        const extra = [
+          data.hint,
+          data.installedRepos?.length
+            ? `App can access: ${data.installedRepos.slice(0, 8).join(", ")}`
+            : undefined,
+        ].filter(Boolean).join("\n");
+        throw new Error([data.error ?? "Registration failed", extra].filter(Boolean).join("\n"));
+      }
       setError(null);
       alert("Vesting activated! Push verified commits to your repo to release tokens.");
     } catch (e) {
@@ -891,30 +936,38 @@ gl repo create my-project`}</pre>
               </a>
             </p>
           )}
+          <p className="muted">
+            Repo: <code>{form.repoFullName}</code> — the GitHub App must be installed on <strong>this exact repo</strong>.
+          </p>
           <p>
-            Install the <strong>Bankr Vesting Bot</strong> GitHub App on your repo so it can
-            receive push webhooks and verify your commits.
+            Install the GitHub App on <code>{form.repoFullName}</code> so it can receive push webhooks
+            and verify your commits.
           </p>
           <a
-            href="https://github.com/apps/bankr-vesting/installations/new"
+            href={`https://github.com/apps/${GITHUB_APP_SLUG}/installations/new`}
             target="_blank"
             rel="noreferrer"
             className="btn btn-secondary"
           >
             Install GitHub App →
           </a>
+          {installCheck && (
+            <p className={installCheck.ok ? "ok-msg" : "err"} style={{ whiteSpace: "pre-wrap" }}>
+              {installCheck.message}
+            </p>
+          )}
           <label style={{ marginTop: "1rem" }}>
-            GitHub App Installation ID (shown after install)
+            GitHub App Installation ID (optional — auto-detected when possible)
             <input
               type="number"
-              placeholder="12345678"
+              placeholder="141219448"
               value={installationId ?? ""}
-              onChange={(e) => setInstallationId(Number(e.target.value))}
+              onChange={(e) => setInstallationId(e.target.value ? Number(e.target.value) : null)}
             />
           </label>
           <button
             className="btn btn-primary"
-            disabled={!installationId || busy}
+            disabled={busy}
             onClick={() => void handleRegister()}
           >
             {busy ? "Activating…" : "Activate vesting →"}
