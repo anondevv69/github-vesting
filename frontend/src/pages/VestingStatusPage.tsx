@@ -76,11 +76,31 @@ export function VestingStatusPage() {
   }, [repo]);
 
   if (!repo) {
-    return <div className="vesting-status">Enter <code>?repo=owner/repo</code> in the URL.</div>;
+    return (
+      <div className="vesting-page">
+        <VestingNav />
+        <p>Enter <code>?repo=owner/repo</code> in the URL.</p>
+      </div>
+    );
   }
 
-  if (loading) return <div className="vesting-status"><p>Loading…</p></div>;
-  if (error || !data?.ok) return <div className="vesting-status"><p className="err">{error ?? data?.grant?.repoFullName ?? "Not found"}</p></div>;
+  if (loading) {
+    return (
+      <div className="vesting-page">
+        <VestingNav />
+        <p className="muted">Loading…</p>
+      </div>
+    );
+  }
+
+  if (error || !data?.ok) {
+    return (
+      <div className="vesting-page">
+        <VestingNav />
+        <p className="err">{error ?? data?.grant?.repoFullName ?? "Not found"}</p>
+      </div>
+    );
+  }
 
   const { grant, progress, recentPushes } = data;
   const barWidth = `${progress.progressPct}%`;
@@ -88,7 +108,7 @@ export function VestingStatusPage() {
   const uniquePushes = dedupePushes(recentPushes);
 
   return (
-    <div className="vesting-status">
+    <div className="vesting-page">
       <VestingNav />
       <h1>
         {grant.repoFullName}
@@ -181,7 +201,6 @@ export function VestingStatusPage() {
       </p>
 
       <style>{`
-        .vesting-status { max-width: 700px; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; }
         h1 { display: flex; align-items: center; gap: 0.75rem; }
         .status-badge { font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 9999px; font-weight: 600; text-transform: uppercase; }
         .status-badge.active { background: #d1fae5; color: #065f46; }
@@ -198,9 +217,6 @@ export function VestingStatusPage() {
         .pushes-table th { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid #e5e7eb; color: #6b7280; }
         .pushes-table td { padding: 0.5rem; border-bottom: 1px solid #f3f4f6; }
         .schedule-summary { font-size: 0.95rem; color: #374151; margin: 0.75rem 0; }
-        .vesting-status a { color: #7c3aed; text-decoration: none; }
-        .err { color: #dc2626; }
-        code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.8rem; }
       `}</style>
     </div>
   );

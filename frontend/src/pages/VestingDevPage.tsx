@@ -97,7 +97,7 @@ export function VestingDevPage() {
   }
 
   return (
-    <div className="page">
+    <div className="vesting-page">
       <VestingNav />
       <header className="dev-header">
         <img
@@ -246,11 +246,9 @@ export function VestingDevPage() {
       </section>
 
       <style>{`
-        .page { max-width: 760px; margin: 0 auto; padding: 0 1rem 2rem; font-family: system-ui, sans-serif; }
         .dev-header { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 0.5rem; }
         .avatar { border-radius: 9999px; border: 2px solid #e5e7eb; }
         .header-sub { margin: 0.25rem 0 0.5rem; }
-        .muted { color: #6b7280; font-size: 0.9rem; }
         .small { font-size: 0.85rem; }
         .link { display: inline-block; margin-right: 1rem; color: #7c3aed; font-size: 0.9rem; }
         .timeline { margin: 0 0 2rem; }

@@ -606,7 +606,7 @@ export function VestingSetupPage() {
     : "0";
 
   return (
-    <div className="vesting-setup-page">
+    <div className="vesting-page">
       <VestingNav />
       <header className="vesting-setup-page__header">
         <h1>Git Vesting</h1>
@@ -1014,7 +1014,6 @@ gl repo create my-project`}</pre>
       )}
 
       <style>{`
-        .vesting-setup-page { max-width: 600px; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; }
         .vesting-setup-page__header { margin-bottom: 2rem; }
         .vesting-setup-page__steps { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
         .step-dot { width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; background: #e5e7eb; color: #6b7280; }

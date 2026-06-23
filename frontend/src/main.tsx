@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import "./styles/vesting.css";
 import { VestingSetupPage } from "./pages/VestingSetupPage";
 import { VestingStatusPage } from "./pages/VestingStatusPage";
 import { VestingDashboardPage } from "./pages/VestingDashboardPage";
