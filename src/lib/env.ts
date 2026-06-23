@@ -52,3 +52,29 @@ export const env = {
   GITLAWB_NODE_URL: get("GITLAWB_NODE_URL", "https://node.gitlawb.com"),
   GITLAWB_WEBHOOK_SECRET: get("GITLAWB_WEBHOOK_SECRET", ""),
 };
+
+/** CORS origins: FRONTEND_URL plus optional CORS_ORIGINS, and www/apex twin. */
+export function getAllowedCorsOrigins(): string[] {
+  const origins = new Set<string>();
+  const base = env.FRONTEND_URL.replace(/\/$/, "");
+  if (base) origins.add(base);
+
+  for (const part of get("CORS_ORIGINS", "").split(",")) {
+    const trimmed = part.trim().replace(/\/$/, "");
+    if (trimmed) origins.add(trimmed);
+  }
+
+  try {
+    const u = new URL(base || "http://localhost:5173");
+    const port = u.port ? `:${u.port}` : "";
+    if (u.hostname.startsWith("www.")) {
+      origins.add(`${u.protocol}//${u.hostname.slice(4)}${port}`);
+    } else if (u.hostname !== "localhost" && u.hostname !== "127.0.0.1") {
+      origins.add(`${u.protocol}//www.${u.hostname}${port}`);
+    }
+  } catch {
+    /* ignore malformed FRONTEND_URL */
+  }
+
+  return [...origins];
+}
