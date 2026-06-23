@@ -209,10 +209,14 @@ export function VestingSetupPage() {
       try {
         const user = JSON.parse(decodeURIComponent(githubUserParam)) as GitHubUser;
         setGithubUser(user);
+        localStorage.setItem("vesting_github_user", JSON.stringify(user));
         setStep(3);
       } catch {
         setError("Failed to parse GitHub user info.");
       }
+    } else {
+      const saved = localStorage.getItem("vesting_github_user");
+      if (saved) setGithubUser(JSON.parse(saved) as GitHubUser);
     }
     if (oauthError) {
       setError(decodeURIComponent(oauthError));
@@ -279,7 +283,8 @@ export function VestingSetupPage() {
   }
 
   function connectGitHub() {
-    window.location.href = `${API_BASE}/api/oauth/github`;
+    const returnTo = encodeURIComponent("/vesting/setup");
+    window.location.href = `${API_BASE}/api/oauth/github?returnTo=${returnTo}`;
   }
 
   async function loadTokenInfo(addressOverride?: string) {

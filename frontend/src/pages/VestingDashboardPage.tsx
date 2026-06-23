@@ -109,7 +109,8 @@ export function VestingDashboardPage() {
   }
 
   function connectGitHub() {
-    window.location.href = `${API_BASE}/api/oauth/github`;
+    const returnTo = encodeURIComponent("/vesting/dashboard");
+    window.location.href = `${API_BASE}/api/oauth/github?returnTo=${returnTo}`;
   }
 
   return (
