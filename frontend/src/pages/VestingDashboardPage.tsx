@@ -134,7 +134,7 @@ export function VestingDashboardPage() {
 
       <section className="help-box">
         <h2>What counts?</h2>
-        <p><strong>Verified push</strong> = one real push to <code>main</code> with ≥50 lines of code (not docs/lockfiles). Same commit never counts twice.</p>
+        <p><strong>Verified push</strong> = one real push to <code>main</code> with ≥3 lines of code (not docs/lockfiles). Same commit never counts twice.</p>
         <p><strong>Your schedule</strong> sets how many verified pushes unlock tokens. Multiple pushes can feed <em>one</em> release (not one payout per push unless you configured it that way).</p>
         <p className="example">
           Example: <strong>2 pushes required, release every 2</strong> → <strong>1 payout</strong> with <strong>all tokens</strong> after 2 verified pushes (not 2 separate payouts).
