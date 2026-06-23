@@ -25,6 +25,7 @@ import {
 import { handleGrantsByRecipient } from "./api/grants";
 import { handleDevSimulatePush } from "./api/devSimulate";
 import { handleOAuthRedirect, handleOAuthCallback } from "./api/oauth";
+import { handleGithubInstallationLookup } from "./api/githubInstall";
 
 const app = express();
 
@@ -94,6 +95,7 @@ app.post("/api/webhook/gitlawb", (req, res) => void handleGitlawbWebhook(req, re
 // ─── OAuth ────────────────────────────────────────────────────────────────────
 app.get("/api/oauth/github", handleOAuthRedirect);
 app.get("/api/oauth/github/callback", (req, res) => void handleOAuthCallback(req, res));
+app.get("/api/github/installation", (req, res) => void handleGithubInstallationLookup(req, res));
 
 // ─── Vesting API ──────────────────────────────────────────────────────────────
 app.post("/api/vesting/register", (req, res) => void handleRegister(req, res));

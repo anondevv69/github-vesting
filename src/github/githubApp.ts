@@ -18,6 +18,48 @@ export function getGithubApp(): App {
   return _app;
 }
 
+export type RepoAccessResult = {
+  valid: boolean;
+  defaultBranch: string;
+  isPrivate: boolean;
+  error?: string;
+  /** Repos the installation can access (when validation fails). */
+  installedRepos?: string[];
+};
+
+/** Resolve the GitHub App installation id for a repo (no user input needed). */
+export async function resolveInstallationForRepo(
+  owner: string,
+  repo: string,
+): Promise<number | null> {
+  try {
+    const app = getGithubApp();
+    const { data } = await app.octokit.request("GET /repos/{owner}/{repo}/installation", {
+      owner,
+      repo,
+    });
+    return data.id;
+  } catch {
+    return null;
+  }
+}
+
+/** List repo full names accessible to an installation (for error hints). */
+export async function listInstallationRepos(installationId: number): Promise<string[]> {
+  const app = getGithubApp();
+  const octokit = await app.getInstallationOctokit(installationId);
+  const names: string[] = [];
+  for await (const response of octokit.paginate.iterator(
+    octokit.rest.apps.listReposAccessibleToInstallation,
+    { per_page: 100 },
+  )) {
+    for (const r of response.data) {
+      if (r.full_name) names.push(r.full_name);
+    }
+  }
+  return names;
+}
+
 /**
  * Invite our GitHub App (bot) as a collaborator on the target repo.
  * The user must be the repo owner / have admin rights.
@@ -33,13 +75,10 @@ export async function inviteBotAsCollaborator(
     owner,
     repo,
     username: env.GITHUB_BOT_USERNAME,
-    permission: "pull", // read-only — we just verify, not write
+    permission: "pull",
   });
 }
 
-/**
- * Get repository metadata using an installation token.
- */
 export async function getRepoInfo(
   installationId: number,
   owner: string,
@@ -54,9 +93,6 @@ export async function getRepoInfo(
   return data;
 }
 
-/**
- * Verify a GitHub OAuth access token and return the authenticated user.
- */
 export async function getOAuthUser(code: string): Promise<{
   login: string;
   id: number;
@@ -77,14 +113,11 @@ export async function getOAuthUser(code: string): Promise<{
   };
 }
 
-/**
- * Validate that the target repo's default branch exists and is accessible.
- */
 export async function validateRepoAccess(
   installationId: number,
   owner: string,
   repo: string,
-): Promise<{ valid: boolean; defaultBranch: string; isPrivate: boolean }> {
+): Promise<RepoAccessResult> {
   try {
     const info = await getRepoInfo(installationId, owner, repo);
     return {
@@ -92,7 +125,20 @@ export async function validateRepoAccess(
       defaultBranch: info.default_branch,
       isPrivate: info.private,
     };
-  } catch {
-    return { valid: false, defaultBranch: "main", isPrivate: false };
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err);
+    let installedRepos: string[] | undefined;
+    try {
+      installedRepos = await listInstallationRepos(installationId);
+    } catch {
+      /* installation id may be wrong app */
+    }
+    return {
+      valid: false,
+      defaultBranch: "main",
+      isPrivate: false,
+      error,
+      installedRepos,
+    };
   }
 }

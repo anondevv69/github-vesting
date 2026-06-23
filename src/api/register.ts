@@ -6,7 +6,7 @@
 
 import type { Request, Response } from "express";
 import { saveGrant, getGrant, type GrantRecord } from "../lib/redis";
-import { validateRepoAccess } from "../github/githubApp";
+import { validateRepoAccess, resolveInstallationForRepo } from "../github/githubApp";
 import { getRedis, KEYS } from "../lib/redis";
 import {
   normalizeRepo,
@@ -52,11 +52,6 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     return;
   }
 
-  if (platform === "github" && !installationId) {
-    res.status(400).json({ ok: false, error: "installationId required for GitHub repos" });
-    return;
-  }
-
   if (!["base", "base-sepolia"].includes(chain)) {
     res.status(400).json({ ok: false, error: "chain must be base or base-sepolia" });
     return;
@@ -70,12 +65,43 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     return;
   }
 
+  let githubInstallId = Number(installationId ?? 0);
+
   if (platform === "github") {
-    const access = await validateRepoAccess(Number(installationId), ...splitRepo(normalizedRepo, "github"));
-    if (!access.valid) {
-      res.status(400).json({ ok: false, error: "GitHub App cannot access this repo — check installation" });
+    const [owner, repoName] = splitRepo(normalizedRepo, "github");
+    let installId = githubInstallId;
+
+    const resolved = await resolveInstallationForRepo(owner, repoName);
+    if (resolved) {
+      installId = resolved;
+    } else if (!installId) {
+      res.status(400).json({
+        ok: false,
+        error: "No GitHub App installation found for this repo",
+        repo: normalizedRepo,
+        hint: "Install the GitHub App and select this repository during setup.",
+      });
       return;
     }
+
+    const access = await validateRepoAccess(installId, owner, repoName);
+    if (!access.valid) {
+      res.status(400).json({
+        ok: false,
+        error: "GitHub App cannot access this repo — check installation",
+        repo: normalizedRepo,
+        installationId: installId,
+        detail: access.error,
+        installedRepos: access.installedRepos?.slice(0, 30),
+        hint:
+          access.installedRepos?.length &&
+          !access.installedRepos.some((r) => r.toLowerCase() === normalizedRepo.toLowerCase())
+            ? `Installation ${installId} does not include ${normalizedRepo}. Re-install the app and add this repo, or use one of: ${access.installedRepos.slice(0, 5).join(", ")}`
+            : "Confirm the GitHub App is installed on this repo (not just your account).",
+      });
+      return;
+    }
+    githubInstallId = installId;
   } else {
     const exists = await verifyGitlawbRepoExists(normalizedRepo);
     if (!exists) {
@@ -113,7 +139,7 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     verifiedPushCount: 0,
     lastPaidMilestone: 0,
     onChainTxHash,
-    installationId: Number(installationId ?? 0),
+    installationId: platform === "github" ? githubInstallId : Number(installationId ?? 0),
     gitlawbOwnerDid: ownerDid,
     status: "active",
     streaming: Boolean(streaming),
