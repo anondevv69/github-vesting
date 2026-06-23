@@ -1,8 +1,18 @@
 /**
  * Oracle: when a new milestone is hit, call GitEscrow.release() on Base.
+ * For legacy streaming grants on old contracts, forwards tokens to the
+ * recipient after release() in a follow-up tx (with retries).
  */
 
-import { createWalletClient, createPublicClient, http, parseAbi, type Address } from "viem";
+import {
+  createWalletClient,
+  createPublicClient,
+  http,
+  parseAbi,
+  parseEventLogs,
+  type Address,
+  type Hash,
+} from "viem";
 import { base, baseSepolia } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { env } from "../lib/env";
@@ -21,8 +31,12 @@ const ERC20_ABI = parseAbi([
 ]);
 
 export type ReleaseResult =
-  | { triggered: true; txHash: string; milestone: number; payout: string }
+  | { triggered: true; txHash: string; forwardTxHash?: string; milestone: number; payout: string }
   | { triggered: false; reason: string };
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function getClients(chain: GrantRecord["chain"]) {
   const account = privateKeyToAccount(env.ORACLE_PRIVATE_KEY as `0x${string}`);
@@ -36,6 +50,88 @@ function getClients(chain: GrantRecord["chain"]) {
     transport: http(rpcUrl),
   });
   return { publicClient, walletClient, account };
+}
+
+function payoutFromReleaseReceipt(
+  receipt: Awaited<ReturnType<ReturnType<typeof createPublicClient>["waitForTransactionReceipt"]>>,
+  fallback: bigint,
+): bigint {
+  const events = parseEventLogs({
+    abi: GIT_ESCROW_ABI,
+    logs: receipt.logs,
+    eventName: "Released",
+  });
+  const amount = events[0]?.args.amount;
+  return amount && amount > 0n ? amount : fallback;
+}
+
+/** Forward tokens sitting on the oracle wallet → grant recipient (legacy streaming). */
+export async function forwardStreamingPayoutToRecipient(
+  grant: GrantRecord,
+  payout: bigint,
+): Promise<Hash> {
+  const { publicClient, walletClient, account } = getClients(grant.chain);
+  const token = grant.token as Address;
+  const recipient = grant.recipient as Address;
+
+  const oracleBalance = await publicClient.readContract({
+    address: token,
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: [account.address],
+  });
+
+  if (oracleBalance === 0n) {
+    throw new Error(`Oracle has no ${token} balance to forward`);
+  }
+
+  // Forward the released amount, or the full oracle balance if that's all we hold.
+  const amount = oracleBalance >= payout ? payout : oracleBalance;
+
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const fwdHash = await walletClient.writeContract({
+        address: token,
+        abi: ERC20_ABI,
+        functionName: "transfer",
+        args: [recipient, amount],
+        account,
+      });
+      await publicClient.waitForTransactionReceipt({ hash: fwdHash });
+      console.log(`[oracle] Forwarded ${amount} ${token} → ${recipient} (tx: ${fwdHash})`);
+      return fwdHash;
+    } catch (err) {
+      lastErr = err;
+      console.warn(`[oracle] Forward attempt ${attempt}/3 failed:`, err);
+      if (attempt < 3) await sleep(2000 * attempt);
+    }
+  }
+
+  throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
+}
+
+/** Recover tokens stuck on the oracle from a prior release that never forwarded. */
+export async function recoverStuckStreamingTokens(
+  grant: Pick<GrantRecord, "token" | "recipient" | "chain">,
+): Promise<{ forwarded: boolean; txHash?: Hash; amount: string }> {
+  const { publicClient, account } = getClients(grant.chain);
+  const balance = await publicClient.readContract({
+    address: grant.token as Address,
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: [account.address],
+  });
+
+  if (balance === 0n) {
+    return { forwarded: false, amount: "0" };
+  }
+
+  const txHash = await forwardStreamingPayoutToRecipient(
+    { ...grant, tokensPerMilestone: balance.toString() } as GrantRecord,
+    balance,
+  );
+  return { forwarded: true, txHash, amount: balance.toString() };
 }
 
 export async function triggerReleaseIfMilestone(
@@ -66,6 +162,18 @@ export async function triggerReleaseIfMilestone(
     const { publicClient, walletClient, account } = getClients(grant.chain);
     const repoIdBytes32 = repoIdToBytes32(repoId);
 
+    const expectedPayout =
+      BigInt(grant.tokensPerMilestone) * BigInt(clampedMilestone - grant.lastPaidMilestone);
+
+    const oracleBalBefore = grant.streaming
+      ? await publicClient.readContract({
+          address: grant.token as Address,
+          abi: ERC20_ABI,
+          functionName: "balanceOf",
+          args: [account.address],
+        })
+      : 0n;
+
     const hash = await walletClient.writeContract({
       address: env.GIT_ESCROW_ADDRESS as Address,
       abi: GIT_ESCROW_ABI,
@@ -77,32 +185,27 @@ export async function triggerReleaseIfMilestone(
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
     console.log(`[oracle] Release tx confirmed: ${hash} (milestone ${clampedMilestone})`);
 
-    // For streaming-allowance grants, the contract pulls tokens into the
-    // oracle's wallet. Forward them to the recipient in a follow-up tx.
+    const payout = payoutFromReleaseReceipt(receipt, expectedPayout);
+    let forwardTxHash: Hash | undefined;
+
+    // Legacy deployed contract: release() leaves tokens on oracle — forward now.
+    // New contract: release() forwards atomically; oracle balance unchanged.
     if (grant.streaming) {
-      const payout = BigInt(grant.tokensPerMilestone) *
-        BigInt(clampedMilestone - grant.lastPaidMilestone);
-      const bal = await publicClient.readContract({
+      const oracleBalAfter = await publicClient.readContract({
         address: grant.token as Address,
         abi: ERC20_ABI,
         functionName: "balanceOf",
         args: [account.address],
       });
-      if (bal >= payout) {
-        const fwdHash = await walletClient.writeContract({
-          address: grant.token as Address,
-          abi: ERC20_ABI,
-          functionName: "transfer",
-          args: [grant.recipient as Address, payout],
-          account,
-        });
-        await publicClient.waitForTransactionReceipt({ hash: fwdHash });
-        console.log(`[oracle] Forwarded ${payout} to ${grant.recipient} (tx: ${fwdHash})`);
-      } else {
-        console.warn(
-          `[oracle] Insufficient oracle balance to forward: have ${bal}, need ${payout}. ` +
-          `Recipient will need to claim manually.`,
+      const received = oracleBalAfter - oracleBalBefore;
+
+      if (received > 0n) {
+        console.log(
+          `[oracle] Legacy streaming release — forwarding ${received} to ${grant.recipient}`,
         );
+        forwardTxHash = await forwardStreamingPayoutToRecipient(grant, payout);
+      } else {
+        console.log(`[oracle] Streaming payout delivered in release tx (atomic forward)`);
       }
     }
 
@@ -115,8 +218,9 @@ export async function triggerReleaseIfMilestone(
     return {
       triggered: true,
       txHash: hash,
+      forwardTxHash,
       milestone: clampedMilestone,
-      payout: grant.tokensPerMilestone,
+      payout: payout.toString(),
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
