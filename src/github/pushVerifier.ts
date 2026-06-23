@@ -204,6 +204,7 @@ export async function recordVerifiedPush(
     reason: verifyResult.reason,
     linesEstimate: verifyResult.linesEstimate,
     commitCount: payload.commits.length,
+    accepted: true,
   });
 
   await redis.sadd(seenKey, headSha);
@@ -214,4 +215,26 @@ export async function recordVerifiedPush(
 
   const newTotal = await redis.incr(pushCountKey);
   return newTotal;
+}
+
+/** Log a rejected push attempt so the status page shows why it did not count. */
+export async function recordRejectedPush(
+  repoId: string,
+  payload: PushPayload,
+  reason: string,
+): Promise<void> {
+  const headSha = headCommitSha(payload) ?? "unknown";
+  const logEntry = JSON.stringify({
+    ts: Date.now(),
+    sha: headSha,
+    branch: branchFromRef(payload.ref),
+    pusher: payload.pusher?.name ?? "unknown",
+    reason,
+    accepted: false,
+    commitCount: payload.commits?.length ?? 0,
+  });
+  const redis = getRedis();
+  const logKey = KEYS.pushLog(repoId);
+  await redis.rpush(logKey, logEntry);
+  await redis.ltrim(logKey, -200, -1);
 }

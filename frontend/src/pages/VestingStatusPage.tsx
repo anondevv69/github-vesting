@@ -46,7 +46,8 @@ type StatusResponse = {
     branch: string;
     pusher: string;
     reason: string;
-    linesEstimate: number;
+    linesEstimate?: number;
+    accepted?: boolean;
   }>;
 };
 
@@ -160,14 +161,18 @@ export function VestingStatusPage() {
         </div>
       </div>
 
-      <h2>Recent verified pushes</h2>
+      <h2>Recent push activity</h2>
       {recentPushes.length === 0 ? (
-        <p className="muted">No verified pushes yet.</p>
+        <p className="muted">
+          No push activity recorded yet. Only pushes to <code>main</code> after the lock was registered (
+          {new Date(grant.createdAt).toLocaleString()}) count toward vesting.
+        </p>
       ) : (
         <table className="pushes-table">
           <thead>
             <tr>
               <th>When</th>
+              <th>Status</th>
               <th>Pusher</th>
               <th>Branch</th>
               <th>Lines ~</th>
@@ -176,11 +181,12 @@ export function VestingStatusPage() {
           </thead>
           <tbody>
             {uniquePushes.reverse().map((p) => (
-              <tr key={p.sha}>
+              <tr key={p.sha} className={p.accepted === false ? "push-rejected" : undefined}>
                 <td>{new Date(p.ts).toLocaleString()}</td>
+                <td>{p.accepted === false ? "rejected" : "verified"}</td>
                 <td>@{p.pusher}</td>
                 <td><code>{p.branch}</code></td>
-                <td>{p.linesEstimate}</td>
+                <td>{p.linesEstimate ?? "—"}</td>
                 <td>
                   <a href={`https://github.com/${grant.repoFullName}/commit/${p.sha}`} target="_blank" rel="noreferrer">
                     {p.sha.slice(0, 7)}
