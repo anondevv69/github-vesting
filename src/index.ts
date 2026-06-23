@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
-import { env, getMissingEnvVars } from "./lib/env";
+import { env, getMissingEnvVars, getAllowedCorsOrigins } from "./lib/env";
 import { handleWebhook } from "./github/webhookHandler";
 import { handleRegister } from "./api/register";
 import { handleStatus, handleList } from "./api/status";
@@ -44,10 +44,23 @@ app.use(
   },
 );
 
+const allowedOrigins = getAllowedCorsOrigins();
+
 app.use(express.json());
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin(origin, callback) {
+      // Allow server-to-server / curl (no Origin header)
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      if (allowedOrigins.includes(origin)) {
+        callback(null, origin);
+        return;
+      }
+      callback(null, false);
+    },
     credentials: true,
     allowedHeaders: ["Content-Type", "x-wallet-address", "x-client"],
   }),
