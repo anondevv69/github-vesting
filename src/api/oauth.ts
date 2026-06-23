@@ -12,10 +12,28 @@ import { getRedis, KEYS } from "../lib/redis";
 
 const SCOPES = "read:user,repo";
 
+const ALLOWED_RETURN_PATHS = ["/vesting/setup", "/vesting/dashboard"] as const;
+
+function sanitizeReturnTo(raw: unknown): (typeof ALLOWED_RETURN_PATHS)[number] {
+  const fallback = "/vesting/dashboard";
+  if (typeof raw !== "string" || !raw.trim()) return fallback;
+  const path = raw.startsWith("/") ? raw.split("?")[0]! : (() => {
+    try {
+      return new URL(raw).pathname;
+    } catch {
+      return "";
+    }
+  })();
+  return (ALLOWED_RETURN_PATHS as readonly string[]).includes(path)
+    ? (path as (typeof ALLOWED_RETURN_PATHS)[number])
+    : fallback;
+}
+
 export function handleOAuthRedirect(req: Request, res: Response): void {
   const state = randomBytes(16).toString("hex");
+  const returnTo = sanitizeReturnTo(req.query["returnTo"]);
   const redis = getRedis();
-  void redis.set(KEYS.oauthState(state), "1", "EX", 600); // 10 min expiry
+  void redis.set(KEYS.oauthState(state), JSON.stringify({ returnTo }), "EX", 600);
 
   const params = new URLSearchParams({
     client_id: env.GITHUB_CLIENT_ID,
@@ -37,22 +55,28 @@ export async function handleOAuthCallback(req: Request, res: Response): Promise<
   }
 
   const redis = getRedis();
-  const stored = await redis.get(KEYS.oauthState(state));
-  if (!stored) {
+  const storedRaw = await redis.get(KEYS.oauthState(state));
+  if (!storedRaw) {
     res.status(400).json({ ok: false, error: "Invalid or expired OAuth state" });
     return;
   }
   await redis.del(KEYS.oauthState(state));
 
+  let returnTo: (typeof ALLOWED_RETURN_PATHS)[number] = "/vesting/dashboard";
+  try {
+    returnTo = sanitizeReturnTo(JSON.parse(storedRaw).returnTo);
+  } catch {
+    /* legacy state value "1" */
+  }
+
   try {
     const user = await getOAuthUser(code);
-    // Store in session (express-session or JWT cookie — simplified here as query param for SPA).
     const sessionData = encodeURIComponent(
       JSON.stringify({ login: user.login, id: user.id, name: user.name, avatarUrl: user.avatarUrl }),
     );
-    res.redirect(`${env.FRONTEND_URL}/vesting/dashboard?github_user=${sessionData}`);
+    res.redirect(`${env.FRONTEND_URL}${returnTo}?github_user=${sessionData}`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    res.redirect(`${env.FRONTEND_URL}/vesting/dashboard?error=${encodeURIComponent(msg)}`);
+    res.redirect(`${env.FRONTEND_URL}${returnTo}?error=${encodeURIComponent(msg)}`);
   }
 }
