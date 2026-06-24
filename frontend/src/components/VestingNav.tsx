@@ -6,6 +6,7 @@ const links = [
   { to: "/", label: "Explore" },
   { to: "/create", label: "Create lock" },
   { to: "/help", label: "Help" },
+  { to: "/agents", label: "Agents" },
 ];
 
 export function VestingNav() {
