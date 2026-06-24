@@ -53,15 +53,24 @@ type LockResponse = {
   bankr?: {
     name: string;
     symbol: string;
-    feeBeneficiary: string;
-    feeShare: string;
-    initializer?: string;
-    bankrUrl: string;
+    imageUri?: string;
+    feeRecipient: {
+      wallet: string;
+      xUsername?: string;
+      xProfileImageUrl?: string;
+    };
+    launchUrl: string;
   } | null;
 };
 
 function formatTs(ts: number): string {
   return new Date(ts).toISOString().replace("T", " ").slice(0, 19);
+}
+
+function ipfsToHttp(uri?: string): string | undefined {
+  if (!uri) return undefined;
+  if (uri.startsWith("ipfs://")) return `https://ipfs.io/ipfs/${uri.slice(7)}`;
+  return uri;
 }
 
 type PushEntry = LockResponse["recentPushes"][number];
@@ -194,50 +203,65 @@ export function LockPage() {
 
       <section className="token-section">
         <h2>Token</h2>
-        {data.bankr && (
-          <p className="token-section__symbol">
-            {data.bankr.symbol || data.bankr.name}
-            {data.bankr.name && data.bankr.symbol ? ` · ${data.bankr.name}` : ""}
-          </p>
-        )}
-        <div className="token-section__addr">
-          <code>{grant.token}</code>
-          <CopyButton text={grant.token} />
-          <a href={`${explorerBase}/address/${grant.token}`} target="_blank" rel="noreferrer">
-            Basescan →
-          </a>
-          {data.bankr?.bankrUrl && (
-            <a href={data.bankr.bankrUrl} target="_blank" rel="noreferrer">
-              Bankr →
-            </a>
+        <div className="token-section__head">
+          {data.bankr?.imageUri && (
+            <img src={ipfsToHttp(data.bankr.imageUri)} alt="" className="token-section__logo" width={40} height={40} />
           )}
-        </div>
-        {data.bankr && (
-          <dl className="token-meta">
-            <div>
-              <dt>Fee recipient</dt>
-              <dd>
-                <code>{shortAddr(data.bankr.feeBeneficiary)}</code>
-                <CopyButton text={data.bankr.feeBeneficiary} />
-                <a href={`${explorerBase}/address/${data.bankr.feeBeneficiary}`} target="_blank" rel="noreferrer">
-                  Basescan →
+          <div>
+            <p className="token-section__symbol">
+              {data.bankr?.symbol || grant.token.slice(0, 6)}
+              {data.bankr?.name ? ` · ${data.bankr.name}` : ""}
+            </p>
+            <div className="token-section__addr">
+              <code>{grant.token}</code>
+              <CopyButton text={grant.token} />
+              <a href={`${explorerBase}/address/${grant.token}`} target="_blank" rel="noreferrer">
+                Basescan
+              </a>
+              {data.bankr?.launchUrl && (
+                <a href={data.bankr.launchUrl} target="_blank" rel="noreferrer">
+                  Bankr
                 </a>
-                {data.bankr.feeShare && <span className="muted"> · {data.bankr.feeShare} share</span>}
-              </dd>
+              )}
             </div>
-            {data.bankr.initializer && (
+          </div>
+        </div>
+
+        {data.bankr?.feeRecipient && (
+          <div className="fee-recipient-card">
+            <span className="fee-recipient-card__label">Fee recipient</span>
+            <div className="fee-recipient-card__person">
+              {data.bankr.feeRecipient.xProfileImageUrl ? (
+                <img
+                  src={data.bankr.feeRecipient.xProfileImageUrl}
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="fee-recipient-card__avatar"
+                />
+              ) : (
+                <span className="fee-recipient-card__avatar fee-recipient-card__avatar--placeholder" />
+              )}
               <div>
-                <dt>Pool contract</dt>
-                <dd>
-                  <code>{shortAddr(data.bankr.initializer)}</code>
-                  <a href={`${explorerBase}/address/${data.bankr.initializer}`} target="_blank" rel="noreferrer">
-                    Basescan →
+                {data.bankr.feeRecipient.xUsername ? (
+                  <a
+                    href={`https://x.com/${data.bankr.feeRecipient.xUsername}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="fee-recipient-card__handle"
+                  >
+                    @{data.bankr.feeRecipient.xUsername}
                   </a>
-                  <span className="muted"> · Doppler initializer (launch pool)</span>
-                </dd>
+                ) : (
+                  <code className="fee-recipient-card__handle">{shortAddr(data.bankr.feeRecipient.wallet)}</code>
+                )}
+                <span className="fee-recipient-card__wallet muted">
+                  {shortAddr(data.bankr.feeRecipient.wallet)}
+                  <CopyButton text={data.bankr.feeRecipient.wallet} />
+                </span>
               </div>
-            )}
-          </dl>
+            </div>
+          </div>
         )}
         {tokenHolders.length > 0 && (
           <table className="locks-table">
