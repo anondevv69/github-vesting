@@ -88,14 +88,16 @@ GET {API}/api/agent/setup-link?wallet=0x…
 
 ## GET /api/agent/fee-tokens
 
-Bankr fee-recipient tokens the wallet can vest.
+Tokens the wallet can lock on Base — **wallet holdings** (same idea as Bankr portfolio) plus fee-recipient tokens.
 
 ```http
 GET {API}/api/agent/fee-tokens
 x-wallet-address: 0x…
 ```
 
-**Response:** `tokens[]` with `address`, `symbol`, `share`, `tweetReply`.
+**Response:** `tokens[]`, `walletHoldings[]`, `replyText`, `tweetReply`.
+
+**Any ERC-20 on Base works** — pass a `0x` address to `POST /api/agent/lock` even if not listed here.
 
 ---
 
@@ -120,7 +122,7 @@ x-wallet-address: 0x…
 | Field | Required | Notes |
 |-------|----------|-------|
 | `repo` | yes | `owner/name` on GitHub |
-| `token` | yes | Symbol (`Space`), Bankr fee token, or `0x` address |
+| `token` | yes | Symbol from wallet (`TMP`, `Space`), or any `0x` ERC-20 on Base |
 | `amount` | yes | Human units: `3490000`, `3.49M`, `1.5K` |
 | `totalPushes` | no | Default `10` |
 | `pushesPerMilestone` | no | Default = `totalPushes` (single release) |

@@ -82,7 +82,7 @@ Optional: `x-client: agent`
 | `/api/agent/grants` | `?wallet=0x…` | Detailed grant list |
 | `/api/agent/status` | `?repo=owner/repo` | Single repo progress |
 | GET | `/api/agent/setup-link` | `?wallet=0x…` | URL to start a new lock (web) |
-| GET | `/api/agent/fee-tokens` | `x-wallet-address` | Bankr tokens wallet can vest |
+| GET | `/api/agent/fee-tokens` | `x-wallet-address` | Wallet ERC-20 holdings on Base (any lockable token) |
 | POST | `/api/agent/lock` | body + wallet header | Prepare approve+lock txs + instructions |
 | POST | `/api/agent/confirm-lock` | `repo`, `lockTxHash` | Register grant after on-chain lock |
 
@@ -111,7 +111,7 @@ curl -H "x-wallet-address: 0x…" \
 
 ### Writes (lock via agent)
 
-Bankr agents with wallet signing:
+Bankr agents with wallet signing — **any ERC-20 on Base** (TMP, Space, USDC, or any `0x` address):
 
 1. `POST /api/agent/lock` with `repo`, `token`, `amount`, `totalPushes`
 2. Submit `transactions[]` via `https://api.bankr.bot/agent/submit` on Base

@@ -9,8 +9,9 @@ Linked Bankr wallet → header `x-wallet-address: 0x…` on every call.
 | **my vesting progress** | `GET {API}/api/agent/briefing?wallet=0x…` → paste `tweetReply` |
 | **how many pushes until release?** | briefing or `GET {API}/api/agent/status?repo=owner/repo` |
 | **list my github locks** | `GET {API}/api/agent/grants?wallet=0x…` |
-| **my bankr tokens / fee tokens** | `GET {API}/api/agent/fee-tokens` → paste `tweetReply` |
-| **lock 3.49M Space on owner/repo for 10 pushes** | See **Lock flow** below |
+| **my bankr tokens / fee tokens / what can I lock** | `GET {API}/api/agent/fee-tokens` → wallet holdings on Base |
+| **lock 855M TMP on owner/repo for 1 push** | `POST {API}/api/agent/lock` — TMP resolves from wallet balance |
+| **lock 855M 0x935e… on owner/repo** | `POST {API}/api/agent/lock` with `token` = contract address |
 | **vest Space on my repo** | Lock flow if wallet can sign; else `setup-link` → `/create` |
 | **start github vesting** (web) | `GET {API}/api/agent/setup-link?wallet=0x…` → paste `{VESTING_SITE_URL}/create` |
 | **vesting on anondevv69/github-vesting** | `GET {API}/api/agent/status?repo=anondevv69/github-vesting` |
@@ -39,6 +40,8 @@ Linked Bankr wallet → header `x-wallet-address: 0x…` on every call.
 
 ## Forbidden replies
 
+- "TMP isn't supported" / "only Space and TEST" **without** calling `POST /api/agent/lock` first
+- Confusing GitHub vesting with a token contract's native `release()` vesting
 - "I can't lock tokens for you" **without** trying the lock API or returning the setup link
 - Empty reply when briefing returns `tweetReply`
 - Paraphrasing stats **without** the lock/create URL on its own line

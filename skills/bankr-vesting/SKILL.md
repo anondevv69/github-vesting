@@ -1,24 +1,24 @@
 ---
 name: bankr-vesting
-description: Lock Bankr tokens on GitHub repos via verified pushes — status, fee tokens, and full lock flow from chat or X.
+description: Lock ANY ERC-20 on Base for GitHub-gated vesting — status, wallet tokens, full lock flow from chat or X. No token allowlist.
 tags: [github, vesting, bankr, base, defi, space]
 ---
 
 # GitHub Vesting — Bankr agent skill
 
-Lock Bankr ERC-20 tokens (e.g. **Space**) on Base. Earn them back by shipping verified commits to a GitHub repo.
+Lock **any ERC-20 on Base** for GitHub-gated vesting. Earn tokens back by shipping verified commits to a repo. **There is no token allowlist** — TMP, Space, USDC, or any `0x` contract works.
 
 **Site:** `{VESTING_SITE_URL}` (explore, lock pages, dev profiles, create flow)  
 **API:** `{VESTING_API_URL}` (agent + webhooks)
 
-| Page | Path |
-|------|------|
-| Explore (search) | `/` |
-| Lock status + token | `/lock/{owner}/{repo}` |
-| Dev profile | `/dev/{username}` |
-| Create lock | `/create` |
+---
 
-Override via env: `VESTING_SITE_URL`, `VESTING_API_URL` (defaults in `skill-manifest.json` until you deploy).
+## CRITICAL — any token
+
+- **Any ERC-20 on Base** can be locked. Symbols resolve from **wallet holdings** or pass a **`0x` address**.
+- `known-escrow.json` → `supportedTokens` is **not an allowlist**. It only marks streaming tokens (Space → `lockAllowance`).
+- **Never** say "only Space and TEST" or "TMP isn't supported" without calling `POST {API}/api/agent/lock` first.
+- Do **not** confuse a token's native `release()` vesting with **GitHub vesting** (GitEscrow + verified pushes).
 
 ---
 
@@ -77,15 +77,17 @@ See **`AGENT-API.md`** for response fields (`replyText`, `tweetReply`, `links`).
 
 ## Writes — lock via Bankr chat or X
 
-You **can** lock tokens from terminal or X when the user has a Bankr-linked wallet that can sign Base transactions.
+You **can** lock **any ERC-20 on Base** from terminal or X when the user has a Bankr-linked wallet that can sign transactions.
+
+**There is NO allowlist.** `known-escrow.json` only documents streaming tokens (Space). Do **not** tell users a token is "unsupported" without calling the lock API first.
 
 ### Lock flow (mandatory order)
 
-1. **`POST {API}/api/agent/lock`** (or `prepare-lock`) with:
+1. **`POST {API}/api/agent/lock`** (always — even when user gives a `0x` address):
    - Header `x-wallet-address: 0x…`
-   - Body: `{ "repo": "owner/repo", "token": "Space", "amount": "3.49M", "totalPushes": 10 }`
-   - `token` = symbol (`Space`), name, or `0x` address
-   - `amount` = human units (`3490000`, `3.49M`, `1.5K`)
+   - Body: `{ "repo": "owner/repo", "token": "TMP", "amount": "855M", "totalPushes": 1 }`
+   - `token` = symbol from **wallet holdings**, fee-recipient name, or **`0x` contract address**
+   - `amount` = human units (`855000000`, `855M`, `3.49M`)
 
 2. If response has **`installUrl`** → tell user to install GitHub App on that repo, then retry.
 
@@ -100,11 +102,29 @@ You **can** lock tokens from terminal or X when the user has a Bankr-linked wall
 
 5. Paste **`tweetReply`** from confirm-lock verbatim (lock page URL on its own line).
 
-### Example one-liner
+### Token resolution
 
-> lock 3.49M Space on anondevv69/my-repo for 10 pushes
+| Input | How it resolves |
+|-------|-----------------|
+| `0x935e…` | Any ERC-20 contract — always accepted |
+| `TMP`, `Space`, etc. | Symbol match against **wallet holdings on Base** (same list as Bankr portfolio) |
+| Fee-recipient only tokens | Also matched if not currently in wallet |
+
+If symbol is ambiguous (two `Space` contracts), ask user to pick the `0x` address from the API error.
+
+### Example one-liners
+
+> lock 855M TMP on anondevv69/bankr-tmp-skill for 1 push
+
+> lock 855M 0x935e13a28849095db45e63040f109c34b757aba3 on anondevv69/bankr-tmp-skill for 1 push
 
 → `POST /api/agent/lock` → submit txs → `POST /api/agent/confirm-lock` → paste `tweetReply`.
+
+### Forbidden
+
+- Saying "TMP isn't supported" or "only Space and TEST" **without** calling `POST /api/agent/lock`
+- Confusing GitHub vesting with a token's **native** `release()` vesting schedule
+- Skipping `confirm-lock` after on-chain lock
 
 ### Web fallback
 
@@ -137,4 +157,4 @@ When user says **Space**, **$SPACE**, or `0xef703b860a6d422fa00cc67bbbb2662297cb
 |------|---------|
 | `ONE-LINE-INTENTS.md` | Tweet → API mapping |
 | `AGENT-API.md` | Endpoint reference + examples |
-| `known-escrow.json` | Escrow address + supported tokens |
+| `known-escrow.json` | Escrow address + streaming token hints (**not** an allowlist) |
