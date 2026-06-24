@@ -27,8 +27,7 @@ function resolveWallet(req: Request): string | null {
 }
 
 function lockUrl(repoFullName: string): string {
-  const [owner, name] = repoFullName.split("/");
-  return `${env.FRONTEND_URL}/lock/${owner}/${name}`;
+  return `${env.FRONTEND_URL}/create?repo=${encodeURIComponent(repoFullName)}`;
 }
 
 export async function handleRepoClaimChallenge(req: Request, res: Response): Promise<void> {

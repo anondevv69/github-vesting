@@ -16,6 +16,7 @@ import {
 import { base, baseSepolia } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { env } from "../lib/env";
+import { parseWei } from "../lib/wei";
 import { updateGrant, type GrantRecord } from "../lib/redis";
 import { repoIdToBytes32 } from "../lib/repoId";
 
@@ -163,7 +164,7 @@ export async function triggerReleaseIfMilestone(
     const repoIdBytes32 = repoIdToBytes32(repoId);
 
     const expectedPayout =
-      BigInt(grant.tokensPerMilestone) * BigInt(clampedMilestone - grant.lastPaidMilestone);
+      parseWei(grant.tokensPerMilestone) * BigInt(clampedMilestone - grant.lastPaidMilestone);
 
     const oracleBalBefore = grant.streaming
       ? await publicClient.readContract({

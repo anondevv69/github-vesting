@@ -58,6 +58,7 @@ export function DevProfilePage() {
   const [editable, setEditable] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const { wallet, connectWallet } = useVestingAuth();
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -70,24 +71,40 @@ export function DevProfilePage() {
   const load = useCallback(() => {
     if (!username) return;
     setLoading(true);
-    const walletQ = wallet ? `&wallet=${wallet}` : "";
+    setLoadError(null);
+    const walletQ = wallet ? `wallet=${wallet}` : "";
     Promise.all([
-      fetch(`${API_BASE}/api/vesting/by-dev/${username}`).then((r) => r.json()),
-      fetch(`${API_BASE}/api/vesting/dev-profile/${username}?${walletQ}`).then((r) => r.json()),
+      fetch(`${API_BASE}/api/vesting/by-dev/${username}`),
+      fetch(`${API_BASE}/api/vesting/dev-profile/${username}?${walletQ}`),
     ])
-      .then(([dev, prof]) => {
-        const d = dev as {
+      .then(async ([devRes, profRes]) => {
+        if (!devRes.ok) {
+          const errBody = await devRes.json().catch(() => ({})) as { error?: string; message?: string };
+          throw new Error(errBody.error ?? errBody.message ?? `API error ${devRes.status}`);
+        }
+        const dev = await devRes.json() as {
+          ok?: boolean;
           grants?: GrantSummary[];
           reviews?: Review[];
           reputation?: { stats: ReputationStats };
+          error?: string;
         };
-        setGrants(d.grants ?? []);
-        setReviews(d.reviews ?? []);
-        setStats(d.reputation?.stats ?? null);
-        const p = prof as { profile?: DevProfile; editable?: boolean };
-        setProfile(p.profile ?? { githubLogin: username });
-        setDraft(p.profile ?? { githubLogin: username, links: [] });
-        setEditable(!!p.editable);
+        if (dev.ok === false) throw new Error(dev.error ?? "Failed to load locks");
+        const prof = profRes.ok
+          ? await profRes.json() as { profile?: DevProfile; editable?: boolean }
+          : { profile: { githubLogin: username }, editable: false };
+        setGrants(dev.grants ?? []);
+        setReviews(dev.reviews ?? []);
+        setStats(dev.reputation?.stats ?? null);
+        setProfile(prof.profile ?? { githubLogin: username });
+        setDraft(prof.profile ?? { githubLogin: username, links: [] });
+        setEditable(!!prof.editable);
+      })
+      .catch((e) => {
+        setGrants([]);
+        setReviews([]);
+        setStats(null);
+        setLoadError(e instanceof Error ? e.message : "Could not load profile");
       })
       .finally(() => setLoading(false));
   }, [username, wallet]);
@@ -150,6 +167,20 @@ export function DevProfilePage() {
       <VestingNav />
 
       {loading && <p className="muted">Loading profile…</p>}
+
+      {!loading && loadError && (
+        <div className="vesting-card" style={{ marginBottom: "1.5rem" }}>
+          <p className="err">Could not load locks — {loadError}</p>
+          <p className="muted">
+            The API may be temporarily down. Your lock pages (e.g.{" "}
+            <Link to={`/lock/${username}/github-vesting`}>/lock/{username}/github-vesting</Link>
+            ) work independently once the backend is back.
+          </p>
+          <button type="button" className="btn btn-primary" onClick={() => load()}>
+            Retry
+          </button>
+        </div>
+      )}
 
       {!loading && (
         <div className="dev-layout dev-layout--profile">

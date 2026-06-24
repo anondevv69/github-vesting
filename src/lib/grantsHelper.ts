@@ -1,4 +1,5 @@
 import { listAllGrants, getGrantByRepoFullName, getRedis, KEYS, type GrantRecord } from "./redis";
+import { parseWei } from "./wei";
 
 export function buildProgress(grant: GrantRecord) {
   const totalMilestones = Math.floor(grant.totalPushesRequired / grant.pushesPerMilestone);
@@ -27,8 +28,9 @@ export function buildProgress(grant: GrantRecord) {
   };
 }
 
-export function formatTokenAmount(wei: string): string {
-  const n = Number(wei) / 1e18;
+export function formatTokenAmount(wei: string | number | bigint): string {
+  const w = parseWei(wei);
+  const n = Number(w / 10n ** 15n) / 1e3;
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(2)}k`;
   return n.toLocaleString(undefined, { maximumFractionDigits: 2 });

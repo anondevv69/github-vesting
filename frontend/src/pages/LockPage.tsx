@@ -145,6 +145,13 @@ export function LockPage() {
       <div className="vesting-page">
         <VestingNav />
         <p className="err">{error ?? "Lock not found"}</p>
+        {repoFullName && (
+          <p style={{ marginTop: "1rem" }}>
+            <Link to={`/create?repo=${encodeURIComponent(repoFullName)}`} className="btn btn-primary">
+              Create lock for {repoFullName} →
+            </Link>
+          </p>
+        )}
       </div>
     );
   }
