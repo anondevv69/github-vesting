@@ -76,13 +76,114 @@ GET {API}/api/agent/status?repo=owner/repo
 
 ## GET /api/agent/setup-link
 
-Link to start a new vesting lock.
+Link to start a new vesting lock (web wizard fallback).
 
 ```http
 GET {API}/api/agent/setup-link?wallet=0x…
 ```
 
 **Response:** `setupUrl`, `dashboardUrl`, `tweetReply`, `steps[]`.
+
+---
+
+## GET /api/agent/fee-tokens
+
+Bankr fee-recipient tokens the wallet can vest.
+
+```http
+GET {API}/api/agent/fee-tokens
+x-wallet-address: 0x…
+```
+
+**Response:** `tokens[]` with `address`, `symbol`, `share`, `tweetReply`.
+
+---
+
+## POST /api/agent/lock
+
+Prepare lock transactions + Bankr execution instructions (one-shot).
+
+```http
+POST {API}/api/agent/lock
+Content-Type: application/json
+x-wallet-address: 0x…
+
+{
+  "repo": "owner/repo",
+  "token": "Space",
+  "amount": "3.49M",
+  "totalPushes": 10,
+  "pushesPerMilestone": 10
+}
+```
+
+| Field | Required | Notes |
+|-------|----------|-------|
+| `repo` | yes | `owner/name` on GitHub |
+| `token` | yes | Symbol (`Space`), Bankr fee token, or `0x` address |
+| `amount` | yes | Human units: `3490000`, `3.49M`, `1.5K` |
+| `totalPushes` | no | Default `10` |
+| `pushesPerMilestone` | no | Default = `totalPushes` (single release) |
+
+**Response (200):**
+
+```json
+{
+  "ok": true,
+  "transactions": [
+    { "step": "approve", "to": "0x…", "data": "0x…", "value": "0x0", "chainId": 8453 },
+    { "step": "lock", "to": "0x76dd…", "data": "0x…", "value": "0x0", "chainId": 8453 }
+  ],
+  "bankrSubmitUrl": "https://api.bankr.bot/agent/submit",
+  "confirmUrl": "https://api.proofofdev.xyz/api/agent/confirm-lock",
+  "statusUrl": "https://www.proofofdev.xyz/lock/owner/repo",
+  "tweetReply": "…",
+  "steps": ["Submit each transaction…", "POST confirm-lock…"]
+}
+```
+
+**Response (400, GitHub App missing):** `installUrl`, `tweetReply` with install link.
+
+---
+
+## POST /api/agent/prepare-lock
+
+Same as `/api/agent/lock` without the extra `steps` wrapper. Use when you already know the Bankr submit flow.
+
+---
+
+## POST /api/agent/confirm-lock
+
+Register the grant after the lock transaction confirms on Base.
+
+```http
+POST {API}/api/agent/confirm-lock
+Content-Type: application/json
+x-wallet-address: 0x…
+
+{
+  "repo": "owner/repo",
+  "lockTxHash": "0x…"
+}
+```
+
+Parses the `Locked` event from the tx, verifies recipient matches wallet, registers push tracking.
+
+**Response:** `grant`, `statusUrl`, `tweetReply` (paste verbatim on X).
+
+---
+
+## Bankr wallet submit (after prepare/lock)
+
+For each transaction in `transactions[]`, in order:
+
+```http
+POST https://api.bankr.bot/agent/submit
+```
+
+Use fields `to`, `data`, `value`, `chainId` from the prepare response. Set `waitForConfirmation: true` on the final lock tx.
+
+Then call `confirm-lock` with the lock transaction hash.
 
 ---
 

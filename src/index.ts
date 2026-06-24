@@ -12,6 +12,12 @@ import {
   handleAgentStatus,
   handleAgentSetupLink,
 } from "./api/agent";
+import {
+  handleAgentFeeTokens,
+  handleAgentPrepareLock,
+  handleAgentConfirmLock,
+  handleAgentLock,
+} from "./api/agentLock";
 import { handleBankrFeeTokens, handleBankrTokenInfo } from "./api/bankr";
 import { handleGitlawbRepoLookup, handleGitlawbSetupInfo } from "./api/gitlawb";
 import { handleGitlawbWebhook } from "./gitlawb/webhookHandler";
@@ -152,6 +158,10 @@ app.get("/api/agent/briefing", (req, res) => void handleAgentBriefing(req, res))
 app.get("/api/agent/grants", (req, res) => void handleAgentGrants(req, res));
 app.get("/api/agent/status", (req, res) => void handleAgentStatus(req, res));
 app.get("/api/agent/setup-link", (req, res) => void handleAgentSetupLink(req, res));
+app.get("/api/agent/fee-tokens", (req, res) => void handleAgentFeeTokens(req, res));
+app.post("/api/agent/prepare-lock", (req, res) => void handleAgentPrepareLock(req, res));
+app.post("/api/agent/confirm-lock", (req, res) => void handleAgentConfirmLock(req, res));
+app.post("/api/agent/lock", (req, res) => void handleAgentLock(req, res));
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 app.listen(env.PORT, env.HOST, () => {

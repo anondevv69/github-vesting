@@ -38,10 +38,11 @@ export function AgentsPage() {
 
           <h3>What the skill provides</h3>
           <ul className="help-list">
-            <li>Intent routing (my vesting, status on repo, start lock)</li>
+            <li>Intent routing (my vesting, status on repo, lock tokens on a repo)</li>
+            <li>Full lock flow: prepare txs → Bankr submit → confirm-lock</li>
             <li>Tweet-friendly <code>tweetReply</code> from the API</li>
             <li>Linked wallet via <code>x-wallet-address</code> header</li>
-            <li>Setup link → <code>/create</code> · status → <code>/lock/owner/repo</code></li>
+            <li>Web fallback → <code>/create</code> · status → <code>/lock/owner/repo</code></li>
           </ul>
 
           <div className="agents-card__actions">
@@ -75,6 +76,8 @@ export function AgentsPage() {
               <tr><td><code>GET /api/agent/grants</code></td><td>Detailed lock list</td></tr>
               <tr><td><code>GET /api/agent/status</code></td><td>Single repo progress</td></tr>
               <tr><td><code>GET /api/agent/setup-link</code></td><td>Start lock wizard URL</td></tr>
+              <tr><td><code>POST /api/agent/lock</code></td><td>Prepare approve + lock txs</td></tr>
+              <tr><td><code>POST /api/agent/confirm-lock</code></td><td>Register after on-chain lock</td></tr>
             </tbody>
           </table>
 
