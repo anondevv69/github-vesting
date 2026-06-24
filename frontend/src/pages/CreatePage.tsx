@@ -16,6 +16,7 @@ import { VestingNav } from "../components/VestingNav";
 import { VestingFooter } from "../components/VestingFooter";
 import { VestingPathChart } from "../components/VestingPathChart";
 import { CopyButton } from "../components/CopyButton";
+import { useVestingAuth } from "../hooks/useVestingAuth";
 import {
   createPublicClient,
   createWalletClient,
@@ -99,6 +100,7 @@ async function waitForTxConfirmation(
 }
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+const API_FETCH: RequestInit = { credentials: "include" };
 const GIT_ESCROW_ADDRESS = import.meta.env.VITE_GIT_ESCROW_ADDRESS as Address | undefined;
 const GITHUB_APP_SLUG = import.meta.env.VITE_GITHUB_APP_SLUG ?? "bankr-vesting";
 
@@ -162,9 +164,9 @@ type FormState = {
 export function CreatePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { wallet: authWallet, githubUser, connectWallet: authConnectWallet, connectGitHub } = useVestingAuth();
   const [step, setStep] = useState<Step>(1);
   const [wallet, setWallet] = useState<Address | null>(null);
-  const [githubUser, setGithubUser] = useState<GitHubUser | null>(null);
   const [form, setForm] = useState<FormState>({
     platform: "github",
     repoFullName: "",
@@ -202,6 +204,28 @@ export function CreatePage() {
   const [repoClaimBusy, setRepoClaimBusy] = useState(false);
   const [repoClaimFileJson, setRepoClaimFileJson] = useState<string | null>(null);
   const [repoClaimMessage, setRepoClaimMessage] = useState<string | null>(null);
+  const [myRepos, setMyRepos] = useState<string[]>([]);
+
+  // Sync wallet from nav auth hook
+  useEffect(() => {
+    if (authWallet) setWallet(authWallet);
+  }, [authWallet]);
+
+  // Load private + public repos when GitHub session is active
+  useEffect(() => {
+    if (!githubUser) {
+      setMyRepos([]);
+      return;
+    }
+    void (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/github/repos`, API_FETCH);
+        if (!res.ok) return;
+        const data = (await res.json()) as { repos?: Array<{ fullName?: string }> };
+        setMyRepos((data.repos ?? []).map((r) => r.fullName).filter(Boolean) as string[]);
+      } catch { /* ignore */ }
+    })();
+  }, [githubUser]);
 
   // Restore wallet connection on page load if already connected.
   useEffect(() => {
@@ -217,28 +241,6 @@ export function CreatePage() {
     }
     void checkExistingWallet();
   }, []);
-
-  // Parse GitHub OAuth callback params.
-  useEffect(() => {
-    const githubUserParam = searchParams.get("github_user");
-    const oauthError = searchParams.get("error");
-    if (githubUserParam) {
-      try {
-        const user = JSON.parse(decodeURIComponent(githubUserParam)) as GitHubUser;
-        setGithubUser(user);
-        localStorage.setItem("vesting_github_user", JSON.stringify(user));
-        setStep(1);
-      } catch {
-        setError("Failed to parse GitHub user info.");
-      }
-    } else {
-      const saved = localStorage.getItem("vesting_github_user");
-      if (saved) setGithubUser(JSON.parse(saved) as GitHubUser);
-    }
-    if (oauthError) {
-      setError(decodeURIComponent(oauthError));
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     if (!wallet || step < 3) return;
@@ -297,11 +299,6 @@ export function CreatePage() {
     }
   }
 
-  function connectGitHub() {
-    const returnTo = encodeURIComponent("/create");
-    window.location.href = `${API_BASE}/api/oauth/github?returnTo=${returnTo}`;
-  }
-
   async function loadTokenInfo(addressOverride?: string) {
     const tokenAddr = addressOverride ?? form.tokenAddress;
     if (!tokenAddr || !wallet) return;
@@ -352,6 +349,7 @@ export function CreatePage() {
     try {
       const res = await fetch(
         `${API_BASE}/api/repo-claims/status?repo=${encodeURIComponent(repo)}&wallet=${wallet}&poll=1`,
+        API_FETCH,
       );
       const d = await res.json() as {
         verified?: boolean;
@@ -388,6 +386,7 @@ export function CreatePage() {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-wallet-address": wallet },
         body: JSON.stringify({ repo: form.repoFullName.trim() }),
+        ...API_FETCH,
       });
       const challenge = await res.json() as {
         ok?: boolean;
@@ -449,22 +448,27 @@ export function CreatePage() {
     setRepoValidation("checking");
     setRepoValidationMsg("");
     try {
-      const res = await fetch(`${API_BASE}/api/github/repo?repo=${encodeURIComponent(repo)}`);
+      const res = await fetch(`${API_BASE}/api/github/repo?repo=${encodeURIComponent(repo)}`, API_FETCH);
       const d = await res.json() as {
         ok: boolean;
         repo?: string;
         error?: string;
         hint?: string;
         suggestions?: string[];
+        needsGitHubLogin?: boolean;
+        private?: boolean;
       };
       if (d.ok) {
         setRepoValidation("ok");
-        setRepoValidationMsg(`✓ ${d.repo ?? repo} found on GitHub`);
+        const priv = d.private ? " (private)" : "";
+        setRepoValidationMsg(`✓ ${d.repo ?? repo} found on GitHub${priv}`);
         void pollRepoClaimStatus(repo);
       } else {
         setRepoValidation("err");
-        const sug = d.suggestions?.length ? ` ${d.hint ?? ""}` : (d.hint ?? "");
-        setRepoValidationMsg((d.error ?? "Repository not found") + sug);
+        let msg = d.error ?? "Repository not found";
+        if (d.needsGitHubLogin) msg += " — connect GitHub to access private repos.";
+        else if (d.hint) msg += ` ${d.hint}`;
+        setRepoValidationMsg(msg);
       }
     } catch {
       setRepoValidation("err");
@@ -771,12 +775,24 @@ export function CreatePage() {
             <p className="muted">Wallet: <code>{wallet.slice(0, 6)}…{wallet.slice(-4)}</code></p>
           )}
 
+          {!githubUser ? (
+            <p className="muted">
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => connectGitHub()}>
+                Connect GitHub
+              </button>
+              {" "}to validate private repos and pick from your list.
+            </p>
+          ) : (
+            <p className="muted">GitHub: <strong>@{githubUser.login}</strong> — private repos supported</p>
+          )}
+
           <div className="create-grid">
             <label>
               GitHub repo
               <input
                 type="text"
                 placeholder="owner/repo"
+                list={myRepos.length ? "my-github-repos" : undefined}
                 value={form.repoFullName}
                 onChange={(e) => {
                   setForm((f) => ({ ...f, repoFullName: e.target.value }));
@@ -786,6 +802,13 @@ export function CreatePage() {
               />
               {repoValidation === "ok" && <span className="field-hint ok">{repoValidationMsg}</span>}
               {repoValidation === "err" && <span className="field-hint err">{repoValidationMsg}</span>}
+              {myRepos.length > 0 && (
+                <datalist id="my-github-repos">
+                  {myRepos.map((r) => (
+                    <option key={r} value={r} />
+                  ))}
+                </datalist>
+              )}
             </label>
             <label>
               Token address

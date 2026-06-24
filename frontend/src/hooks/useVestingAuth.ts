@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import type { Address } from "viem";
 
@@ -10,6 +10,8 @@ export type GitHubUser = {
   name: string | null;
   avatarUrl: string;
 };
+
+const fetchOpts: RequestInit = { credentials: "include" };
 
 export function useVestingAuth() {
   const location = useLocation();
@@ -28,6 +30,23 @@ export function useVestingAuth() {
     }
   });
 
+  const syncGithubSession = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/github/me`, fetchOpts);
+      const data = (await res.json()) as { ok: boolean; github: GitHubUser | null };
+      if (data.github) {
+        setGithubUser(data.github);
+        localStorage.setItem("vesting_github_user", JSON.stringify(data.github));
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    void syncGithubSession();
+  }, [syncGithubSession]);
+
   useEffect(() => {
     const githubUserParam = searchParams.get("github_user");
     const oauthError = searchParams.get("error");
@@ -41,12 +60,13 @@ export function useVestingAuth() {
       next.delete("github_user");
       next.delete("error");
       setSearchParams(next, { replace: true });
+      void syncGithubSession();
     } else if (oauthError) {
       const next = new URLSearchParams(searchParams);
       next.delete("error");
       setSearchParams(next, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, syncGithubSession]);
 
   useEffect(() => {
     if (wallet) localStorage.setItem("vesting_wallet", wallet);
@@ -69,7 +89,10 @@ export function useVestingAuth() {
     setWallet(null);
   }
 
-  function disconnectGitHub() {
+  async function disconnectGitHub() {
+    try {
+      await fetch(`${API_BASE}/api/auth/github/logout`, { method: "POST", ...fetchOpts });
+    } catch { /* ignore */ }
     localStorage.removeItem("vesting_github_user");
     setGithubUser(null);
   }
@@ -81,5 +104,6 @@ export function useVestingAuth() {
     connectGitHub,
     disconnectWallet,
     disconnectGitHub,
+    syncGithubSession,
   };
 }

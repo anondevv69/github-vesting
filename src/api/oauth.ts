@@ -7,8 +7,8 @@
 import type { Request, Response } from "express";
 import { randomBytes } from "crypto";
 import { env } from "../lib/env";
-import { getOAuthUser } from "../github/githubApp";
 import { getRedis, KEYS } from "../lib/redis";
+import { finishGithubOAuth } from "./githubAuth";
 
 const SCOPES = "read:user,repo";
 
@@ -72,7 +72,7 @@ export async function handleOAuthCallback(req: Request, res: Response): Promise<
   }
 
   try {
-    const user = await getOAuthUser(code);
+    const user = await finishGithubOAuth(res, code);
     const sessionData = encodeURIComponent(
       JSON.stringify({ login: user.login, id: user.id, name: user.name, avatarUrl: user.avatarUrl }),
     );
