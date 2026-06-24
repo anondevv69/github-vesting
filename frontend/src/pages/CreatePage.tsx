@@ -650,11 +650,10 @@ export function CreatePage() {
   return (
     <div className="vesting-page vesting-page--wide">
       <VestingNav />
-      <header className="vesting-setup-page__header">
+      <header>
         <h1>Create lock</h1>
+        <p className="setup-step-label muted">Step {step} of 3</p>
       </header>
-
-      <p className="setup-step-label setup-step-label--center">Step {step} of 3</p>
 
       {error && (
         <p className="err" style={{ whiteSpace: "pre-wrap", marginBottom: "1rem" }}>{error}</p>

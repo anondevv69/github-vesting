@@ -17,6 +17,7 @@
   --radius-lg: 0.75rem;
   --max-w: 48rem;
   --max-w-narrow: 30rem;
+  --page-wide: 56rem;
 }
 
 *,
@@ -27,6 +28,7 @@
 
 html {
   color-scheme: dark;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -37,6 +39,11 @@ body {
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 a {
@@ -66,7 +73,7 @@ code {
 }
 
 .vesting-page--wide {
-  max-width: 56rem;
+  max-width: var(--page-wide);
 }
 
 .vesting-page--narrow {
@@ -1868,6 +1875,7 @@ code {
 }
 
 .vesting-footer__card {
+  min-width: 0;
   padding: 0.65rem 0.75rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
   border: 1px solid var(--border);
