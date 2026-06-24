@@ -6,6 +6,8 @@ import type { Request, Response } from "express";
 import { listAllGrants, getGrantByRepoFullName, getRedis, KEYS, type GrantRecord } from "../lib/redis";
 import { buildProgress, formatTokenAmount } from "../lib/grantsHelper";
 import { splitRepo } from "../lib/repoId";
+import { getDevProfile } from "./devProfile";
+import { fetchBankrTokenInfo } from "./bankr";
 
 function dedupeGrants(grants: GrantRecord[]): GrantRecord[] {
   const byRepo = new Map<string, GrantRecord>();
@@ -81,6 +83,39 @@ export async function handleSearch(req: Request, res: Response): Promise<void> {
         label: `${g.token.slice(0, 6)}…${g.token.slice(-4)}`,
         secondary: `${tokenGrants.length} lock${tokenGrants.length === 1 ? "" : "s"} · ${formatTokenAmount(totalLocked.toString())}`,
         href: lockPath(tokenGrants[0]!.repoFullName),
+      });
+    }
+  }
+
+  const qBare = q.replace(/^@/, "");
+  const ownersChecked = new Set<string>();
+  for (const g of grants) {
+    const [owner] = splitRepo(g.repoFullName, g.platform ?? "github");
+    const ownerKey = owner.toLowerCase();
+    if (ownersChecked.has(ownerKey) || seenDevs.has(owner)) continue;
+    ownersChecked.add(ownerKey);
+
+    const profile = await getDevProfile(owner);
+    if (!profile) continue;
+
+    const twitter = profile.twitter?.toLowerCase() ?? "";
+    const displayName = profile.displayName?.toLowerCase() ?? "";
+    const matchesTwitter = twitter.length > 0 && (twitter.includes(qBare) || qBare.includes(twitter));
+    const matchesName = displayName.length > 0 && displayName.includes(qBare);
+
+    if (matchesTwitter || matchesName) {
+      seenDevs.add(owner);
+      const devGrants = grants.filter((x) =>
+        splitRepo(x.repoFullName, x.platform ?? "github")[0].toLowerCase() === ownerKey,
+      );
+      const pushes = devGrants.reduce((s, x) => s + x.verifiedPushCount, 0);
+      const via = matchesTwitter && twitter ? `@${twitter} on X` : displayName;
+      results.push({
+        type: "dev",
+        id: owner,
+        label: `@${owner}`,
+        secondary: `${via} · ${devGrants.length} lock${devGrants.length === 1 ? "" : "s"} · ${pushes} pushes`,
+        href: `/dev/${owner}`,
       });
     }
   }
@@ -195,6 +230,8 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
     };
   }).sort((a, b) => Number(BigInt(b.amount) - BigInt(a.amount)));
 
+  const bankr = await fetchBankrTokenInfo(grant.token);
+
   res.json({
     ok: true,
     grant,
@@ -208,5 +245,6 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
     tokenHolders,
     totalTokenLocked: totalTokenLocked.toString(),
     totalTokenLockedFormatted: formatTokenAmount(totalTokenLocked.toString()),
+    bankr,
   });
 }

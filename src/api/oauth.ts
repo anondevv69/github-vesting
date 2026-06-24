@@ -12,10 +12,10 @@ import { getRedis, KEYS } from "../lib/redis";
 
 const SCOPES = "read:user,repo";
 
-const ALLOWED_RETURN_PATHS = ["/create", "/vesting/setup", "/vesting/dashboard"] as const;
+const ALLOWED_RETURN_PATHS = ["/", "/create", "/help", "/vesting/setup", "/vesting/dashboard"] as const;
 
 function sanitizeReturnTo(raw: unknown): string {
-  const fallback = "/create";
+  const fallback = "/";
   if (typeof raw !== "string" || !raw.trim()) return fallback;
   const path = raw.startsWith("/") ? raw.split("?")[0]! : (() => {
     try {
@@ -25,7 +25,9 @@ function sanitizeReturnTo(raw: unknown): string {
     }
   })();
   if ((ALLOWED_RETURN_PATHS as readonly string[]).includes(path)) return path;
+  if (path.startsWith("/dev/") || path.startsWith("/lock/")) return path;
   if (path === "/vesting/setup") return "/create";
+  if (path === "/vesting/dashboard") return "/";
   return fallback;
 }
 
