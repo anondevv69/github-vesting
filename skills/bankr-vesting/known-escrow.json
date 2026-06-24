@@ -9,7 +9,9 @@
       "streaming": true
     }
   },
-  "setupPath": "/vesting/setup",
-  "dashboardPath": "/vesting/dashboard",
-  "statusPathTemplate": "/vesting/status?repo={ownerSlashRepo}"
+  "setupPath": "/create",
+  "explorePath": "/",
+  "lockPathTemplate": "/lock/{owner}/{repoName}",
+  "devProfilePathTemplate": "/dev/{username}",
+  "legacyStatusPathTemplate": "/vesting/status?repo={ownerSlashRepo}"
 }
