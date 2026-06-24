@@ -30,16 +30,62 @@ export function HelpPage() {
         <h2>2. Ship verified pushes</h2>
         <p>
           Push real code to your repo&apos;s default branch (<code>main</code>, <code>master</code>, or production).
-          Each push is checked by the GitHub App:
-        </p>
-        <ul className="help-list">
-          <li>Must change code files with meaningful line deltas (~10+ lines)</li>
-          <li>Force-pushes and spam patterns are rejected</li>
-          <li>Rate limits apply per repo</li>
-        </ul>
-        <p>
-          Watch progress on your lock page — e.g.{" "}
+          Each push is checked by the GitHub App. Watch progress on your lock page — e.g.{" "}
           <Link to="/lock/anondevv69/github-vesting">anondevv69/github-vesting</Link>.
+        </p>
+      </section>
+
+      <section className="vesting-card help-section help-section--rules">
+        <h2>Verified push rules (read this)</h2>
+        <p>
+          These limits stop people from gaming milestones with tiny or rapid-fire commits.
+          Rejected pushes appear on your lock timeline with the reason they did not count.
+        </p>
+        <table className="help-rules-table">
+          <thead>
+            <tr>
+              <th>Rule</th>
+              <th>Limit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Target branch</td>
+              <td><code>main</code>, <code>master</code>, <code>production</code>, or <code>prod</code> only</td>
+            </tr>
+            <tr>
+              <td>Minimum change</td>
+              <td>Real code files — not docs, lockfiles, or README-only edits</td>
+            </tr>
+            <tr>
+              <td>Force-push</td>
+              <td>Never counted</td>
+            </tr>
+            <tr>
+              <td>Cooldown</td>
+              <td>30 minutes between counted pushes</td>
+            </tr>
+            <tr>
+              <td>Substantial fix bypass</td>
+              <td>
+                Pushes with ~50+ estimated lines of code can count inside the cooldown window
+                (e.g. fixing a broken deploy). Small tweaks still wait the full 30 minutes.
+              </td>
+            </tr>
+            <tr>
+              <td>Daily cap</td>
+              <td>Max 3 counted pushes per repo per calendar day</td>
+            </tr>
+            <tr>
+              <td>Duplicates</td>
+              <td>Same commit SHA is never counted twice</td>
+            </tr>
+          </tbody>
+        </table>
+        <p className="help-warning">
+          Do not abuse the system: splitting one feature into many tiny commits, editing markdown only,
+          or pushing repeatedly without meaningful code will not advance your lock. Ship real work on a
+          sensible cadence — that is what this measures.
         </p>
       </section>
 

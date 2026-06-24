@@ -8,15 +8,18 @@
  *  - Markdown-only, lock-file-only, and empty merge commits are rejected.
  *  - Force-pushes reset the daily cooldown but do NOT count as a milestone push.
  *  - Maximum MAX_PUSHES_PER_DAY counted pushes per calendar day per repo.
- *  - Minimum MIN_MINUTES_BETWEEN_PUSHES minutes between counted pushes.
+ *  - Minimum MIN_MINUTES_BETWEEN_PUSHES minutes between counted pushes (from last accepted push).
+ *  - Substantial changes (≥ COOLDOWN_BYPASS_MIN_LINES estimated lines) bypass the cooldown.
  */
 
 import { getRedis, KEYS } from "../lib/redis";
 
 const PRODUCTION_BRANCHES = new Set(["main", "master", "production", "prod"]);
 export const MIN_LINES_CHANGED = 3;
-const MAX_PUSHES_PER_DAY = 3;
-const MIN_MINUTES_BETWEEN_PUSHES = 30;
+export const MAX_PUSHES_PER_DAY = 3;
+export const MIN_MINUTES_BETWEEN_PUSHES = 30;
+/** Substantial code changes bypass the cooldown (e.g. fixing a broken deploy). */
+export const COOLDOWN_BYPASS_MIN_LINES = 50;
 
 /** Files that don't count as meaningful code changes. */
 const IGNORED_PATTERNS = [
@@ -52,7 +55,7 @@ export type PushPayload = {
 
 export type VerifyResult =
   | { accepted: true; reason: string; linesEstimate: number }
-  | { accepted: false; reason: string };
+  | { accepted: false; reason: string; linesEstimate?: number; codeFiles?: number };
 
 function branchFromRef(ref: string): string {
   return ref.replace("refs/heads/", "");
@@ -82,6 +85,19 @@ function estimateLines(commits: PushPayload["commits"]): number {
 
 function todayDateStr(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+/** Timestamp of the most recent accepted push in the log (ignores rejected attempts). */
+async function lastAcceptedPushTs(repoId: string): Promise<number | null> {
+  const redis = getRedis();
+  const entries = await redis.lrange(KEYS.pushLog(repoId), -30, -1);
+  for (let i = entries.length - 1; i >= 0; i--) {
+    try {
+      const entry = JSON.parse(entries[i]!) as { ts: number; accepted?: boolean };
+      if (entry.accepted !== false) return entry.ts;
+    } catch { /* skip malformed */ }
+  }
+  return null;
 }
 
 export async function verifyPush(
@@ -143,6 +159,8 @@ export async function verifyPush(
     return {
       accepted: false,
       reason: `Commit ${headSha.slice(0, 7)} already counted — duplicate push ignored`,
+      linesEstimate,
+      codeFiles: meaningfulFiles.length,
     };
   }
 
@@ -154,21 +172,30 @@ export async function verifyPush(
     return {
       accepted: false,
       reason: `Daily cap of ${MAX_PUSHES_PER_DAY} counted pushes already reached for ${dateStr}`,
+      linesEstimate,
+      codeFiles: meaningfulFiles.length,
     };
   }
 
-  // 7. Check minimum time between pushes.
+  // 7. Cooldown between counted pushes — bypassed for substantial code changes.
+  let cooldownBypassed = false;
   if (!options?.bypassCooldown) {
-    const logKey = KEYS.pushLog(repoId);
-    const lastRaw = await redis.lrange(logKey, -1, -1);
-    if (lastRaw.length > 0) {
-      const lastEntry = JSON.parse(lastRaw[0]!) as { ts: number };
-      const minutesSince = (Date.now() - lastEntry.ts) / 60_000;
+    const lastTs = await lastAcceptedPushTs(repoId);
+    if (lastTs !== null) {
+      const minutesSince = (Date.now() - lastTs) / 60_000;
       if (minutesSince < MIN_MINUTES_BETWEEN_PUSHES) {
-        return {
-          accepted: false,
-          reason: `Only ${minutesSince.toFixed(1)} min since last counted push (minimum ${MIN_MINUTES_BETWEEN_PUSHES} min)`,
-        };
+        if (linesEstimate >= COOLDOWN_BYPASS_MIN_LINES) {
+          cooldownBypassed = true;
+        } else {
+          return {
+            accepted: false,
+            reason:
+              `Only ${minutesSince.toFixed(1)} min since last counted push ` +
+              `(minimum ${MIN_MINUTES_BETWEEN_PUSHES} min, or ~${COOLDOWN_BYPASS_MIN_LINES}+ estimated lines for a substantial fix)`,
+            linesEstimate,
+            codeFiles: meaningfulFiles.length,
+          };
+        }
       }
     }
   }
@@ -177,7 +204,8 @@ export async function verifyPush(
     accepted: true,
     reason: isGitlawb
       ? `GitLawb push to ${branch} · commit ${headSha.slice(0, 7)} · ~${linesEstimate} lines (signed)`
-      : `${payload.commits.length} commit(s), ~${linesEstimate} lines in ${meaningfulFiles.length} code file(s) on ${branch}`,
+      : `${payload.commits.length} commit(s), ~${linesEstimate} lines in ${meaningfulFiles.length} code file(s) on ${branch}` +
+        (cooldownBypassed ? " · cooldown bypassed (substantial change)" : ""),
     linesEstimate,
   };
 }
@@ -221,7 +249,7 @@ export async function recordVerifiedPush(
 export async function recordRejectedPush(
   repoId: string,
   payload: PushPayload,
-  reason: string,
+  verifyResult: Extract<VerifyResult, { accepted: false }>,
 ): Promise<void> {
   const headSha = headCommitSha(payload) ?? "unknown";
   const logEntry = JSON.stringify({
@@ -229,9 +257,11 @@ export async function recordRejectedPush(
     sha: headSha,
     branch: branchFromRef(payload.ref),
     pusher: payload.pusher?.name ?? "unknown",
-    reason,
+    reason: verifyResult.reason,
     accepted: false,
     commitCount: payload.commits?.length ?? 0,
+    ...(verifyResult.linesEstimate != null ? { linesEstimate: verifyResult.linesEstimate } : {}),
+    ...(verifyResult.codeFiles != null ? { codeFiles: verifyResult.codeFiles } : {}),
   });
   const redis = getRedis();
   const logKey = KEYS.pushLog(repoId);

@@ -142,7 +142,8 @@ After deploy, update `skills/bankr-vesting/skill-manifest.json` with your public
 | Target branch | `main`, `master`, `production`, `prod` |
 | Min meaningful lines/push | 3 (estimated from code files) |
 | Max counted pushes/day | 3 |
-| Cooldown between pushes | 30 minutes |
+| Cooldown between pushes | 30 minutes (from last **counted** push) |
+| Substantial fix bypass | ~50+ estimated lines of code can count inside cooldown |
 | Force-push | Rejected (doesn't count) |
 | Lock-files / docs only | Rejected (doesn't count) |
 
