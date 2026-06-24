@@ -7,6 +7,7 @@ import { LockPage } from "./pages/LockPage";
 import { DevProfilePage } from "./pages/DevProfilePage";
 import { CreatePage } from "./pages/CreatePage";
 import { HelpPage } from "./pages/HelpPage";
+import { AgentsPage } from "./pages/AgentsPage";
 
 function LegacyDevRedirect() {
   const { username = "" } = useParams();
@@ -32,6 +33,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Route path="/dev/:username" element={<DevProfilePage />} />
         <Route path="/create" element={<CreatePage />} />
         <Route path="/help" element={<HelpPage />} />
+        <Route path="/agents" element={<AgentsPage />} />
 
         <Route path="/vesting/explore" element={<Navigate to="/" replace />} />
         <Route path="/vesting/setup" element={<Navigate to="/create" replace />} />
