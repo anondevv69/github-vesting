@@ -2,8 +2,15 @@
 
 Lock Bankr ERC-20 tokens (e.g. **Space**) on Base. Earn them back by shipping verified commits to a GitHub repo.
 
-**Site:** `{VESTING_SITE_URL}` (frontend wizard + dashboard)  
+**Site:** `{VESTING_SITE_URL}` (explore, lock pages, dev profiles, create flow)  
 **API:** `{VESTING_API_URL}` (agent + webhooks)
+
+| Page | Path |
+|------|------|
+| Explore (search) | `/` |
+| Lock status + token | `/lock/{owner}/{repo}` |
+| Dev profile | `/dev/{username}` |
+| Create lock | `/create` |
 
 Override via env: `VESTING_SITE_URL`, `VESTING_API_URL` (defaults in `skill-manifest.json` until you deploy).
 
@@ -67,12 +74,13 @@ See **`AGENT-API.md`** for response fields (`replyText`, `tweetReply`, `links`).
 
 ```text
 Start GitHub vesting — connect wallet + GitHub:
-{VESTING_SITE_URL}/vesting/setup
+{VESTING_SITE_URL}/create
 ```
 
-Steps: connect wallet → GitHub OAuth → repo + token + schedule → approve + lock on Base → install GitHub App → activate.
+Steps (3-step wizard): repo + token → schedule → review + lock on Base (GitHub OAuth + App install as needed).
 
-Dashboard: `{VESTING_SITE_URL}/vesting/dashboard`
+Explore / your locks: `{VESTING_SITE_URL}/`  
+Lock page: `{VESTING_SITE_URL}/lock/owner/repo`
 
 ---
 
@@ -80,7 +88,7 @@ Dashboard: `{VESTING_SITE_URL}/vesting/dashboard`
 
 - Paste **`tweetReply`** from API verbatim when present
 - Full `https://` URL on its **own line** at the end
-- Never omit the setup/status link
+- Never omit the setup/lock link
 
 ---
 

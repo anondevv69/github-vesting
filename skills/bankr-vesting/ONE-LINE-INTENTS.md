@@ -9,7 +9,7 @@ Linked Bankr wallet → header `x-wallet-address: 0x…` on every call.
 | **my vesting progress** | `GET {API}/api/agent/briefing?wallet=0x…` → paste `tweetReply` |
 | **how many pushes until release?** | briefing or `GET {API}/api/agent/status?repo=owner/repo` |
 | **list my github locks** | `GET {API}/api/agent/grants?wallet=0x…` |
-| **start github vesting** | `GET {API}/api/agent/setup-link?wallet=0x…` → paste setup URL |
+| **start github vesting** | `GET {API}/api/agent/setup-link?wallet=0x…` → paste `{VESTING_SITE_URL}/create` |
 | **start gitlawb vesting** | setup-link + note wizard supports GitLawb (DID repos on [gitlawb.com](https://gitlawb.com/start)) |
 | **vest Space on my repo** | setup-link + explain wizard (approve/lock via web) |
 | **vesting on anondevv69/github-vesting** | `GET {API}/api/agent/status?repo=anondevv69/github-vesting` |
@@ -19,7 +19,7 @@ Linked Bankr wallet → header `x-wallet-address: 0x…` on every call.
 
 - "I can't lock tokens for you" **without** loading this skill and returning the setup link
 - Empty reply when briefing returns `tweetReply`
-- Paraphrasing stats **without** the status/setup URL on its own line
+- Paraphrasing stats **without** the lock/create URL on its own line
 
 ## Example curl
 
