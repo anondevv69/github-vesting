@@ -60,30 +60,39 @@ export async function handleBankrFeeTokens(req: Request, res: Response): Promise
   }
 }
 
-type BankrTokenFeesResponse = {
-  address: string;
-  chain: string;
-  tokens: Array<{
+type BankrLaunchResponse = {
+  launch?: {
     tokenAddress: string;
-    name?: string;
-    symbol?: string;
-    share?: string;
-    initializer?: string;
-    poolId?: string;
-  }>;
+    tokenName?: string;
+    tokenSymbol?: string;
+    imageUri?: string;
+    feeRecipient?: {
+      walletAddress?: string;
+      xUsername?: string;
+      xProfileImageUrl?: string;
+    };
+    deployer?: {
+      walletAddress?: string;
+      xUsername?: string;
+      xProfileImageUrl?: string;
+    };
+  };
+};
+
+export type BankrFeeRecipient = {
+  wallet: string;
+  xUsername?: string;
+  xProfileImageUrl?: string;
 };
 
 export type BankrTokenInfo = {
   tokenAddress: string;
   name: string;
   symbol: string;
-  feeBeneficiary: string;
-  feeShare: string;
-  initializer?: string;
-  poolId?: string;
-  chain: string;
-  bankrUrl: string;
-  source: "bankr.doppler";
+  imageUri?: string;
+  feeRecipient: BankrFeeRecipient;
+  launchUrl: string;
+  source: "bankr.launch";
 };
 
 export async function fetchBankrTokenInfo(tokenAddress: string): Promise<BankrTokenInfo | null> {
@@ -91,24 +100,29 @@ export async function fetchBankrTokenInfo(tokenAddress: string): Promise<BankrTo
   if (!/^0x[a-f0-9]{40}$/.test(token)) return null;
 
   try {
-    const upstream = await fetch(`${BANKR_API}/public/doppler/token-fees/${token}`);
+    const upstream = await fetch(`${BANKR_API}/token-launches/${token}`);
     if (!upstream.ok) return null;
 
-    const data = (await upstream.json()) as BankrTokenFeesResponse;
-    const match = (data.tokens ?? []).find((t) => t.tokenAddress.toLowerCase() === token);
-    if (!match) return null;
+    const data = (await upstream.json()) as BankrLaunchResponse;
+    const launch = data.launch;
+    if (!launch?.tokenAddress) return null;
+
+    const recipient = launch.feeRecipient ?? launch.deployer;
+    const wallet = recipient?.walletAddress?.toLowerCase();
+    if (!wallet || !/^0x[a-f0-9]{40}$/.test(wallet)) return null;
 
     return {
-      tokenAddress: match.tokenAddress,
-      name: match.name ?? "",
-      symbol: match.symbol ?? "",
-      feeBeneficiary: data.address,
-      feeShare: match.share ?? "",
-      initializer: match.initializer,
-      poolId: match.poolId,
-      chain: data.chain ?? "base",
-      bankrUrl: `https://www.bankr.space/community/${match.tokenAddress}`,
-      source: "bankr.doppler",
+      tokenAddress: launch.tokenAddress,
+      name: launch.tokenName ?? "",
+      symbol: launch.tokenSymbol ?? "",
+      imageUri: launch.imageUri,
+      feeRecipient: {
+        wallet,
+        xUsername: recipient?.xUsername?.replace(/^@/, ""),
+        xProfileImageUrl: recipient?.xProfileImageUrl,
+      },
+      launchUrl: `https://bankr.bot/launches/${launch.tokenAddress}`,
+      source: "bankr.launch",
     };
   } catch {
     return null;
