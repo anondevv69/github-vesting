@@ -42,7 +42,8 @@ if message mentions github vesting / lock tokens / vesting progress / verified p
 ### Bankr-specific rules
 
 - Paste **`tweetReply`** from the API verbatim in X replies
-- Writes (approve + lock) require the web wizard: `{SITE}/create`
+- **Lock via chat:** `POST /api/agent/lock` → Bankr `agent/submit` on Base → `POST /api/agent/confirm-lock`
+- Web fallback for locks: `{SITE}/create`
 - Status links: `{SITE}/lock/{owner}/{repo}`
 - Space token → streaming lock path (allowance, not escrow)
 
@@ -80,7 +81,10 @@ Optional: `x-client: agent`
 | `/api/agent/briefing` | `?wallet=0x…` | Summary of all locks for a wallet |
 | `/api/agent/grants` | `?wallet=0x…` | Detailed grant list |
 | `/api/agent/status` | `?repo=owner/repo` | Single repo progress |
-| `/api/agent/setup-link` | `?wallet=0x…` | URL to start a new lock |
+| GET | `/api/agent/setup-link` | `?wallet=0x…` | URL to start a new lock (web) |
+| GET | `/api/agent/fee-tokens` | `x-wallet-address` | Bankr tokens wallet can vest |
+| POST | `/api/agent/lock` | body + wallet header | Prepare approve+lock txs + instructions |
+| POST | `/api/agent/confirm-lock` | `repo`, `lockTxHash` | Register grant after on-chain lock |
 
 ### Example
 
@@ -105,9 +109,16 @@ curl -H "x-wallet-address: 0x…" \
 | Lock status | `/lock/{owner}/{repo}` |
 | Dev profile | `/dev/{username}` |
 
-### Writes
+### Writes (lock via agent)
 
-On-chain lock creation cannot be done via API alone. Reply with the setup link from `/api/agent/setup-link`:
+Bankr agents with wallet signing:
+
+1. `POST /api/agent/lock` with `repo`, `token`, `amount`, `totalPushes`
+2. Submit `transactions[]` via `https://api.bankr.bot/agent/submit` on Base
+3. `POST /api/agent/confirm-lock` with `lockTxHash`
+4. Reply with `tweetReply` from confirm-lock
+
+Web fallback (no wallet signing):
 
 ```
 Start GitHub vesting:
