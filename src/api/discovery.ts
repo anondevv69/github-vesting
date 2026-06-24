@@ -6,6 +6,7 @@ import type { Request, Response } from "express";
 import { listAllGrants, getGrantByRepoFullName, getRedis, KEYS, type GrantRecord } from "../lib/redis";
 import { buildProgress, formatTokenAmount } from "../lib/grantsHelper";
 import { splitRepo } from "../lib/repoId";
+import { parseWei } from "../lib/wei";
 import { getDevProfile } from "./devProfile";
 import { fetchBankrTokenInfo } from "./bankr";
 import { getRepoClaim } from "../lib/repoClaims";
@@ -77,7 +78,7 @@ export async function handleSearch(req: Request, res: Response): Promise<void> {
     if (!seenTokens.has(token) && (token.includes(q) || q.length >= 4 && token.startsWith(q))) {
       seenTokens.add(token);
       const tokenGrants = grants.filter((x) => x.token.toLowerCase() === token);
-      const totalLocked = tokenGrants.reduce((s, x) => s + BigInt(x.totalLocked), 0n);
+      const totalLocked = tokenGrants.reduce((s, x) => s + parseWei(x.totalLocked), 0n);
       results.push({
         type: "token",
         id: g.token,
@@ -207,17 +208,18 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
   const progress = buildProgress(grant);
   const [githubOwner] = splitRepo(grant.repoFullName, grant.platform ?? "github");
 
-  const releasedWei = BigInt(grant.tokensPerMilestone) * BigInt(grant.lastPaidMilestone);
-  const remainingWei = BigInt(grant.totalLocked) - releasedWei;
+  const releasedWei = parseWei(grant.tokensPerMilestone) * BigInt(grant.lastPaidMilestone);
+  const remainingWei = parseWei(grant.totalLocked) - releasedWei;
 
   const allGrants = dedupeGrants(await listAllGrants());
   const sameToken = allGrants.filter((g) => g.token.toLowerCase() === grant.token.toLowerCase());
-  const totalTokenLocked = sameToken.reduce((s, g) => s + BigInt(g.totalLocked), 0n);
+  const totalTokenLocked = sameToken.reduce((s, g) => s + parseWei(g.totalLocked), 0n);
 
   const tokenHolders = sameToken.map((g) => {
     const [dev] = splitRepo(g.repoFullName, g.platform ?? "github");
+    const amountWei = parseWei(g.totalLocked);
     const pct = totalTokenLocked > 0n
-      ? Number((BigInt(g.totalLocked) * 10000n) / totalTokenLocked) / 100
+      ? Number((amountWei * 10000n) / totalTokenLocked) / 100
       : 0;
     return {
       wallet: g.recipient,
@@ -229,7 +231,7 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
       href: lockPath(g.repoFullName),
       devHref: `/dev/${dev}`,
     };
-  }).sort((a, b) => Number(BigInt(b.amount) - BigInt(a.amount)));
+  }).sort((a, b) => Number(parseWei(b.amount) - parseWei(a.amount)));
 
   const bankr = await fetchBankrTokenInfo(grant.token);
   const repoClaim = await getRepoClaim(repoFullName);

@@ -10,13 +10,14 @@
  *   6. Confirm GitHub App installation
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { VestingNav } from "../components/VestingNav";
 import { VestingFooter } from "../components/VestingFooter";
 import { VestingPathChart } from "../components/VestingPathChart";
 import { CopyButton } from "../components/CopyButton";
 import { useVestingAuth } from "../hooks/useVestingAuth";
+import { normalizeRepoFullName, splitRepo } from "../lib/repoId";
 import {
   createPublicClient,
   createWalletClient,
@@ -161,23 +162,48 @@ type FormState = {
   chain: "base" | "base-sepolia";
 };
 
+type SavedWizard = {
+  step: Step;
+  form: FormState;
+  scheduleMode: "single" | "recurring";
+};
+
+const WIZARD_STORAGE_KEY = "proofofdev-create-wizard";
+
+function loadSavedWizard(): SavedWizard | null {
+  try {
+    const raw = sessionStorage.getItem(WIZARD_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as SavedWizard;
+    if (parsed.step < 1 || parsed.step > 3 || !parsed.form) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 export function CreatePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { wallet: authWallet, githubUser, connectWallet: authConnectWallet, connectGitHub } = useVestingAuth();
-  const [step, setStep] = useState<Step>(1);
+  const repoFromUrl = searchParams.get("repo")?.trim() ?? "";
+  const savedWizard = loadSavedWizard();
+  const [step, setStep] = useState<Step>(savedWizard?.step ?? 1);
   const [wallet, setWallet] = useState<Address | null>(null);
-  const [form, setForm] = useState<FormState>({
-    platform: "github",
-    repoFullName: "",
-    tokenAddress: import.meta.env.VITE_MOCK_TOKEN_ADDRESS ?? "",
-    tokenSymbol: "",
-    tokenDecimals: 18,
-    tokenBalance: "0",
-    lockAmount: "",
-    totalPushes: 10,
-    pushesPerMilestone: 10,
-    chain: IS_TESTNET ? "base-sepolia" : "base",
+  const [form, setForm] = useState<FormState>(() => {
+    if (savedWizard?.form) return savedWizard.form;
+    return {
+      platform: "github",
+      repoFullName: repoFromUrl.includes("/") ? repoFromUrl : "",
+      tokenAddress: import.meta.env.VITE_MOCK_TOKEN_ADDRESS ?? "",
+      tokenSymbol: "",
+      tokenDecimals: 18,
+      tokenBalance: "0",
+      lockAmount: "",
+      totalPushes: 10,
+      pushesPerMilestone: 10,
+      chain: IS_TESTNET ? "base-sepolia" : "base",
+    };
   });
   const [bankrTokens, setBankrTokens] = useState<BankrFeeToken[]>([]);
   const [bankrTokensLoading, setBankrTokensLoading] = useState(false);
@@ -196,7 +222,9 @@ export function CreatePage() {
   const [chainNonce, setChainNonce] = useState<number | null>(null);
   const [gitlawbSetup, setGitlawbSetup] = useState<{ webhookUrl: string; webhookCommand: string } | null>(null);
   const [gitlawbWebhookReady, setGitlawbWebhookReady] = useState(false);
-  const [scheduleMode, setScheduleMode] = useState<"single" | "recurring">("single");
+  const [scheduleMode, setScheduleMode] = useState<"single" | "recurring">(
+    savedWizard?.scheduleMode ?? "single",
+  );
   const [repoValidation, setRepoValidation] = useState<"idle" | "checking" | "ok" | "err">("idle");
   const [repoValidationMsg, setRepoValidationMsg] = useState("");
   const [repoClaimStatus, setRepoClaimStatus] = useState<"none" | "pending" | "verified">("none");
@@ -205,11 +233,42 @@ export function CreatePage() {
   const [repoClaimFileJson, setRepoClaimFileJson] = useState<string | null>(null);
   const [repoClaimMessage, setRepoClaimMessage] = useState<string | null>(null);
   const [myRepos, setMyRepos] = useState<string[]>([]);
+  const didAutoValidateRepo = useRef(false);
 
   // Sync wallet from nav auth hook
   useEffect(() => {
     if (authWallet) setWallet(authWallet);
   }, [authWallet]);
+
+  // Persist wizard progress so refresh / timeout does not reset the form
+  useEffect(() => {
+    const payload: SavedWizard = { step, form, scheduleMode };
+    sessionStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(payload));
+  }, [step, form, scheduleMode]);
+
+  // Prefill repo from URL when arriving from verified-claim link
+  useEffect(() => {
+    if (!repoFromUrl.includes("/")) return;
+    setForm((f) => (f.repoFullName ? f : { ...f, repoFullName: repoFromUrl }));
+  }, [repoFromUrl]);
+
+  // Validate repo + claim status once when prefilled from URL or restored session
+  useEffect(() => {
+    if (didAutoValidateRepo.current) return;
+    const repo = form.repoFullName.trim();
+    if (!repo.includes("/")) return;
+    didAutoValidateRepo.current = true;
+    void validateRepoOnBlur();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional one-shot on prefilled repo
+  }, [form.repoFullName]);
+
+  // Refresh claim badge when wallet connects
+  useEffect(() => {
+    const repo = form.repoFullName.trim();
+    if (!wallet || !repo.includes("/")) return;
+    void pollRepoClaimStatus(repo);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- poll when wallet/repo available
+  }, [wallet, form.repoFullName]);
 
   // Load private + public repos when GitHub session is active
   useEffect(() => {
@@ -434,7 +493,10 @@ export function CreatePage() {
   }
 
   async function validateRepoOnBlur() {
-    const repo = form.repoFullName.trim();
+    const repo = normalizeRepoFullName(form.repoFullName);
+    if (repo !== form.repoFullName.trim()) {
+      setForm((f) => ({ ...f, repoFullName: repo }));
+    }
     if (!repo.includes("/")) {
       setRepoValidation("err");
       setRepoValidationMsg("Use owner/repo format");
@@ -535,9 +597,10 @@ export function CreatePage() {
     const amount = parseUnits(form.lockAmount, form.tokenDecimals);
     const tokenAddr = form.tokenAddress as Address;
     const lockFn = isBankrToken ? "lockAllowance" : "lock";
+    const normalizedRepo = normalizeRepoFullName(form.repoFullName);
     const repoIdSeed = form.platform === "gitlawb"
-      ? `gitlawb:${form.repoFullName.trim()}`
-      : form.repoFullName.trim();
+      ? `gitlawb:${normalizedRepo}`
+      : normalizedRepo;
     const repoIdBytes32 = keccak256(toBytes(repoIdSeed));
     const lockArgs = [
       repoIdBytes32,
@@ -703,16 +766,18 @@ export function CreatePage() {
       const lockAmountWei = parseUnits(form.lockAmount, form.tokenDecimals);
       const tokensPerMilestone = (lockAmountWei / BigInt(milestones)).toString();
 
+      const normalizedRepo = normalizeRepoFullName(form.repoFullName);
+
       const res = await fetch(`${API_BASE}/api/vesting/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          repoFullName: form.repoFullName,
+          repoFullName: normalizedRepo,
           platform: "github",
           recipient: wallet,
           token: form.tokenAddress,
           chain: form.chain,
-          totalLocked: (parseFloat(form.lockAmount) * 10 ** form.tokenDecimals).toString(),
+          totalLocked: lockAmountWei.toString(),
           totalPushesRequired: form.totalPushes,
           pushesPerMilestone: form.pushesPerMilestone,
           tokensPerMilestone,
@@ -725,7 +790,8 @@ export function CreatePage() {
       if (!data.ok && res.status !== 409) {
         throw new Error(data.error ?? "Registration failed");
       }
-      const [owner, name] = form.repoFullName.split("/");
+      sessionStorage.removeItem(WIZARD_STORAGE_KEY);
+      const [owner, name] = splitRepo(normalizedRepo);
       navigate(`/lock/${owner}/${name}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Registration failed");

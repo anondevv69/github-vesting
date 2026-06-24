@@ -593,7 +593,7 @@ export function VestingSetupPage() {
           recipient: wallet,
           token: form.tokenAddress,
           chain: form.chain,
-          totalLocked: (parseFloat(form.lockAmount) * 10 ** form.tokenDecimals).toString(),
+          totalLocked: parseUnits(form.lockAmount, form.tokenDecimals).toString(),
           totalPushesRequired: form.totalPushes,
           pushesPerMilestone: form.pushesPerMilestone,
           tokensPerMilestone,

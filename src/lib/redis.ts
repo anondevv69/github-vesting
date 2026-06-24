@@ -1,5 +1,6 @@
 import Redis from "ioredis";
 import { env } from "./env";
+import { normalizeWeiString } from "./wei";
 
 let _redis: Redis | null = null;
 
@@ -77,9 +78,15 @@ export type RepoClaimRecord = {
 export async function saveGrant(grant: GrantRecord): Promise<void> {
   const redis = getRedis();
   const platform = grant.platform ?? "github";
-  await redis.set(KEYS.grant(grant.repoId), JSON.stringify({ ...grant, platform }));
-  await redis.sadd(KEYS.allGrants(), grant.repoId);
-  await redis.set(KEYS.repoByName(platform, grant.repoFullName), grant.repoId);
+  const normalized: GrantRecord = {
+    ...grant,
+    platform,
+    totalLocked: normalizeWeiString(grant.totalLocked),
+    tokensPerMilestone: normalizeWeiString(grant.tokensPerMilestone),
+  };
+  await redis.set(KEYS.grant(normalized.repoId), JSON.stringify(normalized));
+  await redis.sadd(KEYS.allGrants(), normalized.repoId);
+  await redis.set(KEYS.repoByName(platform, normalized.repoFullName), normalized.repoId);
 }
 
 export async function getGrantByRepoFullName(
@@ -111,6 +118,8 @@ export async function getGrant(repoId: string): Promise<GrantRecord | null> {
   if (!raw) return null;
   const grant = JSON.parse(raw) as GrantRecord;
   if (!grant.platform) grant.platform = "github";
+  grant.totalLocked = normalizeWeiString(grant.totalLocked);
+  grant.tokensPerMilestone = normalizeWeiString(grant.tokensPerMilestone);
   return grant;
 }
 

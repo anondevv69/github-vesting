@@ -5,6 +5,8 @@
  */
 
 import type { Request, Response } from "express";
+import { createPublicClient, http, parseAbi, parseEventLogs, type Hash } from "viem";
+import { base, baseSepolia } from "viem/chains";
 import { saveGrant, getGrant, type GrantRecord } from "../lib/redis";
 import { validateRepoAccess, resolveInstallationForRepo } from "../github/githubApp";
 import { getRedis, KEYS } from "../lib/redis";
@@ -15,6 +17,30 @@ import {
   type RepoPlatform,
 } from "../lib/repoId";
 import { verifyGitlawbRepoExists, fetchGitlawbRepo } from "../gitlawb/client";
+import { env } from "../lib/env";
+
+const ESCROW_ABI = parseAbi([
+  "event Locked(bytes32 indexed repoId, address indexed recipient, address indexed token, uint256 amount, uint256 totalPushesRequired, uint256 releasesPerMilestone, uint256 tokensPerMilestone)",
+]);
+
+async function repoIdFromLockTx(
+  txHash: string,
+  chain: "base" | "base-sepolia",
+): Promise<string | null> {
+  if (!env.GIT_ESCROW_ADDRESS) return null;
+  try {
+    const viemChain = chain === "base" ? base : baseSepolia;
+    const rpc = chain === "base" ? env.BASE_RPC_URL : env.BASE_SEPOLIA_RPC_URL;
+    const client = createPublicClient({ chain: viemChain, transport: http(rpc) });
+    const receipt = await client.getTransactionReceipt({ hash: txHash as Hash });
+    const logs = parseEventLogs({ abi: ESCROW_ABI, logs: receipt.logs, eventName: "Locked" });
+    const repoId = logs[0]?.args?.repoId;
+    return repoId ? repoId.slice(2) : null;
+  } catch (err) {
+    console.warn("[register] Could not read Locked event from tx:", err);
+    return null;
+  }
+}
 
 export async function handleRegister(req: Request, res: Response): Promise<void> {
   const body = req.body as Partial<
@@ -58,7 +84,8 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
   }
 
   const normalizedRepo = normalizeRepo(repoFullName, platform);
-  const repoId = repoIdFromPlatform(platform, repoFullName);
+  const onChainRepoId = await repoIdFromLockTx(onChainTxHash, chain as "base" | "base-sepolia");
+  const repoId = onChainRepoId ?? repoIdFromPlatform(platform, repoFullName);
   const existing = await getGrant(repoId);
   if (existing && existing.status === "active") {
     res.status(409).json({ ok: false, error: "Active vesting grant already exists for this repo" });

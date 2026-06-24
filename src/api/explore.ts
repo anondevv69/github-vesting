@@ -78,36 +78,45 @@ export async function handleByDev(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const grants = dedupeGrants(await listAllGrants()).filter((g) => {
-    const [owner] = splitRepo(g.repoFullName, g.platform ?? "github");
-    return owner.toLowerCase() === login;
-  });
+  try {
+    const grants = dedupeGrants(await listAllGrants()).filter((g) => {
+      try {
+        const [owner] = splitRepo(g.repoFullName, g.platform ?? "github");
+        return owner.toLowerCase() === login;
+      } catch {
+        return false;
+      }
+    });
 
-  const redis = getRedis();
-  const reviewsRaw = await redis.lrange(KEYS.devReviews(login), 0, -1);
-  const reviews = reviewsRaw
-    .map((r) => { try { return JSON.parse(r) as DevReview; } catch { return null; } })
-    .filter((r): r is DevReview => r !== null)
-    .reverse();
+    const redis = getRedis();
+    const reviewsRaw = await redis.lrange(KEYS.devReviews(login), 0, -1);
+    const reviews = reviewsRaw
+      .map((r) => { try { return JSON.parse(r) as DevReview; } catch { return null; } })
+      .filter((r): r is DevReview => r !== null)
+      .reverse();
 
-  const avgRating = reviews.length
-    ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
-    : null;
+    const avgRating = reviews.length
+      ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+      : null;
 
-  const reputation = await computeDevReputation(grants, reviews);
+    const reputation = await computeDevReputation(grants, reviews);
 
-  res.json({
-    ok: true,
-    githubLogin: login,
-    grantCount: grants.length,
-    grants: grants.map(grantSummary),
-    reviews,
-    avgRating,
-    reputation,
-    communityUrl: grants[0]?.token
-      ? `https://www.bankr.space/community/${grants[0].token}`
-      : null,
-  });
+    res.json({
+      ok: true,
+      githubLogin: login,
+      grantCount: grants.length,
+      grants: grants.map(grantSummary),
+      reviews,
+      avgRating,
+      reputation,
+      communityUrl: grants[0]?.token
+        ? `https://www.bankr.space/community/${grants[0].token}`
+        : null,
+    });
+  } catch (err) {
+    console.error("[by-dev]", login, err);
+    res.status(500).json({ ok: false, error: "Failed to load dev profile" });
+  }
 }
 
 export async function handlePostDevReview(req: Request, res: Response): Promise<void> {

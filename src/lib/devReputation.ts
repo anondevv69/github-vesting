@@ -4,6 +4,7 @@
 
 import { getRedis, KEYS, type GrantRecord } from "./redis";
 import { formatTokenAmount } from "./grantsHelper";
+import { parseWei } from "./wei";
 import type { DevReview } from "../api/explore";
 
 export type DevBadge = {
@@ -188,7 +189,7 @@ export async function computeDevReputation(
   reviews: DevReview[],
 ): Promise<DevReputation> {
   const totalVerifiedPushes = grants.reduce((s, g) => s + g.verifiedPushCount, 0);
-  const totalLockedWei = grants.reduce((s, g) => s + BigInt(g.totalLocked), 0n);
+  const totalLockedWei = grants.reduce((s, g) => s + parseWei(g.totalLocked), 0n);
   const activeLocks = grants.filter((g) => g.status === "active").length;
   const completedLocks = grants.filter((g) => g.status === "complete").length;
   const milestonesPaid = grants.reduce((s, g) => s + g.lastPaidMilestone, 0);
