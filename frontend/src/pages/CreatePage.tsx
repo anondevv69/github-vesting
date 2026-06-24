@@ -450,14 +450,21 @@ export function CreatePage() {
     setRepoValidationMsg("");
     try {
       const res = await fetch(`${API_BASE}/api/github/repo?repo=${encodeURIComponent(repo)}`);
-      const d = await res.json() as { ok: boolean; repo?: string; error?: string };
+      const d = await res.json() as {
+        ok: boolean;
+        repo?: string;
+        error?: string;
+        hint?: string;
+        suggestions?: string[];
+      };
       if (d.ok) {
         setRepoValidation("ok");
         setRepoValidationMsg(`✓ ${d.repo ?? repo} found on GitHub`);
         void pollRepoClaimStatus(repo);
       } else {
         setRepoValidation("err");
-        setRepoValidationMsg(d.error ?? "Repository not found");
+        const sug = d.suggestions?.length ? ` ${d.hint ?? ""}` : (d.hint ?? "");
+        setRepoValidationMsg((d.error ?? "Repository not found") + sug);
       }
     } catch {
       setRepoValidation("err");
@@ -800,6 +807,9 @@ export function CreatePage() {
               <h3>Verify repo ownership</h3>
               <p className="muted">
                 Bond your wallet to this repo by pushing a signed claim file. Optional before locking — agents can push it for you.
+                {repoValidation === "err" && (
+                  <span className="field-hint err"> Create the repo on GitHub first, then push the claim file.</span>
+                )}
               </p>
               {repoClaimStatus === "verified" ? (
                 <p className="field-hint ok">

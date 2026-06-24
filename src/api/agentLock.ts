@@ -21,7 +21,7 @@ import { env } from "../lib/env";
 import { isValidWallet, formatTokenAmount } from "../lib/grantsHelper";
 import { prepareLockTransactions } from "../lib/lockBuilder";
 import { handleRegister } from "./register";
-import { resolveInstallationForRepo, validateRepoAccess } from "../github/githubApp";
+import { resolveInstallationForRepo, validateRepoAccess, getRepoInfo } from "../github/githubApp";
 import { normalizeRepoFullName, splitRepo } from "../lib/repoId";
 import { getRepoClaim } from "../lib/repoClaims";
 import { Octokit } from "@octokit/rest";
@@ -61,15 +61,47 @@ function githubAppInstallUrl(): string {
   return `https://github.com/apps/${GITHUB_APP_SLUG}/installations/new`;
 }
 
-async function validateGithubRepo(repoFullName: string): Promise<{ ok: boolean; error?: string }> {
+async function validateGithubRepo(repoFullName: string): Promise<{
+  ok: boolean;
+  error?: string;
+  hint?: string;
+  suggestions?: string[];
+}> {
   const normalized = normalizeRepoFullName(repoFullName);
   const [owner, repo] = splitRepo(normalized, "github");
+  const installId = await resolveInstallationForRepo(owner, repo);
+  if (installId) {
+    try {
+      await getRepoInfo(installId, owner, repo);
+      return { ok: true };
+    } catch {
+      /* fall through */
+    }
+  }
   try {
     const octokit = new Octokit();
     await octokit.repos.get({ owner, repo });
     return { ok: true };
   } catch {
-    return { ok: false, error: `Repository ${normalized} not found on GitHub` };
+    const octokit = new Octokit();
+    let suggestions: string[] = [];
+    try {
+      const { data } = await octokit.repos.listForUser({ username: owner, per_page: 100 });
+      const needle = repo.toLowerCase().replace(/[^a-z0-9]/g, "");
+      suggestions = data
+        .map((r) => r.full_name)
+        .filter((n): n is string => Boolean(n))
+        .filter((full) => {
+          const short = full.split("/")[1]!.toLowerCase();
+          return short.includes(needle) || needle.includes(short.slice(0, 6));
+        })
+        .slice(0, 5);
+    } catch { /* ignore */ }
+    const hint =
+      suggestions.length > 0
+        ? `Did you mean: ${suggestions.join(", ")}?`
+        : "Create the repo on GitHub first, or check spelling.";
+    return { ok: false, error: `Repository ${normalized} not found on GitHub`, hint, suggestions };
   }
 }
 
@@ -255,7 +287,12 @@ export async function handleAgentPrepareLock(req: Request, res: Response): Promi
 
   const repoCheck = await validateGithubRepo(normalizedRepo);
   if (!repoCheck.ok) {
-    res.status(404).json({ ok: false, error: repoCheck.error });
+    res.status(404).json({
+      ok: false,
+      error: repoCheck.error,
+      hint: repoCheck.hint,
+      suggestions: repoCheck.suggestions,
+    });
     return;
   }
 
