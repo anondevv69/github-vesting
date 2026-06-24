@@ -30,6 +30,11 @@ import {
 } from "./api/explore";
 import { handleSearch, handleRecentPushes, handleLockDetail } from "./api/discovery";
 import { handleGetDevProfile, handlePatchDevProfile } from "./api/devProfile";
+import {
+  handleListLinkedWallets,
+  handleWalletLinkChallenge,
+  handleWalletLinkConfirm,
+} from "./api/devWallets";
 import { handleGrantsByRecipient } from "./api/grants";
 import { handleDevSimulatePush } from "./api/devSimulate";
 import { handleOAuthRedirect, handleOAuthCallback } from "./api/oauth";
@@ -164,6 +169,9 @@ app.get("/api/vesting/by-dev/:login", (req, res) => void handleByDev(req, res));
 app.get("/api/vesting/by-dev", (req, res) => void handleByDev(req, res));
 app.get("/api/vesting/dev-profile/:login", (req, res) => void handleGetDevProfile(req, res));
 app.patch("/api/vesting/dev-profile/:login", (req, res) => void handlePatchDevProfile(req, res));
+app.get("/api/dev/link-wallet/:login", (req, res) => void handleListLinkedWallets(req, res));
+app.post("/api/dev/link-wallet/challenge", (req, res) => void handleWalletLinkChallenge(req, res));
+app.post("/api/dev/link-wallet/confirm", (req, res) => void handleWalletLinkConfirm(req, res));
 app.post("/api/vesting/by-dev/:login/reviews", (req, res) => void handlePostDevReview(req, res));
 app.get("/api/vesting/leaderboard", (req, res) => void handleLeaderboard(req, res));
 

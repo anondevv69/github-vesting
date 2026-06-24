@@ -6,6 +6,8 @@ import type { Request, Response } from "express";
 import { listAllGrants, getRedis, KEYS } from "../lib/redis";
 import { isValidWallet } from "../lib/grantsHelper";
 import { splitRepo } from "../lib/repoId";
+import { listLinkedWallets, isWalletLinked } from "../lib/devWallets";
+import { getGithubSession } from "../lib/githubSession";
 
 export type DevProfileLink = { label: string; url: string };
 
@@ -34,6 +36,7 @@ export async function getDevProfile(login: string): Promise<DevProfile | null> {
 }
 
 async function canEditProfile(login: string, wallet: string): Promise<boolean> {
+  if (await isWalletLinked(login, wallet)) return true;
   const grants = (await listAllGrants()).filter((g) => {
     const [owner] = splitRepo(g.repoFullName, g.platform ?? "github");
     return owner.toLowerCase() === login.toLowerCase();
@@ -50,11 +53,24 @@ export async function handleGetDevProfile(req: Request, res: Response): Promise<
 
   const profile = (await getDevProfile(login)) ?? { githubLogin: login };
   const wallet = String(req.query["wallet"] ?? req.headers["x-wallet-address"] ?? "").trim().toLowerCase();
+  const session = await getGithubSession(req);
+  const linkedWallets = await listLinkedWallets(login);
+  const isSelf = session?.login.toLowerCase() === login;
   const editable = wallet && isValidWallet(wallet)
     ? await canEditProfile(login, wallet)
     : false;
+  const walletLinked = wallet && isValidWallet(wallet)
+    ? linkedWallets.some((w) => w.wallet === wallet)
+    : false;
 
-  res.json({ ok: true, profile: { ...profile, githubLogin: login }, editable });
+  res.json({
+    ok: true,
+    profile: { ...profile, githubLogin: login },
+    editable,
+    linkedWallets,
+    canLinkWallet: isSelf,
+    walletLinked,
+  });
 }
 
 export async function handlePatchDevProfile(req: Request, res: Response): Promise<void> {

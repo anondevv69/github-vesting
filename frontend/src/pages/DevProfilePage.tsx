@@ -8,6 +8,7 @@ import { shortAddr } from "../lib/format";
 import { useVestingAuth } from "../hooks/useVestingAuth";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+const API_FETCH: RequestInit = { credentials: "include" };
 
 type GrantSummary = {
   repoFullName: string;
@@ -44,6 +45,26 @@ type ReputationStats = {
   firstLockAt: string | null;
 };
 
+type LinkedWallet = {
+  wallet: string;
+  linkedAt: string;
+  source: "signed" | "repo-claim" | "lock";
+};
+
+type FeeRecipientToken = {
+  symbol: string;
+  name: string;
+  address: string;
+  bankrHandle?: string;
+};
+
+type FeeRecipientEntry = {
+  wallet: string;
+  source: LinkedWallet["source"];
+  linkedAt: string;
+  tokens: FeeRecipientToken[];
+};
+
 import { lockPathFromRepo } from "../lib/repoId";
 
 function lockPath(repoFullName: string): string {
@@ -60,7 +81,7 @@ export function DevProfilePage() {
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const { wallet, connectWallet } = useVestingAuth();
+  const { wallet, githubUser, connectWallet, connectGitHub } = useVestingAuth();
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [rating, setRating] = useState(5);
@@ -68,6 +89,12 @@ export function DevProfilePage() {
   const [submitting, setSubmitting] = useState(false);
   const [draft, setDraft] = useState<DevProfile>({ githubLogin: username });
   const [saving, setSaving] = useState(false);
+  const [linkedWallets, setLinkedWallets] = useState<LinkedWallet[]>([]);
+  const [feeRecipientEntries, setFeeRecipientEntries] = useState<FeeRecipientEntry[]>([]);
+  const [canLinkWallet, setCanLinkWallet] = useState(false);
+  const [walletLinked, setWalletLinked] = useState(false);
+  const [linkBusy, setLinkBusy] = useState(false);
+  const [linkMessage, setLinkMessage] = useState<string | null>(null);
 
   const load = useCallback(() => {
     if (!username) return;
@@ -76,7 +103,7 @@ export function DevProfilePage() {
     const walletQ = wallet ? `wallet=${wallet}` : "";
     Promise.all([
       fetch(`${API_BASE}/api/vesting/by-dev/${username}`),
-      fetch(`${API_BASE}/api/vesting/dev-profile/${username}?${walletQ}`),
+      fetch(`${API_BASE}/api/vesting/dev-profile/${username}?${walletQ}`, API_FETCH),
     ])
       .then(async ([devRes, profRes]) => {
         if (!devRes.ok) {
@@ -92,7 +119,13 @@ export function DevProfilePage() {
         };
         if (dev.ok === false) throw new Error(dev.error ?? "Failed to load locks");
         const prof = profRes.ok
-          ? await profRes.json() as { profile?: DevProfile; editable?: boolean }
+          ? await profRes.json() as {
+              profile?: DevProfile;
+              editable?: boolean;
+              linkedWallets?: LinkedWallet[];
+              canLinkWallet?: boolean;
+              walletLinked?: boolean;
+            }
           : { profile: { githubLogin: username }, editable: false };
         setGrants(dev.grants ?? []);
         setReviews(dev.reviews ?? []);
@@ -100,6 +133,21 @@ export function DevProfilePage() {
         setProfile(prof.profile ?? { githubLogin: username });
         setDraft(prof.profile ?? { githubLogin: username, links: [] });
         setEditable(!!prof.editable);
+        setLinkedWallets(prof.linkedWallets ?? []);
+        setCanLinkWallet(!!prof.canLinkWallet);
+        setWalletLinked(!!prof.walletLinked);
+
+        const wallets = prof.linkedWallets ?? [];
+        if (wallets.length > 0) {
+          fetch(`${API_BASE}/api/dev/link-wallet/${username}`, API_FETCH)
+            .then((r) => r.json())
+            .then((d: { ok?: boolean; feeRecipientTokens?: FeeRecipientEntry[] }) => {
+              if (d.ok && d.feeRecipientTokens) setFeeRecipientEntries(d.feeRecipientTokens);
+            })
+            .catch(() => setFeeRecipientEntries([]));
+        } else {
+          setFeeRecipientEntries([]);
+        }
       })
       .catch((e) => {
         setGrants([]);
@@ -113,6 +161,63 @@ export function DevProfilePage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  async function linkWalletToProfile() {
+    if (!wallet) {
+      await connectWallet();
+      return;
+    }
+    if (!githubUser || githubUser.login.toLowerCase() !== username.toLowerCase()) {
+      connectGitHub();
+      return;
+    }
+
+    setLinkBusy(true);
+    setLinkMessage(null);
+    try {
+      const eth = (window as Window & { ethereum?: { request: (args: { method: string; params?: unknown[] }) => Promise<string> } }).ethereum;
+      if (!eth) throw new Error("Wallet required to sign link message");
+
+      const challengeRes = await fetch(`${API_BASE}/api/dev/link-wallet/challenge`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-wallet-address": wallet },
+        ...API_FETCH,
+      });
+      const challenge = await challengeRes.json() as {
+        ok?: boolean;
+        error?: string;
+        signMessage?: string;
+      };
+      if (!challenge.ok || !challenge.signMessage) {
+        throw new Error(challenge.error ?? "Failed to start wallet link");
+      }
+
+      const signature = await eth.request({
+        method: "personal_sign",
+        params: [challenge.signMessage, wallet],
+      });
+
+      const confirmRes = await fetch(`${API_BASE}/api/dev/link-wallet/confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-wallet-address": wallet },
+        body: JSON.stringify({
+          wallet,
+          signature,
+          signMessage: challenge.signMessage,
+        }),
+        ...API_FETCH,
+      });
+      const confirmed = await confirmRes.json() as { ok?: boolean; error?: string };
+      if (!confirmed.ok) throw new Error(confirmed.error ?? "Wallet link failed");
+
+      setLinkMessage("Wallet linked to your GitHub profile.");
+      load();
+    } catch (e) {
+      setLinkMessage(e instanceof Error ? e.message : "Wallet link failed");
+    } finally {
+      setLinkBusy(false);
+    }
+  }
 
   async function saveProfile() {
     if (!wallet) return;
@@ -306,10 +411,70 @@ export function DevProfilePage() {
               </div>
             )}
 
-            {displayWallet && (
+            {displayWallet && linkedWallets.length === 0 && (
               <p className="dev-sidebar__wallet">
                 <code>{shortAddr(displayWallet)}</code>
                 <CopyButton text={displayWallet} />
+              </p>
+            )}
+
+            {linkedWallets.length > 0 && (
+              <div className="dev-sidebar__stats" style={{ marginTop: "0.75rem" }}>
+                <span className="dev-sidebar__stat-label">Linked wallets</span>
+                {linkedWallets.map((w) => (
+                  <p key={w.wallet} className="dev-sidebar__wallet" style={{ margin: "0.35rem 0" }}>
+                    <code>{shortAddr(w.wallet)}</code>
+                    <CopyButton text={w.wallet} />
+                  </p>
+                ))}
+              </div>
+            )}
+
+            {feeRecipientEntries.some((e) => e.tokens.length > 0) && (
+              <div className="dev-sidebar__stats" style={{ marginTop: "0.75rem" }}>
+                <span className="dev-sidebar__stat-label">Bankr fee recipient</span>
+                {feeRecipientEntries.flatMap((e) =>
+                  e.tokens.map((t) => (
+                    <p key={`${e.wallet}-${t.address}`} className="muted" style={{ margin: "0.25rem 0", fontSize: "0.85rem" }}>
+                      {t.bankrHandle ? `@${t.bankrHandle}` : t.symbol}
+                      {" · "}
+                      <code>{shortAddr(e.wallet)}</code>
+                    </p>
+                  )),
+                )}
+              </div>
+            )}
+
+            {canLinkWallet && !walletLinked && (
+              <div style={{ marginTop: "0.75rem" }}>
+                {!githubUser || githubUser.login.toLowerCase() !== username.toLowerCase() ? (
+                  <button type="button" className="btn btn-ghost" onClick={connectGitHub}>
+                    Sign in with GitHub to link wallet
+                  </button>
+                ) : !wallet ? (
+                  <button type="button" className="btn btn-ghost" onClick={() => void connectWallet()}>
+                    Connect wallet to link
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={linkBusy}
+                    onClick={() => void linkWalletToProfile()}
+                  >
+                    {linkBusy ? "Linking…" : `Link ${shortAddr(wallet)} to profile`}
+                  </button>
+                )}
+                <p className="muted" style={{ fontSize: "0.8rem", marginTop: "0.5rem" }}>
+                  Link your Bankr fee-recipient wallet so it shows on your dev profile and lets you edit settings.
+                </p>
+                {linkMessage && <p className={linkMessage.includes("linked") ? "ok" : "err"}>{linkMessage}</p>}
+              </div>
+            )}
+
+            {walletLinked && canLinkWallet && (
+              <p className="muted" style={{ fontSize: "0.8rem", marginTop: "0.5rem" }}>
+                Connected wallet is linked to this profile.
               </p>
             )}
 
