@@ -4,7 +4,7 @@ import { VestingFooter } from "../components/VestingFooter";
 
 export function HelpPage() {
   return (
-    <div className="vesting-page">
+    <div className="vesting-page vesting-page--wide">
       <VestingNav />
 
       <header>

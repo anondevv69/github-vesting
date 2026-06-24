@@ -648,7 +648,7 @@ export function CreatePage() {
   }
 
   return (
-    <div className="vesting-page vesting-page--narrow">
+    <div className="vesting-page vesting-page--wide">
       <VestingNav />
       <header className="vesting-setup-page__header">
         <h1>Create lock</h1>
