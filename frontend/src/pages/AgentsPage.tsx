@@ -11,7 +11,7 @@ const CURL_EXAMPLE = `curl -H "x-wallet-address: 0x…" "${API_BASE}/api/agent/b
 
 export function AgentsPage() {
   return (
-    <div className="vesting-page">
+    <div className="vesting-page vesting-page--wide">
       <VestingNav />
 
       <header>

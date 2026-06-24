@@ -953,17 +953,16 @@ code {
 }
 
 .vesting-setup-page__header {
-  margin-bottom: 1.5rem;
-  text-align: center;
+  margin-bottom: 1.25rem;
 }
 
 .vesting-setup-page__header h1 {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
+  margin: 0;
 }
 
 .setup-card {
-  max-width: var(--max-w-narrow);
-  margin: 0 auto 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .setup-card h2 {
@@ -1660,7 +1659,6 @@ code {
 
 /* ─── Create flow ────────────────────────────────────────────────────────── */
 .setup-step-label--center {
-  text-align: center;
   margin-bottom: 1.25rem;
 }
 
@@ -1673,6 +1671,10 @@ code {
 
 @media (max-width: 640px) {
   .create-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-cards {
     grid-template-columns: 1fr;
   }
 }
@@ -2264,4 +2266,119 @@ a.fee-recipient-card__handle:hover {
 .timeline-feed__note {
   color: var(--green);
   font-size: 0.75rem;
+}
+
+/* ─── Mobile / responsive ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .vesting-page {
+    padding: 1rem 0.875rem 2.5rem;
+  }
+
+  .vesting-nav {
+    gap: 0.65rem;
+  }
+
+  .vesting-nav__auth {
+    margin-left: 0;
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .lock-header__repo {
+    font-size: 1.125rem;
+    word-break: break-all;
+  }
+
+  .locks-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .help-rules-table {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .vesting-nav {
+    flex-wrap: wrap;
+  }
+
+  .vesting-nav__brand {
+    flex: 1;
+  }
+
+  .vesting-nav__links {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.15rem;
+    scrollbar-width: none;
+  }
+
+  .vesting-nav__links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .vesting-nav__auth {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .vesting-nav__wallet code {
+    font-size: 0.6875rem;
+  }
+
+  .mode-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .search-results__row {
+    grid-template-columns: 3.25rem 1fr;
+    gap: 0.5rem;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .search-results__secondary {
+    grid-column: 1 / -1;
+    font-size: 0.75rem;
+  }
+
+  .recent-feed__item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .push-activity-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .push-activity-summary__stat:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .push-activity-callout {
+    font-size: 0.75rem;
+  }
+
+  .agents-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fee-recipient-card {
+    max-width: none;
+  }
+
+  .vesting-footer__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .vesting-footer__grid {
+    grid-template-columns: 1fr;
+  }
 }
