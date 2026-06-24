@@ -8,6 +8,7 @@ import { DevProfilePage } from "./pages/DevProfilePage";
 import { CreatePage } from "./pages/CreatePage";
 import { HelpPage } from "./pages/HelpPage";
 import { AgentsPage } from "./pages/AgentsPage";
+import { lockPathFromRepo, isValidRepoFullName } from "./lib/repoId";
 
 function LegacyDevRedirect() {
   const { username = "" } = useParams();
@@ -17,9 +18,8 @@ function LegacyDevRedirect() {
 function LegacyStatusRedirect() {
   const [params] = useSearchParams();
   const repo = params.get("repo");
-  if (repo?.includes("/")) {
-    const [owner, name] = repo.split("/");
-    return <Navigate to={`/lock/${owner}/${name}`} replace />;
+  if (repo && isValidRepoFullName(repo)) {
+    return <Navigate to={lockPathFromRepo(repo)} replace />;
   }
   return <Navigate to="/" replace />;
 }

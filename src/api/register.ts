@@ -177,5 +177,14 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
   await saveGrant(grant);
   console.log(`[register] New ${platform} vesting grant for ${normalizedRepo} by ${recipient}`);
 
-  res.json({ ok: true, repoId, grant });
+  const [owner, repoName] = splitRepo(normalizedRepo, platform);
+  const lockPath = `/lock/${owner}/${repoName}`;
+
+  res.json({
+    ok: true,
+    repoId,
+    grant,
+    lockPath,
+    lockUrl: `${env.FRONTEND_URL}${lockPath}`,
+  });
 }

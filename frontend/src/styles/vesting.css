@@ -1042,6 +1042,16 @@ code {
   margin-top: 0.5rem;
 }
 
+.repo-claim-agent-prompt {
+  margin-top: 1rem;
+}
+
+.repo-claim-agent-prompt .agents-code-block code {
+  white-space: pre-wrap;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
 .preset-row {
   display: flex;
   flex-wrap: wrap;

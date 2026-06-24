@@ -44,9 +44,10 @@ type ReputationStats = {
   firstLockAt: string | null;
 };
 
+import { lockPathFromRepo } from "../lib/repoId";
+
 function lockPath(repoFullName: string): string {
-  const [owner, name] = repoFullName.split("/");
-  return `/lock/${owner}/${name}`;
+  return lockPathFromRepo(repoFullName);
 }
 
 export function DevProfilePage() {
