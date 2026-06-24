@@ -17,6 +17,7 @@ import {
   type RepoPlatform,
 } from "../lib/repoId";
 import { verifyGitlawbRepoExists, fetchGitlawbRepo } from "../gitlawb/client";
+import { addLinkedWallet } from "../lib/devWallets";
 import { env } from "../lib/env";
 
 const ESCROW_ABI = parseAbi([
@@ -176,6 +177,11 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
 
   await saveGrant(grant);
   console.log(`[register] New ${platform} vesting grant for ${normalizedRepo} by ${recipient}`);
+
+  if (platform === "github") {
+    const [owner] = splitRepo(normalizedRepo, "github");
+    void addLinkedWallet(owner, recipient, "lock").catch(() => {});
+  }
 
   const [owner, repoName] = splitRepo(normalizedRepo, platform);
   const lockPath = `/lock/${owner}/${repoName}`;

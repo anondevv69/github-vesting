@@ -13,6 +13,7 @@ import { normalizeRepoFullName } from "./repoId";
 import { isValidWallet } from "./grantsHelper";
 import { resolveInstallationForRepo } from "../github/githubApp";
 import { getGithubApp } from "../github/githubApp";
+import { addLinkedWallet } from "./devWallets";
 
 export const CLAIM_FILE_PATH = ".proofofdev/claim.json";
 export const CLAIM_CHALLENGE_TTL_SEC = 60 * 60 * 24; // 24h
@@ -206,6 +207,7 @@ export async function markClaimVerified(
   const redis = getRedis();
   await redis.set(KEYS.repoClaim(normalizedRepo), JSON.stringify(record));
   await redis.del(KEYS.repoClaimChallenge(claimId));
+  void addLinkedWallet(githubLogin, wallet, "repo-claim").catch(() => {});
   return record;
 }
 
