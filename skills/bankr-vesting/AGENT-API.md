@@ -189,6 +189,41 @@ Then call `confirm-lock` with the lock transaction hash.
 
 ---
 
+## POST /api/repo-claims/challenge
+
+Start repo ownership verification (wallet ↔ repo bond).
+
+```http
+POST {API}/api/repo-claims/challenge
+x-wallet-address: 0x…
+
+{ "repo": "owner/repo" }
+```
+
+Returns `signMessage`, `claimId`, `filePath`, `fileTemplate`.
+
+## POST /api/repo-claims/prepare-file
+
+After wallet signs `signMessage`:
+
+```http
+POST {API}/api/repo-claims/prepare-file
+
+{ "claimId": "clm_…", "signature": "0x…" }
+```
+
+Returns `fileContent` to commit at `.proofofdev/claim.json` on `main`. Push via git or Bankr agent — **does not count as a vesting push**.
+
+## GET /api/repo-claims/status
+
+```http
+GET {API}/api/repo-claims/status?repo=owner/repo&wallet=0x…&poll=1
+```
+
+Returns `verified`, `claim`, `tweetReply`.
+
+---
+
 ## Web (non-agent) endpoints
 
 | Method | Path | Description |

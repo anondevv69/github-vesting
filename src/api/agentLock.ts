@@ -23,6 +23,7 @@ import { prepareLockTransactions } from "../lib/lockBuilder";
 import { handleRegister } from "./register";
 import { resolveInstallationForRepo, validateRepoAccess } from "../github/githubApp";
 import { normalizeRepoFullName, splitRepo } from "../lib/repoId";
+import { getRepoClaim } from "../lib/repoClaims";
 import { Octokit } from "@octokit/rest";
 import { fetchBankrTokenInfo } from "./bankr";
 import knownEscrow from "../../skills/bankr-vesting/known-escrow.json";
@@ -285,6 +286,10 @@ export async function handleAgentPrepareLock(req: Request, res: Response): Promi
       pushesPerMilestone,
     });
 
+    const repoClaim = await getRepoClaim(normalizedRepo);
+    const claimVerified =
+      repoClaim?.status === "verified" && repoClaim.wallet === wallet.toLowerCase();
+
     const scheduleSummary =
       pushesPerMilestone === totalPushes
         ? `all tokens after ${totalPushes} verified pushes`
@@ -302,6 +307,15 @@ export async function handleAgentPrepareLock(req: Request, res: Response): Promi
       repo: normalizedRepo,
       installationId: gh.installationId,
       ...prep,
+      repoClaim: {
+        verified: claimVerified,
+        status: repoClaim?.status ?? "none",
+        githubLogin: repoClaim?.githubLogin,
+        claimUrl: `${env.SERVER_URL}/api/repo-claims/challenge`,
+        verifyHint: claimVerified
+          ? undefined
+          : `Optional: POST /api/repo-claims/challenge then push .proofofdev/claim.json before locking`,
+      },
       statusUrl: lockUrl(normalizedRepo),
       bankrPrompt: buildBankrPrompt(prep, normalizedRepo, wallet),
       bankrSubmitUrl: `${BANKR_API}/agent/submit`,

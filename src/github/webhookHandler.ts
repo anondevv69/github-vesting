@@ -3,6 +3,8 @@ import type { Request, Response } from "express";
 import { env } from "../lib/env";
 import { getGrantByRepoFullName } from "../lib/redis";
 import type { PushPayload } from "./pushVerifier";
+import { isClaimOnlyPush } from "../lib/repoClaims";
+import { processRepoClaimFromPush } from "./repoClaimHandler";
 import { processPushForGrant } from "./processPush";
 
 /** Verify GitHub's HMAC-SHA256 webhook signature. */
@@ -52,11 +54,37 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       return;
     }
 
+    const claimResult = await processRepoClaimFromPush(payload);
+
     const grant = await getGrantByRepoFullName(repoFullName);
 
+    if (claimResult.processed && !grant) {
+      res.json({
+        ok: true,
+        repoClaim: claimResult,
+        message: claimResult.verified
+          ? "Repo claim verified"
+          : `Repo claim push processed: ${claimResult.reason}`,
+      });
+      return;
+    }
+
     if (!grant || grant.status !== "active") {
-      // No active vesting grant for this repo — ignore silently.
+      if (claimResult.processed) {
+        res.json({ ok: true, repoClaim: claimResult, message: "Repo claim processed; no active vesting grant" });
+        return;
+      }
       res.json({ ok: true, message: "No active vesting grant for this repo" });
+      return;
+    }
+
+    if (isClaimOnlyPush(payload.commits ?? [])) {
+      res.json({
+        ok: true,
+        accepted: false,
+        reason: "Repo claim verification push — not counted toward vesting",
+        repoClaim: claimResult.processed ? claimResult : undefined,
+      });
       return;
     }
 
@@ -80,6 +108,7 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       reason: result.reason,
       verifiedPushCount: result.verifiedPushCount,
       release: result.release,
+      ...(claimResult.processed ? { repoClaim: claimResult } : {}),
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

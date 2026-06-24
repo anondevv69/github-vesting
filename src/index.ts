@@ -33,8 +33,14 @@ import { handleGetDevProfile, handlePatchDevProfile } from "./api/devProfile";
 import { handleGrantsByRecipient } from "./api/grants";
 import { handleDevSimulatePush } from "./api/devSimulate";
 import { handleOAuthRedirect, handleOAuthCallback } from "./api/oauth";
-import { handleGithubInstallationLookup } from "./api/githubInstall";
+import {
+  handleRepoClaimChallenge,
+  handleRepoClaimPrepareFile,
+  handleRepoClaimStatus,
+  handleRepoClaimGet,
+} from "./api/repoClaims";
 import { handleGithubRepoLookup } from "./api/githubRepo";
+import { handleGithubInstallationLookup } from "./api/githubInstall";
 
 const app = express();
 
@@ -124,6 +130,10 @@ app.post("/api/webhook/gitlawb", (req, res) => void handleGitlawbWebhook(req, re
 app.get("/api/oauth/github", handleOAuthRedirect);
 app.get("/api/oauth/github/callback", (req, res) => void handleOAuthCallback(req, res));
 app.get("/api/github/installation", (req, res) => void handleGithubInstallationLookup(req, res));
+app.post("/api/repo-claims/challenge", (req, res) => void handleRepoClaimChallenge(req, res));
+app.post("/api/repo-claims/prepare-file", (req, res) => void handleRepoClaimPrepareFile(req, res));
+app.get("/api/repo-claims/status", (req, res) => void handleRepoClaimStatus(req, res));
+app.get("/api/repo-claims/:owner/:repoName", (req, res) => void handleRepoClaimGet(req, res));
 app.get("/api/github/repo", (req, res) => void handleGithubRepoLookup(req, res));
 
 // ─── Vesting API ──────────────────────────────────────────────────────────────

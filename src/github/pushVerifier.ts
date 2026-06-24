@@ -34,6 +34,7 @@ const IGNORED_PATTERNS = [
   /CHANGELOG/i,
   /LICENSE/i,
   /NOTICE/i,
+  /^\.proofofdev\//,
 ];
 
 export type PushPayload = {
@@ -51,6 +52,7 @@ export type PushPayload = {
   }>;
   repository: { full_name: string };
   pusher: { name: string };
+  sender?: { login?: string };
 };
 
 export type VerifyResult =

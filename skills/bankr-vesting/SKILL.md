@@ -126,6 +126,16 @@ If symbol is ambiguous (two `Space` contracts), ask user to pick the `0x` addres
 - Confusing GitHub vesting with a token's **native** `release()` vesting schedule
 - Skipping `confirm-lock` after on-chain lock
 
+### Repo ownership (optional, before lock)
+
+Bond wallet ↔ repo by pushing `.proofofdev/claim.json`:
+
+1. `POST /api/repo-claims/challenge` → sign `signMessage`
+2. `POST /api/repo-claims/prepare-file` → push JSON to main (Bankr agent can do this)
+3. `GET /api/repo-claims/status?poll=1`
+
+Claim pushes are **excluded** from vesting push counts. Lock flow unchanged after verification.
+
 ### Web fallback
 
 If wallet cannot sign (no Bankr submit), return setup link:
