@@ -21,7 +21,7 @@ export async function processPushForGrant(
   const verifyResult = await verifyPush(repoId, payload, { ...options, platform });
 
   if (!verifyResult.accepted) {
-    await recordRejectedPush(repoId, payload, verifyResult.reason);
+    await recordRejectedPush(repoId, payload, verifyResult);
     return { accepted: false, reason: verifyResult.reason };
   }
 

@@ -39,6 +39,7 @@ type LockResponse = {
     linesEstimate?: number;
     commitCount?: number;
     accepted?: boolean;
+    reason?: string;
   }>;
   tokenHolders: Array<{
     wallet: string;
@@ -61,6 +62,35 @@ type LockResponse = {
 
 function formatTs(ts: number): string {
   return new Date(ts).toISOString().replace("T", " ").slice(0, 19);
+}
+
+type PushEntry = LockResponse["recentPushes"][number];
+
+function pushStatus(p: PushEntry): "counted" | "rejected" {
+  return p.accepted !== false ? "counted" : "rejected";
+}
+
+function rejectionCategory(reason?: string): string {
+  const r = (reason ?? "").toLowerCase();
+  if (r.includes("min since last") || r.includes("cooldown")) return "Cooldown";
+  if (r.includes("daily cap")) return "Daily cap";
+  if (r.includes("already counted") || r.includes("duplicate")) return "Duplicate";
+  if (r.includes("docs") || r.includes("lockfile")) return "Not code";
+  if (r.includes("force-push")) return "Force-push";
+  if (r.includes("production branch")) return "Wrong branch";
+  if (r.includes("substantial")) return "Too small";
+  return "Rule";
+}
+
+function summarizePushes(pushes: PushEntry[]) {
+  const counted = pushes.filter((p) => pushStatus(p) === "counted");
+  const rejected = pushes.filter((p) => pushStatus(p) === "rejected");
+  const byCategory = new Map<string, number>();
+  for (const p of rejected) {
+    const cat = rejectionCategory(p.reason);
+    byCategory.set(cat, (byCategory.get(cat) ?? 0) + 1);
+  }
+  return { total: pushes.length, counted: counted.length, rejected: rejected.length, byCategory };
 }
 
 export function LockPage() {
@@ -111,7 +141,8 @@ export function LockPage() {
   }
 
   const { grant, progress, githubOwner, recentPushes, tokenHolders } = data;
-  const verified = recentPushes.filter((p) => p.accepted !== false);
+  const timeline = [...recentPushes].reverse();
+  const pushSummary = summarizePushes(recentPushes);
   const pct = progress.totalPushesRequired > 0
     ? Math.floor((progress.verifiedPushCount / progress.totalPushesRequired) * 100)
     : 0;
@@ -235,31 +266,96 @@ export function LockPage() {
       </section>
 
       <section>
-        <h2>Push timeline</h2>
-        {verified.length === 0 ? (
-          <p className="muted">No verified pushes yet.</p>
+        <h2>Push activity</h2>
+        <p className="muted search-hints">
+          Every push to this repo is recorded here. Only verified pushes advance your milestone —
+          others are visible so you can see work happening and why something did not count.
+        </p>
+
+        {pushSummary.total > 0 && (
+          <div className="push-activity-summary">
+            <div className="push-activity-summary__stat">
+              <span className="push-activity-summary__value">{pushSummary.total}</span>
+              <span className="push-activity-summary__label">pushes received</span>
+            </div>
+            <div className="push-activity-summary__stat push-activity-summary__stat--green">
+              <span className="push-activity-summary__value">{progress.verifiedPushCount}</span>
+              <span className="push-activity-summary__label">counted toward lock</span>
+            </div>
+            {pushSummary.rejected > 0 && (
+              <div className="push-activity-summary__stat push-activity-summary__stat--amber">
+                <span className="push-activity-summary__value">{pushSummary.rejected}</span>
+                <span className="push-activity-summary__label">not counted (see below)</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {pushSummary.rejected > 0 && (
+          <div className="push-activity-callout">
+            <strong>Recent pushes not counted:</strong>{" "}
+            {[...pushSummary.byCategory.entries()].map(([cat, n]) => `${n}× ${cat}`).join(" · ")}
+            . Cooldown is 30 minutes between counted pushes; substantial code changes (~50+ lines)
+            can bypass it. <Link to="/help">Full rules →</Link>
+          </div>
+        )}
+
+        {timeline.length === 0 ? (
+          <p className="muted">No pushes recorded yet.</p>
         ) : (
           <ul className="timeline-feed">
-            {[...verified].reverse().map((p) => (
-              <li key={p.sha} className="timeline-feed__item">
-                <span className="timeline-feed__ts">{formatTs(p.ts)}</span>
-                <span className="timeline-feed__sha">
-                  <a
-                    href={`https://github.com/${grant.repoFullName}/commit/${p.sha}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {p.sha.slice(0, 7)}
-                  </a>
-                </span>
-                <span>
-                  {p.commitCount ?? 1} file{(p.commitCount ?? 1) === 1 ? "" : "s"}
-                  {" · ~"}
-                  {p.linesEstimate ?? "—"} lines
-                </span>
-                <span className="badge-verified">verified</span>
-              </li>
-            ))}
+            {timeline.map((p) => {
+              const verified = pushStatus(p) === "counted";
+              const rejectCat = verified ? null : rejectionCategory(p.reason);
+              return (
+                <li
+                  key={`${p.sha}-${p.ts}`}
+                  className={`timeline-feed__item${verified ? "" : " timeline-feed__item--rejected"}`}
+                >
+                  <span className="timeline-feed__ts">{formatTs(p.ts)}</span>
+                  <span className="timeline-feed__sha">
+                    <a
+                      href={`https://github.com/${grant.repoFullName}/commit/${p.sha}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {p.sha.slice(0, 7)}
+                    </a>
+                  </span>
+                  <span className="timeline-feed__detail">
+                    {verified ? (
+                      <>
+                        {p.commitCount ?? 1} file{(p.commitCount ?? 1) === 1 ? "" : "s"}
+                        {" · ~"}
+                        {p.linesEstimate ?? "—"} lines
+                        {p.reason?.includes("cooldown bypassed") && (
+                          <span className="timeline-feed__note"> · substantial fix</span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {(p.linesEstimate != null || p.commitCount) && (
+                          <span className="timeline-feed__changes">
+                            {p.commitCount ?? 1} file{(p.commitCount ?? 1) === 1 ? "" : "s"}
+                            {p.linesEstimate != null && (
+                              <> · ~{p.linesEstimate} lines changed</>
+                            )}
+                            {" · "}
+                          </span>
+                        )}
+                        <span className="timeline-feed__reason">{p.reason ?? "Not counted"}</span>
+                        {rejectCat && (
+                          <span className="timeline-feed__category">{rejectCat}</span>
+                        )}
+                      </>
+                    )}
+                  </span>
+                  <span className={verified ? "badge-verified" : "badge-rejected"}>
+                    {verified ? "counted" : "not counted"}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
