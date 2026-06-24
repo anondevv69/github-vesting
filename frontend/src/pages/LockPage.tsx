@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { VestingNav } from "../components/VestingNav";
+import { VestingFooter } from "../components/VestingFooter";
 import { CopyButton } from "../components/CopyButton";
-import { formatTokens } from "../lib/format";
+import { formatTokens, shortAddr } from "../lib/format";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const IS_TESTNET = import.meta.env.VITE_CHAIN === "base-sepolia";
@@ -48,6 +49,14 @@ type LockResponse = {
     devHref: string;
     href: string;
   }>;
+  bankr?: {
+    name: string;
+    symbol: string;
+    feeBeneficiary: string;
+    feeShare: string;
+    initializer?: string;
+    bankrUrl: string;
+  } | null;
 };
 
 function formatTs(ts: number): string {
@@ -154,13 +163,51 @@ export function LockPage() {
 
       <section className="token-section">
         <h2>Token</h2>
+        {data.bankr && (
+          <p className="token-section__symbol">
+            {data.bankr.symbol || data.bankr.name}
+            {data.bankr.name && data.bankr.symbol ? ` · ${data.bankr.name}` : ""}
+          </p>
+        )}
         <div className="token-section__addr">
           <code>{grant.token}</code>
           <CopyButton text={grant.token} />
           <a href={`${explorerBase}/address/${grant.token}`} target="_blank" rel="noreferrer">
             Basescan →
           </a>
+          {data.bankr?.bankrUrl && (
+            <a href={data.bankr.bankrUrl} target="_blank" rel="noreferrer">
+              Bankr →
+            </a>
+          )}
         </div>
+        {data.bankr && (
+          <dl className="token-meta">
+            <div>
+              <dt>Fee recipient</dt>
+              <dd>
+                <code>{shortAddr(data.bankr.feeBeneficiary)}</code>
+                <CopyButton text={data.bankr.feeBeneficiary} />
+                <a href={`${explorerBase}/address/${data.bankr.feeBeneficiary}`} target="_blank" rel="noreferrer">
+                  Basescan →
+                </a>
+                {data.bankr.feeShare && <span className="muted"> · {data.bankr.feeShare} share</span>}
+              </dd>
+            </div>
+            {data.bankr.initializer && (
+              <div>
+                <dt>Pool contract</dt>
+                <dd>
+                  <code>{shortAddr(data.bankr.initializer)}</code>
+                  <a href={`${explorerBase}/address/${data.bankr.initializer}`} target="_blank" rel="noreferrer">
+                    Basescan →
+                  </a>
+                  <span className="muted"> · Doppler initializer (launch pool)</span>
+                </dd>
+              </div>
+            )}
+          </dl>
+        )}
         {tokenHolders.length > 0 && (
           <table className="locks-table">
             <thead>
@@ -225,6 +272,8 @@ export function LockPage() {
         {" · "}
         {data.remainingFormatted} remaining
       </p>
+
+      <VestingFooter />
     </div>
   );
 }

@@ -12,7 +12,7 @@ import {
   handleAgentStatus,
   handleAgentSetupLink,
 } from "./api/agent";
-import { handleBankrFeeTokens } from "./api/bankr";
+import { handleBankrFeeTokens, handleBankrTokenInfo } from "./api/bankr";
 import { handleGitlawbRepoLookup, handleGitlawbSetupInfo } from "./api/gitlawb";
 import { handleGitlawbWebhook } from "./gitlawb/webhookHandler";
 import {
@@ -130,6 +130,7 @@ app.post("/api/dev/simulate-push", (req, res) => void handleDevSimulatePush(req,
 
 // ─── Bankr + discovery ─────────────────────────────────────────────────────────
 app.get("/api/bankr/fee-tokens", (req, res) => void handleBankrFeeTokens(req, res));
+app.get("/api/bankr/token-info", (req, res) => void handleBankrTokenInfo(req, res));
 app.get("/api/gitlawb/repo", (req, res) => void handleGitlawbRepoLookup(req, res));
 app.get("/api/gitlawb/setup", (req, res) => void handleGitlawbSetupInfo(req, res));
 app.get("/api/vesting/explore", (req, res) => void handleExplore(req, res));

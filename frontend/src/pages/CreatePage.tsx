@@ -13,6 +13,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { VestingNav } from "../components/VestingNav";
+import { VestingFooter } from "../components/VestingFooter";
 import { VestingPathChart } from "../components/VestingPathChart";
 import {
   createPublicClient,
@@ -283,8 +284,6 @@ export function CreatePage() {
         setBusy(false);
         return;
       }
-
-      setStep(2);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Wallet connect failed");
     } finally {
@@ -826,6 +825,8 @@ export function CreatePage() {
           </button>
         </section>
       )}
+
+      <VestingFooter />
     </div>
   );
 }

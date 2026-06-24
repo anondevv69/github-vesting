@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import type { Address } from "viem";
 import { VestingNav } from "../components/VestingNav";
+import { VestingFooter } from "../components/VestingFooter";
 import { StarRating } from "../components/StarRating";
 import { CopyButton } from "../components/CopyButton";
 import { shortAddr } from "../lib/format";
+import { useVestingAuth } from "../hooks/useVestingAuth";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
@@ -57,7 +58,7 @@ export function DevProfilePage() {
   const [editable, setEditable] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [wallet, setWallet] = useState<Address | null>(null);
+  const { wallet, connectWallet } = useVestingAuth();
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [rating, setRating] = useState(5);
@@ -94,21 +95,6 @@ export function DevProfilePage() {
   useEffect(() => {
     load();
   }, [load]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("vesting_wallet");
-    if (saved) setWallet(saved as Address);
-  }, []);
-
-  async function connectWallet() {
-    const eth = (window as Window & { ethereum?: { request: (a: { method: string }) => Promise<string[]> } }).ethereum;
-    if (!eth) return;
-    const accounts = await eth.request({ method: "eth_requestAccounts" });
-    if (accounts[0]) {
-      setWallet(accounts[0] as Address);
-      localStorage.setItem("vesting_wallet", accounts[0]);
-    }
-  }
 
   async function saveProfile() {
     if (!wallet) return;
@@ -392,6 +378,8 @@ export function DevProfilePage() {
           </main>
         </div>
       )}
+
+      <VestingFooter />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { VestingNav } from "../components/VestingNav";
+import { VestingFooter } from "../components/VestingFooter";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
@@ -105,6 +106,10 @@ export function ExplorePage() {
       {showRecent && (
         <section>
           <h2>Recently active</h2>
+          <p className="search-hints muted">
+            Search by GitHub username, repo (<code>owner/repo</code>), token contract address,
+            or X handle if the dev linked it on their profile.
+          </p>
           {recent.length === 0 ? (
             <p className="muted">No verified pushes yet.</p>
           ) : (
@@ -124,6 +129,8 @@ export function ExplorePage() {
           )}
         </section>
       )}
+
+      <VestingFooter />
     </div>
   );
 }
