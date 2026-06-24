@@ -27,16 +27,17 @@ function resolveWallet(req: Request): string | null {
   return raw.toLowerCase();
 }
 
+function statusUrl(repoFullName: string): string {
+  const [owner, name] = repoFullName.split("/");
+  return `${env.FRONTEND_URL}/lock/${owner}/${name}`;
+}
+
 function setupUrl(): string {
-  return `${env.FRONTEND_URL}/vesting/setup`;
+  return `${env.FRONTEND_URL}/create`;
 }
 
 function dashboardUrl(): string {
-  return `${env.FRONTEND_URL}/vesting/dashboard`;
-}
-
-function statusUrl(repoFullName: string): string {
-  return `${env.FRONTEND_URL}/vesting/status?repo=${encodeURIComponent(repoFullName)}`;
+  return `${env.FRONTEND_URL}/`;
 }
 
 function buildGrantSummary(

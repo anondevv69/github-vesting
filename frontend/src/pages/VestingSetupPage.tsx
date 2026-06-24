@@ -191,6 +191,8 @@ export function VestingSetupPage() {
   const [chainNonce, setChainNonce] = useState<number | null>(null);
   const [gitlawbSetup, setGitlawbSetup] = useState<{ webhookUrl: string; webhookCommand: string } | null>(null);
   const [gitlawbWebhookReady, setGitlawbWebhookReady] = useState(false);
+  const [repoValidation, setRepoValidation] = useState<"idle" | "checking" | "ok" | "err">("idle");
+  const [repoValidationMsg, setRepoValidationMsg] = useState("");
 
   // Restore wallet connection on page load if already connected.
   useEffect(() => {
@@ -335,6 +337,36 @@ export function VestingSetupPage() {
       setError("Could not load token info — check the address.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function validateRepoOnBlur() {
+    const repo = form.repoFullName.trim();
+    if (!repo.includes("/")) {
+      setRepoValidation("err");
+      setRepoValidationMsg("Use owner/repo format");
+      return;
+    }
+    if (form.platform === "gitlawb") {
+      setRepoValidation("ok");
+      setRepoValidationMsg("GitLawb repo format OK");
+      return;
+    }
+    setRepoValidation("checking");
+    setRepoValidationMsg("");
+    try {
+      const res = await fetch(`${API_BASE}/api/github/repo?repo=${encodeURIComponent(repo)}`);
+      const d = await res.json() as { ok: boolean; repo?: string; error?: string };
+      if (d.ok) {
+        setRepoValidation("ok");
+        setRepoValidationMsg(`✓ ${d.repo ?? repo} found on GitHub`);
+      } else {
+        setRepoValidation("err");
+        setRepoValidationMsg(d.error ?? "Repository not found");
+      }
+    } catch {
+      setRepoValidation("err");
+      setRepoValidationMsg("Could not verify repo");
     }
   }
 
@@ -606,22 +638,20 @@ export function VestingSetupPage() {
     : "0";
 
   return (
-    <div className="vesting-page">
+    <div className="vesting-page vesting-page--narrow">
       <VestingNav />
       <header className="vesting-setup-page__header">
-        <h1>Git Vesting</h1>
+        <h1>Create lock</h1>
         <p className="muted">
-          Lock tokens — earn them back by shipping verified commits on <strong>GitHub</strong> or{" "}
-          <a href="https://gitlawb.com/start" target="_blank" rel="noreferrer">GitLawb</a>.
+          Lock tokens — earn them back by shipping verified commits.
         </p>
       </header>
 
-      <div className="vesting-setup-page__steps">
-        {[1, 2, 3, 4, 5, 6].map((s) => (
-          <div key={s} className={`step-dot ${step === s ? "active" : step > s ? "done" : ""}`}>
-            {s}
-          </div>
-        ))}
+      <div className="setup-progress" aria-hidden>
+        <div
+          className="setup-progress__fill"
+          style={{ width: `${((step - 1) / 5) * 100}%` }}
+        />
       </div>
 
       {error && (
@@ -630,8 +660,9 @@ export function VestingSetupPage() {
 
       {/* Step 1: Connect wallet */}
       {step === 1 && (
-        <section className="vesting-card">
-          <h2>Step 1 — Connect wallet & choose platform</h2>
+        <section className="vesting-card setup-card">
+          <p className="setup-step-label">Step 1 of 6</p>
+          <h2>Connect wallet</h2>
           <p className="muted">Connect the wallet that is the fee recipient for your token.</p>
           <div className="preset-row">
             <button
@@ -656,8 +687,10 @@ export function VestingSetupPage() {
       )}
 
       {step === 2 && form.platform === "github" && (
-        <section className="vesting-card">
-          <h2>Step 2 — Connect GitHub</h2>
+        <section className="vesting-card setup-card">
+          <button type="button" className="btn btn-ghost" onClick={() => setStep(1)}>← Back</button>
+          <p className="setup-step-label">Step 2 of 6</p>
+          <h2>Connect GitHub</h2>
           <p className="muted">Wallet connected: <code>{wallet}</code></p>
           <p className="muted">We need read access to your repo so our bot can verify your pushes.</p>
           <button className="btn btn-primary" onClick={connectGitHub}>
@@ -667,8 +700,10 @@ export function VestingSetupPage() {
       )}
 
       {step === 2 && form.platform === "gitlawb" && (
-        <section className="vesting-card">
-          <h2>Step 2 — GitLawb identity</h2>
+        <section className="vesting-card setup-card">
+          <button type="button" className="btn btn-ghost" onClick={() => setStep(1)}>← Back</button>
+          <p className="setup-step-label">Step 2 of 6</p>
+          <h2>GitLawb identity</h2>
           <p className="muted">Wallet connected: <code>{wallet}</code></p>
           <p className="muted">
             GitLawb uses a DID identity (no passwords). Install the CLI and create your agent identity:
@@ -694,8 +729,10 @@ gl repo create my-project`}</pre>
 
       {/* Step 3: Repo + token details */}
       {step === 3 && (
-        <section className="vesting-card">
-          <h2>Step 3 — Your repo & token</h2>
+        <section className="vesting-card setup-card">
+          <button type="button" className="btn btn-ghost" onClick={() => setStep(2)}>← Back</button>
+          <p className="setup-step-label">Step 3 of 6</p>
+          <h2>Repo & token</h2>
           {githubUser && (
             <p className="muted">
               GitHub: <strong>@{githubUser.login}</strong>
@@ -707,8 +744,21 @@ gl repo create my-project`}</pre>
               type="text"
               placeholder={form.platform === "gitlawb" ? "z6Mk…/my-project" : "myorg/my-token-project"}
               value={form.repoFullName}
-              onChange={(e) => setForm((f) => ({ ...f, repoFullName: e.target.value }))}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, repoFullName: e.target.value }));
+                setRepoValidation("idle");
+              }}
+              onBlur={() => void validateRepoOnBlur()}
             />
+            {repoValidation === "checking" && (
+              <span className="field-hint">Checking repo…</span>
+            )}
+            {repoValidation === "ok" && (
+              <span className="field-hint ok">{repoValidationMsg}</span>
+            )}
+            {repoValidation === "err" && (
+              <span className="field-hint err">{repoValidationMsg}</span>
+            )}
           </label>
           {form.platform === "gitlawb" && form.repoFullName.includes("/") && (
             <p className="muted">
@@ -754,16 +804,15 @@ gl repo create my-project`}</pre>
             />
           </label>
           {form.tokenSymbol && (
-            <p className="muted">
-              Token: <strong>{form.tokenSymbol}</strong> · Your balance:{" "}
-              <strong>{form.tokenBalance}</strong>
+            <p className="field-hint ok">
+              ✓ {form.tokenSymbol} · balance {form.tokenBalance}
               {" · "}
-              <Link to={`/vesting/token/${form.tokenAddress}`}>View locks on this token</Link>
+              <Link to={`/vesting/token/${form.tokenAddress}`}>View locks</Link>
             </p>
           )}
           <button
             className="btn btn-primary"
-            disabled={!form.repoFullName || !form.tokenAddress || busy}
+            disabled={!form.repoFullName || !form.tokenAddress || busy || repoValidation === "err"}
             onClick={() => setStep(4)}
           >
             Next →
@@ -773,8 +822,10 @@ gl repo create my-project`}</pre>
 
       {/* Step 4: Vesting schedule */}
       {step === 4 && (
-        <section className="vesting-card">
-          <h2>Step 4 — How many verified pushes?</h2>
+        <section className="vesting-card setup-card">
+          <button type="button" className="btn btn-ghost" onClick={() => setStep(3)}>← Back</button>
+          <p className="setup-step-label">Step 4 of 6</p>
+          <h2>Vesting schedule</h2>
           <label>
             Tokens to lock
             <input
@@ -862,8 +913,10 @@ gl repo create my-project`}</pre>
 
       {/* Step 5: Approve + lock on-chain */}
       {step === 5 && (
-        <section className="vesting-card">
-          <h2>Step 5 — Lock tokens on-chain</h2>
+        <section className="vesting-card setup-card">
+          <button type="button" className="btn btn-ghost" onClick={() => setStep(4)}>← Back</button>
+          <p className="setup-step-label">Step 5 of 6</p>
+          <h2>Lock on-chain</h2>
           <div className="vesting-summary">
             <p><strong>Repo:</strong> {form.repoFullName}</p>
             <p><strong>Token:</strong> {form.tokenSymbol} ({form.tokenAddress})</p>
@@ -926,8 +979,10 @@ gl repo create my-project`}</pre>
 
       {/* Step 6: Activate (GitHub App or GitLawb webhook) */}
       {step === 6 && form.platform === "github" && (
-        <section className="vesting-card">
-          <h2>Step 6 — Install GitHub App & activate</h2>
+        <section className="vesting-card setup-card">
+          <button type="button" className="btn btn-ghost" onClick={() => setStep(5)}>← Back</button>
+          <p className="setup-step-label">Step 6 of 6</p>
+          <h2>Activate vesting</h2>
           {lockTxHash && (
             <p className="muted">
               Lock tx:{" "}
@@ -976,8 +1031,10 @@ gl repo create my-project`}</pre>
       )}
 
       {step === 6 && form.platform === "gitlawb" && (
-        <section className="vesting-card">
-          <h2>Step 6 — GitLawb webhook & activate</h2>
+        <section className="vesting-card setup-card">
+          <button type="button" className="btn btn-ghost" onClick={() => setStep(5)}>← Back</button>
+          <p className="setup-step-label">Step 6 of 6</p>
+          <h2>GitLawb webhook</h2>
           {lockTxHash && (
             <p className="muted">
               Lock tx:{" "}
@@ -1012,47 +1069,6 @@ gl repo create my-project`}</pre>
           </button>
         </section>
       )}
-
-      <style>{`
-        .vesting-setup-page__header { margin-bottom: 2rem; }
-        .vesting-setup-page__steps { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
-        .step-dot { width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; background: #e5e7eb; color: #6b7280; }
-        .step-dot.active { background: #7c3aed; color: white; }
-        .step-dot.done { background: #10b981; color: white; }
-        .vesting-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; }
-        .vesting-card h2 { margin: 0 0 0.75rem; font-size: 1.1rem; }
-        label { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 1rem; font-size: 0.9rem; font-weight: 500; }
-        input[type=text], input[type=number] { padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.4rem; font-size: 0.9rem; }
-        .btn { padding: 0.55rem 1.2rem; border-radius: 0.4rem; font-weight: 600; cursor: pointer; border: none; font-size: 0.9rem; }
-        .btn-primary { background: #7c3aed; color: white; }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-secondary { background: #1f2937; color: white; text-decoration: none; display: inline-block; }
-        .vesting-preview { background: #f9fafb; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; }
-        .vesting-summary p { margin: 0.3rem 0; font-size: 0.9rem; }
-        .muted { color: #6b7280; font-size: 0.875rem; }
-        .err { color: #dc2626; font-size: 0.875rem; }
-        code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.8rem; }
-        .token-picker { margin: 1rem 0; }
-        .token-picker__grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
-        .token-chip {
-          display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem;
-          padding: 0.6rem 0.85rem; border-radius: 0.5rem; border: 1px solid #d1d5db;
-          background: #fff; cursor: pointer; font-size: 0.8rem; text-align: left;
-        }
-        .token-chip.active { border-color: #7c3aed; background: #faf5ff; }
-        .preset-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
-        .preset-btn {
-          padding: 0.45rem 0.75rem; border-radius: 9999px; border: 1px solid #d1d5db;
-          background: #fff; cursor: pointer; font-size: 0.8rem;
-        }
-        .preset-btn.active { background: #7c3aed; color: #fff; border-color: #7c3aed; }
-        .small { font-size: 0.8rem; }
-        .code-block {
-          background: #1e1b4b; color: #e9d5ff; padding: 1rem; border-radius: 0.5rem;
-          font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap;
-        }
-        .checkbox-row { display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; font-size: 0.9rem; }
-      `}</style>
     </div>
   );
 }
