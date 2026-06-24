@@ -11,7 +11,6 @@ import type { Request, Response } from "express";
 import {
   createPublicClient,
   http,
-  isAddress,
   parseAbi,
   parseEventLogs,
   type Address,
@@ -27,6 +26,11 @@ import { normalizeRepoFullName, splitRepo } from "../lib/repoId";
 import { Octokit } from "@octokit/rest";
 import { fetchBankrTokenInfo } from "./bankr";
 import knownEscrow from "../../skills/bankr-vesting/known-escrow.json";
+import {
+  fetchFeeRecipientTokens,
+  listLockableTokens,
+  resolveTokenForWallet,
+} from "../lib/walletTokens";
 
 const IS_TESTNET = process.env.VITE_CHAIN === "base-sepolia";
 const activeChain = IS_TESTNET ? baseSepolia : base;
@@ -118,37 +122,9 @@ async function resolveTokenInput(
   token: string,
   wallet: string,
 ): Promise<{ address: Address } | { error: string }> {
-  const t = token.trim();
-  if (isAddress(t)) return { address: t as Address };
-
-  for (const val of Object.values(knownEscrow.supportedTokens)) {
-    if (val.symbol.toLowerCase() === t.toLowerCase()) {
-      return { address: val.address as Address };
-    }
-  }
-
-  try {
-    const upstream = await fetch(`${BANKR_API}/public/doppler/creator-fees/${wallet}`);
-    if (upstream.ok) {
-      const data = (await upstream.json()) as {
-        tokens?: Array<{ tokenAddress: string; symbol?: string; name?: string }>;
-      };
-      const hit = (data.tokens ?? []).find(
-        (x) =>
-          x.symbol?.toLowerCase() === t.toLowerCase() ||
-          x.name?.toLowerCase() === t.toLowerCase(),
-      );
-      if (hit?.tokenAddress && isAddress(hit.tokenAddress)) {
-        return { address: hit.tokenAddress as Address };
-      }
-    }
-  } catch {
-    // fall through
-  }
-
-  return {
-    error: `Unknown token "${t}" — use 0x address, Space, or a symbol from GET /api/agent/fee-tokens`,
-  };
+  const resolved = await resolveTokenForWallet(wallet, token);
+  if ("error" in resolved) return { error: resolved.error };
+  return { address: resolved.address };
 }
 
 async function parseLockBody(req: Request): Promise<
@@ -224,34 +200,44 @@ export async function handleAgentFeeTokens(req: Request, res: Response): Promise
   }
 
   try {
-    const upstream = await fetch(`${BANKR_API}/public/doppler/creator-fees/${wallet}`);
-    if (!upstream.ok) {
-      res.status(502).json({ ok: false, error: `Bankr API returned ${upstream.status}` });
-      return;
-    }
-    const data = (await upstream.json()) as {
-      tokens?: Array<{ tokenAddress: string; name?: string; symbol?: string; share?: string }>;
-    };
-    const tokens = (data.tokens ?? []).map((t) => ({
-      address: t.tokenAddress,
-      name: t.name ?? "",
-      symbol: t.symbol ?? "",
-      share: t.share ?? "",
+    const [lockable, feeRecipient] = await Promise.all([
+      listLockableTokens(wallet as Address),
+      fetchFeeRecipientTokens(wallet),
+    ]);
+
+    const walletHoldings = lockable.filter((t) => t.source === "wallet");
+    const feeSet = new Set(feeRecipient.map((t) => t.address.toLowerCase()));
+
+    const tokens = lockable.map((t) => ({
+      address: t.address,
+      name: t.name,
+      symbol: t.symbol,
+      source: t.source,
+      feeRecipient: feeSet.has(t.address.toLowerCase()),
+      balanceRaw: t.balanceRaw !== "0" ? t.balanceRaw : undefined,
     }));
 
-    const lines = tokens.length
-      ? tokens.map((t) => `${t.symbol || t.name} — ${t.address}`).join("\n")
-      : "No fee-recipient tokens found on Bankr.";
+    const lines = walletHoldings.length
+      ? walletHoldings.map((t) => `${t.symbol || t.name} — ${t.address}`).join("\n")
+      : lockable.map((t) => `${t.symbol || t.name} — ${t.address}`).join("\n");
 
     const replyText =
-      `Tokens you can vest (fee recipient on Base):\n${lines}\n\n` +
-      `To lock: tell me repo, token, and amount — e.g. "lock 3.49M Space on owner/repo for 10 pushes"`;
+      `Tokens you can lock on Base (any ERC-20 in your wallet):\n${lines || "(none indexed yet — use 0x address)"}\n\n` +
+      `To lock: "lock 855M TMP on owner/repo for 10 pushes" or use a 0x contract address.`;
 
-    res.json({ ok: true, wallet, tokens, replyText, tweetReply: replyText });
+    res.json({
+      ok: true,
+      wallet,
+      tokens,
+      walletHoldings,
+      feeRecipientTokens: feeRecipient,
+      replyText,
+      tweetReply: replyText,
+    });
   } catch (err) {
     res.status(502).json({
       ok: false,
-      error: err instanceof Error ? err.message : "Failed to reach Bankr API",
+      error: err instanceof Error ? err.message : "Failed to list wallet tokens",
     });
   }
 }

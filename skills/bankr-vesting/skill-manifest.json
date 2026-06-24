@@ -1,7 +1,7 @@
 {
   "name": "bankr-vesting",
   "displayName": "GitHub Vesting",
-  "skillVersion": "1.1.0",
+  "skillVersion": "1.2.0",
   "defaultSiteUrl": "https://www.proofofdev.xyz",
   "VESTING_SITE_URL": "https://www.proofofdev.xyz",
   "apiBaseUrl": "https://api.proofofdev.xyz",
@@ -27,5 +27,5 @@
     "AGENT-API.md",
     "known-escrow.json"
   ],
-  "bankrNote": "Reads: briefing, grants, status, setup-link. Writes (approve/lock) require /create wizard link. Site: / (explore), /lock/owner/repo, /dev/username. Uses linked wallet in x-wallet-address header."
+  "bankrNote": "ANY ERC-20 on Base — no allowlist. Lock: POST /api/agent/lock (symbol from wallet or 0x address) → Bankr agent/submit → POST /api/agent/confirm-lock. Reads: briefing, grants, status, fee-tokens (wallet holdings). Never refuse TMP or other tokens without calling lock API. known-escrow.json supportedTokens = streaming hints only."
 }
