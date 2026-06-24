@@ -81,82 +81,20 @@ export function VestingPathChart({
         })}
       </div>
 
-      <ol className="vesting-path__how">
-        <li>
-          <strong>One GitHub push = one count.</strong> A single commit to <code>main</code> counts once.
-          Amending or re-pushing the same commit does not double-count.
-        </li>
-        <li>
-          <strong>Meaningful code only.</strong> ≥3 lines of real code (not docs/lockfiles), on{" "}
-          <code>main</code> / <code>production</code>. Max 3 counted pushes per day · 30 min apart.
-        </li>
-        <li>
-          <strong>Commitment.</strong> Unlike Bankr Glidepath, vesting locks cannot be undone with a
-          cooldown — tokens release only when milestones are hit.
-        </li>
-      </ol>
-
-      <style>{`
-        .vesting-path {
-          background: linear-gradient(180deg, #faf5ff 0%, #fff 100%);
-          border: 1px solid #e9d5ff;
-          border-radius: 1rem;
-          padding: 1.25rem 1.5rem;
-          margin: 1rem 0;
-        }
-        .vesting-path__eyebrow {
-          font-size: 0.7rem;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: #7c3aed;
-          font-weight: 700;
-        }
-        .vesting-path__header h3 { margin: 0.25rem 0 0.5rem; font-size: 1.15rem; }
-        .vesting-path__summary { margin: 0; color: #4b5563; font-size: 0.9rem; max-width: 36rem; }
-        .vesting-path__chart { margin: 1.25rem 0; display: flex; flex-direction: column; gap: 0.65rem; }
-        .vesting-path__row {
-          display: grid;
-          grid-template-columns: 9rem 1fr 7rem;
-          gap: 0.75rem;
-          align-items: center;
-        }
-        .vesting-path__label { font-size: 0.85rem; font-weight: 600; }
-        .vesting-path__label .muted { font-weight: 400; color: #6b7280; }
-        .vesting-path__bar-wrap {
-          background: #ede9fe;
-          border-radius: 9999px;
-          height: 0.65rem;
-          overflow: hidden;
-        }
-        .vesting-path__bar {
-          background: #c4b5fd;
-          height: 100%;
-          border-radius: 9999px;
-          min-width: 4px;
-          transition: width 0.3s;
-        }
-        .vesting-path__bar.reached { background: #a78bfa; }
-        .vesting-path__bar.paid { background: #7c3aed; }
-        .vesting-path__value { font-size: 0.85rem; font-weight: 600; text-align: right; color: #5b21b6; }
-        .vesting-path__how {
-          margin: 0;
-          padding-left: 1.2rem;
-          font-size: 0.85rem;
-          color: #374151;
-          line-height: 1.5;
-        }
-        .vesting-path__how li { margin-bottom: 0.5rem; }
-        .vesting-path code {
-          background: #f3f4f6;
-          padding: 0.1rem 0.35rem;
-          border-radius: 0.25rem;
-          font-size: 0.85em;
-        }
-        @media (max-width: 640px) {
-          .vesting-path__row { grid-template-columns: 1fr; gap: 0.25rem; }
-          .vesting-path__value { text-align: left; }
-        }
-      `}</style>
+      <div className="vesting-path__rules">
+        <div className="vesting-path__rule">
+          <strong>One push = one count</strong>
+          A single commit to <code>main</code> counts once. Re-pushing the same SHA does not double-count.
+        </div>
+        <div className="vesting-path__rule">
+          <strong>Meaningful code</strong>
+          ≥3 lines of real code (not docs/lockfiles) on <code>main</code>. Max 3/day · 30 min apart.
+        </div>
+        <div className="vesting-path__rule">
+          <strong>Commitment</strong>
+          Unlike Glidepath, vesting locks cannot be undone — tokens release only at milestones.
+        </div>
+      </div>
     </div>
   );
 }

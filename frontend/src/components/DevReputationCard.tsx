@@ -17,7 +17,7 @@ export function DevReputationCard({ githubLogin, reputation, compact = false }: 
     : 100;
 
   return (
-    <section className={`dev-rep ${compact ? "dev-rep--compact" : ""}`}>
+    <section className={`dev-rep${compact ? " dev-rep--compact" : ""}`}>
       <div className="dev-rep__hero">
         <div className="dev-rep__level-ring" aria-label={`Level ${level}`}>
           <span className="dev-rep__level-num">{level}</span>
@@ -94,8 +94,6 @@ export function DevReputationCard({ githubLogin, reputation, compact = false }: 
           </ul>
         </details>
       )}
-
-      <style>{styles}</style>
     </section>
   );
 }
@@ -118,68 +116,3 @@ const BADGE_HINTS = [
   { id: "community-trusted", icon: "⭐", label: "Community Trusted", hint: "4.5+ stars from 3+ reviews" },
   { id: "milestone-maker", icon: "🏆", label: "Milestone Maker", hint: "3+ on-chain token releases paid" },
 ];
-
-const styles = `
-  .dev-rep {
-    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
-    color: #f5f3ff;
-    border-radius: 1rem;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-  .dev-rep--compact { padding: 1rem; }
-  .dev-rep__hero { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
-  .dev-rep__level-ring {
-    width: 3.5rem; height: 3.5rem; border-radius: 50%;
-    background: linear-gradient(135deg, #a78bfa, #7c3aed);
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.15);
-    flex-shrink: 0;
-  }
-  .dev-rep__level-num { font-size: 1.4rem; font-weight: 800; }
-  .dev-rep__eyebrow {
-    margin: 0; font-size: 0.7rem; text-transform: uppercase;
-    letter-spacing: 0.1em; opacity: 0.75;
-  }
-  .dev-rep__title { margin: 0.15rem 0; font-size: 1.35rem; }
-  .dev-rep__score-line { margin: 0; font-size: 0.95rem; }
-  .dev-rep__score-line .muted { opacity: 0.8; font-weight: 400; }
-  .dev-rep__bar-outer {
-    background: rgba(255,255,255,0.15); border-radius: 9999px;
-    height: 0.5rem; margin-bottom: 1.25rem; overflow: hidden;
-  }
-  .dev-rep__bar-inner {
-    background: linear-gradient(90deg, #c4b5fd, #f0abfc);
-    height: 100%; border-radius: 9999px;
-  }
-  .dev-rep__stats {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
-    gap: 0.75rem; margin-bottom: 1rem;
-  }
-  .dev-rep__stat {
-    background: rgba(255,255,255,0.08); border-radius: 0.5rem; padding: 0.65rem 0.75rem;
-  }
-  .dev-rep__stat-val { display: block; font-weight: 700; font-size: 1.05rem; }
-  .dev-rep__stat-label { font-size: 0.72rem; opacity: 0.75; text-transform: uppercase; }
-  .dev-rep__breakdown {
-    display: flex; flex-wrap: wrap; gap: 0.75rem; font-size: 0.8rem; opacity: 0.85;
-    margin-bottom: 1.25rem;
-  }
-  .dev-rep__badges h3 { margin: 0 0 0.75rem; font-size: 0.95rem; }
-  .dev-rep__badge-grid {
-    list-style: none; padding: 0; margin: 0;
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 0.5rem;
-  }
-  .badge-chip {
-    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 0.65rem; padding: 0.55rem 0.65rem;
-    display: flex; flex-direction: column; gap: 0.15rem;
-  }
-  .badge-chip__icon { font-size: 1.25rem; }
-  .badge-chip__label { font-size: 0.75rem; font-weight: 600; }
-  .dev-rep__next { margin-top: 1rem; font-size: 0.85rem; opacity: 0.9; }
-  .dev-rep__next summary { cursor: pointer; font-weight: 600; }
-  .dev-rep__next ul { margin: 0.5rem 0 0; padding-left: 0; list-style: none; }
-  .dev-rep__next li { margin-bottom: 0.35rem; }
-  .muted { opacity: 0.85; font-size: 0.9rem; }
-`;

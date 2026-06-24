@@ -1,9 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 
 const links = [
-  { to: "/vesting/explore", label: "Explore" },
-  { to: "/vesting/dashboard", label: "My locks" },
-  { to: "/vesting/setup", label: "Create lock" },
+  { to: "/", label: "Explore" },
+  { to: "/create", label: "Create lock" },
 ];
 
 export function VestingNav() {
@@ -11,7 +10,7 @@ export function VestingNav() {
 
   return (
     <nav className="vesting-nav">
-      <Link to="/vesting/explore" className="vesting-nav__brand">
+      <Link to="/" className="vesting-nav__brand">
         GitHub Vesting
       </Link>
       <div className="vesting-nav__links">
@@ -19,7 +18,7 @@ export function VestingNav() {
           <Link
             key={to}
             to={to}
-            className={pathname === to || pathname.startsWith(`${to}/`) ? "active" : ""}
+            className={pathname === to || (to !== "/" && pathname.startsWith(to)) ? "active" : ""}
           >
             {label}
           </Link>

@@ -22,10 +22,13 @@ import {
   handlePostDevReview,
   handleLeaderboard,
 } from "./api/explore";
+import { handleSearch, handleRecentPushes, handleLockDetail } from "./api/discovery";
+import { handleGetDevProfile, handlePatchDevProfile } from "./api/devProfile";
 import { handleGrantsByRecipient } from "./api/grants";
 import { handleDevSimulatePush } from "./api/devSimulate";
 import { handleOAuthRedirect, handleOAuthCallback } from "./api/oauth";
 import { handleGithubInstallationLookup } from "./api/githubInstall";
+import { handleGithubRepoLookup } from "./api/githubRepo";
 
 const app = express();
 
@@ -115,6 +118,7 @@ app.post("/api/webhook/gitlawb", (req, res) => void handleGitlawbWebhook(req, re
 app.get("/api/oauth/github", handleOAuthRedirect);
 app.get("/api/oauth/github/callback", (req, res) => void handleOAuthCallback(req, res));
 app.get("/api/github/installation", (req, res) => void handleGithubInstallationLookup(req, res));
+app.get("/api/github/repo", (req, res) => void handleGithubRepoLookup(req, res));
 
 // ─── Vesting API ──────────────────────────────────────────────────────────────
 app.post("/api/vesting/register", (req, res) => void handleRegister(req, res));
@@ -129,10 +133,16 @@ app.get("/api/bankr/fee-tokens", (req, res) => void handleBankrFeeTokens(req, re
 app.get("/api/gitlawb/repo", (req, res) => void handleGitlawbRepoLookup(req, res));
 app.get("/api/gitlawb/setup", (req, res) => void handleGitlawbSetupInfo(req, res));
 app.get("/api/vesting/explore", (req, res) => void handleExplore(req, res));
+app.get("/api/vesting/search", (req, res) => void handleSearch(req, res));
+app.get("/api/vesting/recent-pushes", (req, res) => void handleRecentPushes(req, res));
+app.get("/api/vesting/lock/:owner/:repoName", (req, res) => void handleLockDetail(req, res));
+app.get("/api/vesting/lock", (req, res) => void handleLockDetail(req, res));
 app.get("/api/vesting/by-token/:token", (req, res) => void handleByToken(req, res));
 app.get("/api/vesting/by-token", (req, res) => void handleByToken(req, res));
 app.get("/api/vesting/by-dev/:login", (req, res) => void handleByDev(req, res));
 app.get("/api/vesting/by-dev", (req, res) => void handleByDev(req, res));
+app.get("/api/vesting/dev-profile/:login", (req, res) => void handleGetDevProfile(req, res));
+app.patch("/api/vesting/dev-profile/:login", (req, res) => void handlePatchDevProfile(req, res));
 app.post("/api/vesting/by-dev/:login/reviews", (req, res) => void handlePostDevReview(req, res));
 app.get("/api/vesting/leaderboard", (req, res) => void handleLeaderboard(req, res));
 

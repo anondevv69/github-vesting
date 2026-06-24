@@ -29,6 +29,7 @@ export const KEYS = {
     `vesting:repo_name:${platform}:${repoFullName.toLowerCase()}`,
   seenPushShas: (repoId: string) => `vesting:seen_shas:${repoId}`,
   devReviews: (githubLogin: string) => `vesting:dev_reviews:${githubLogin.toLowerCase()}`,
+  devProfile: (githubLogin: string) => `vesting:dev_profile:${githubLogin.toLowerCase()}`,
 };
 
 import type { RepoPlatform } from "./repoId";

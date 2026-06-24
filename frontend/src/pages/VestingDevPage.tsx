@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { Address } from "viem";
 import { VestingNav } from "../components/VestingNav";
-import { DevReputationCard } from "../components/DevReputationCard";
+import { StarRating } from "../components/StarRating";
 import { shortAddr } from "../lib/format";
 import type { DevReputation } from "../types/reputation";
 
@@ -29,14 +29,27 @@ type Review = {
   createdAt: string;
 };
 
+type ActivityEntry = {
+  repoFullName: string;
+  ts: number;
+  sha: string;
+  reason: string;
+  linesEstimate?: number;
+};
+
+type Tab = "locks" | "activity" | "feedback";
+
 export function VestingDevPage() {
   const { login = "" } = useParams();
   const [grants, setGrants] = useState<GrantSummary[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reputation, setReputation] = useState<DevReputation | null>(null);
-  const [communityUrl, setCommunityUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<Tab>("locks");
+  const [activity, setActivity] = useState<ActivityEntry[]>([]);
+  const [activityLoading, setActivityLoading] = useState(false);
   const [wallet, setWallet] = useState<Address | null>(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -50,13 +63,11 @@ export function VestingDevPage() {
         grants?: GrantSummary[];
         reviews?: Review[];
         reputation?: DevReputation;
-        communityUrl?: string | null;
       }>)
       .then((d) => {
         setGrants(d.grants ?? []);
         setReviews(d.reviews ?? []);
         setReputation(d.reputation ?? null);
-        setCommunityUrl(d.communityUrl ?? null);
       })
       .finally(() => setLoading(false));
   }, [login]);
@@ -64,6 +75,46 @@ export function VestingDevPage() {
   useEffect(() => {
     loadDev();
   }, [loadDev]);
+
+  useEffect(() => {
+    if (tab !== "activity" || grants.length === 0) return;
+    setActivityLoading(true);
+    Promise.all(
+      grants.map((g) =>
+        fetch(`${API_BASE}/api/vesting/status?repo=${encodeURIComponent(g.repoFullName)}`)
+          .then((r) => r.json() as Promise<{
+            ok: boolean;
+            grant?: { repoFullName: string };
+            recentPushes?: Array<{
+              ts: number;
+              sha: string;
+              reason: string;
+              linesEstimate?: number;
+              accepted?: boolean;
+            }>;
+          }>),
+      ),
+    )
+      .then((results) => {
+        const rows: ActivityEntry[] = [];
+        for (const r of results) {
+          if (!r.ok || !r.grant) continue;
+          for (const p of r.recentPushes ?? []) {
+            if (p.accepted === false) continue;
+            rows.push({
+              repoFullName: r.grant.repoFullName,
+              ts: p.ts,
+              sha: p.sha,
+              reason: p.reason,
+              linesEstimate: p.linesEstimate,
+            });
+          }
+        }
+        rows.sort((a, b) => b.ts - a.ts);
+        setActivity(rows);
+      })
+      .finally(() => setActivityLoading(false));
+  }, [tab, grants]);
 
   async function connectWallet() {
     const eth = (window as Window & { ethereum?: { request: (a: { method: string }) => Promise<string[]> } }).ethereum;
@@ -88,6 +139,7 @@ export function VestingDevPage() {
       const d = await res.json() as { ok: boolean; error?: string };
       if (!d.ok) throw new Error(d.error ?? "Failed");
       setComment("");
+      setShowReviewForm(false);
       loadDev();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to post review");
@@ -97,191 +149,195 @@ export function VestingDevPage() {
   }
 
   return (
-    <div className="vesting-page">
+    <div className="vesting-page vesting-page--wide">
       <VestingNav />
-      <header className="dev-header">
-        <img
-          src={`https://github.com/${login}.png?size=80`}
-          alt=""
-          className="avatar"
-          width={64}
-          height={64}
-        />
-        <div>
-          <h1>@{login}</h1>
-          <p className="muted header-sub">
-            {reputation?.title ?? "Developer"}
-            {reputation && ` · Level ${reputation.level} · ${reputation.score} rep`}
-          </p>
-          <a href={`https://github.com/${login}`} target="_blank" rel="noreferrer" className="link">
-            GitHub profile →
-          </a>
-          {communityUrl && (
-            <a href={communityUrl} target="_blank" rel="noreferrer" className="link">
-              Bankr Space →
-            </a>
-          )}
-        </div>
-      </header>
 
       {loading && <p className="muted">Loading developer profile…</p>}
 
-      {!loading && reputation && (
-        <DevReputationCard githubLogin={login} reputation={reputation} />
-      )}
-
-      {!loading && reputation?.stats && (
-        <section className="timeline">
-          <h2>Building reputation over time</h2>
-          <ul>
-            {reputation.stats.firstLockAt && (
-              <li>
-                <span className="timeline-dot" />
-                <div>
-                  <strong>First vesting lock</strong>
-                  <p className="muted">{new Date(reputation.stats.firstLockAt).toLocaleDateString()}</p>
-                </div>
-              </li>
-            )}
-            {reputation.stats.lastPushAt && (
-              <li>
-                <span className="timeline-dot active" />
-                <div>
-                  <strong>Last verified push</strong>
-                  <p className="muted">{new Date(reputation.stats.lastPushAt).toLocaleString()}</p>
-                </div>
-              </li>
-            )}
-            {reputation.stats.reviewCount > 0 && (
-              <li>
-                <span className="timeline-dot community" />
-                <div>
-                  <strong>Community trust</strong>
-                  <p className="muted">
-                    {reputation.stats.avgRating?.toFixed(1)} ★ from {reputation.stats.reviewCount} review
-                    {reputation.stats.reviewCount === 1 ? "" : "s"}
-                  </p>
-                </div>
-              </li>
-            )}
-            {reputation.stats.completedLocks > 0 && (
-              <li>
-                <span className="timeline-dot complete" />
-                <div>
-                  <strong>Vesting milestones hit</strong>
-                  <p className="muted">
-                    {reputation.stats.completedLocks} schedule
-                    {reputation.stats.completedLocks === 1 ? "" : "s"} completed ·{" "}
-                    {reputation.stats.milestonesPaid} on-chain releases
-                  </p>
-                </div>
-              </li>
-            )}
-          </ul>
-        </section>
-      )}
-
-      <h2>Locked repos</h2>
-      {!loading && grants.length === 0 && (
-        <p className="muted">No public vesting locks for this developer yet.</p>
-      )}
-      <div className="list">
-        {grants.map((g) => (
-          <article key={g.repoFullName} className="card">
-            <h3>
-              <Link to={`/vesting/status?repo=${encodeURIComponent(g.repoFullName)}`}>
-                {g.repoFullName}
-              </Link>
-            </h3>
-            <p className="muted">
-              <Link to={`/vesting/token/${g.token}`}>Token {shortAddr(g.token)}</Link>
-              {" · "}{g.status}
-            </p>
-            <p>
-              {g.progress.verifiedPushCount}/{g.progress.totalPushesRequired} pushes ·{" "}
-              {g.totalLockedFormatted} locked ·{" "}
-              {g.progress.milestonesCompleted}/{g.progress.totalMilestones} releases paid
-            </p>
-            <p className="muted small">{g.progress.summary}</p>
-          </article>
-        ))}
-      </div>
-
-      <section className="reviews">
-        <h2>Community reviews</h2>
-        <p className="muted">
-          Reviews boost a developer&apos;s community score and help holders see who ships and cares about their product.
-        </p>
-        <form onSubmit={(e) => void submitReview(e)} className="review-form">
-          <label>
-            Rating
-            <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
-              {[5, 4, 3, 2, 1].map((n) => (
-                <option key={n} value={n}>{n} ★</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Comment
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Ship quality, communication, vesting transparency…"
-              rows={3}
+      {!loading && (
+        <div className="dev-layout">
+          <aside className="dev-sidebar">
+            <img
+              src={`https://github.com/${login}.png?size=480`}
+              alt=""
+              className="dev-sidebar__avatar"
+              width={240}
+              height={240}
             />
-          </label>
-          <button type="submit" disabled={submitting}>
-            {wallet ? (submitting ? "Posting…" : "Post review") : "Connect wallet to review"}
-          </button>
-        </form>
-        <ul className="review-list">
-          {reviews.map((r) => (
-            <li key={`${r.wallet}-${r.createdAt}`}>
-              <strong>{"★".repeat(r.rating)}</strong>
-              <span className="muted"> {shortAddr(r.wallet)} · {new Date(r.createdAt).toLocaleDateString()}</span>
-              <p>{r.comment}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+            <p className="dev-sidebar__handle">@{login}</p>
+            {reputation && (
+              <>
+                <div className="dev-sidebar__stat">
+                  <span className="dev-sidebar__stat-label">Joined</span>
+                  <span>
+                    {reputation.stats.firstLockAt
+                      ? new Date(reputation.stats.firstLockAt).toLocaleDateString()
+                      : "—"}
+                  </span>
+                </div>
+                <div className="dev-sidebar__stat">
+                  <span className="dev-sidebar__stat-label">Tokens locked</span>
+                  <span>{reputation.stats.totalTokensLockedFormatted}</span>
+                </div>
+                <div className="dev-sidebar__stat">
+                  <span className="dev-sidebar__stat-label">Verified pushes</span>
+                  <span>{reputation.stats.totalVerifiedPushes}</span>
+                </div>
+                <div className="dev-sidebar__stat">
+                  <span className="dev-sidebar__stat-label">Reputation</span>
+                  <span>Lv.{reputation.level} · {reputation.score}</span>
+                </div>
+              </>
+            )}
+            <p className="muted" style={{ marginTop: "1rem", fontSize: "0.8125rem" }}>
+              {reputation?.title ?? "Developer"}
+            </p>
+            <a href={`https://github.com/${login}`} target="_blank" rel="noreferrer">
+              GitHub profile →
+            </a>
+          </aside>
 
-      <style>{`
-        .dev-header { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 0.5rem; }
-        .avatar { border-radius: 9999px; border: 2px solid #e5e7eb; }
-        .header-sub { margin: 0.25rem 0 0.5rem; }
-        .small { font-size: 0.85rem; }
-        .link { display: inline-block; margin-right: 1rem; color: #7c3aed; font-size: 0.9rem; }
-        .timeline { margin: 0 0 2rem; }
-        .timeline h2 { font-size: 1.05rem; margin-bottom: 1rem; }
-        .timeline ul { list-style: none; padding: 0; margin: 0; border-left: 2px solid #e5e7eb; margin-left: 0.5rem; }
-        .timeline li { display: flex; gap: 1rem; padding: 0 0 1.25rem 1.25rem; position: relative; }
-        .timeline-dot {
-          position: absolute; left: -0.45rem; top: 0.2rem;
-          width: 0.75rem; height: 0.75rem; border-radius: 50%; background: #d1d5db;
-        }
-        .timeline-dot.active { background: #7c3aed; }
-        .timeline-dot.community { background: #f59e0b; }
-        .timeline-dot.complete { background: #10b981; }
-        .timeline li strong { display: block; font-size: 0.95rem; }
-        .timeline li p { margin: 0.15rem 0 0; }
-        .list { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
-        .card { border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem 1.25rem; }
-        .card h3 { margin: 0 0 0.35rem; }
-        .card a { color: #7c3aed; text-decoration: none; }
-        .reviews { border-top: 1px solid #e5e7eb; padding-top: 1.5rem; }
-        .review-form { display: flex; flex-direction: column; gap: 0.75rem; max-width: 28rem; margin: 1rem 0; }
-        .review-form label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; }
-        .review-form select, .review-form textarea {
-          padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #d1d5db;
-        }
-        .review-form button {
-          align-self: flex-start; padding: 0.5rem 1rem; border-radius: 0.5rem;
-          background: #7c3aed; color: #fff; border: none; cursor: pointer;
-        }
-        .review-list { list-style: none; padding: 0; }
-        .review-list li { border-bottom: 1px solid #f3f4f6; padding: 0.75rem 0; }
-        .review-list p { margin: 0.35rem 0 0; }
-      `}</style>
+          <main>
+            <div className="tabs">
+              {(["locks", "activity", "feedback"] as Tab[]).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`tabs__btn${tab === t ? " active" : ""}`}
+                  onClick={() => setTab(t)}
+                >
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            {tab === "locks" && (
+              <>
+                {grants.length === 0 && (
+                  <p className="muted">No public vesting locks for this developer yet.</p>
+                )}
+                <div className="lock-grid">
+                  {grants.map((g) => {
+                    const pct = g.progress.totalPushesRequired > 0
+                      ? Math.floor((g.progress.verifiedPushCount / g.progress.totalPushesRequired) * 100)
+                      : 0;
+                    return (
+                      <article key={g.repoFullName} className="lock-grid__card">
+                        <p className="lock-grid__repo">
+                          <Link to={`/vesting/status?repo=${encodeURIComponent(g.repoFullName)}`}>
+                            {g.repoFullName}
+                          </Link>
+                        </p>
+                        <p className="muted" style={{ fontSize: "0.75rem", margin: "0 0 0.5rem" }}>
+                          {g.totalLockedFormatted} locked
+                        </p>
+                        <div className="bar-outer">
+                          <div className="bar-inner" style={{ width: `${pct}%` }} />
+                        </div>
+                        <p className="progress-label">
+                          {g.progress.verifiedPushCount}/{g.progress.totalPushesRequired} pushes
+                        </p>
+                        <span className={`badge ${g.status}`}>{g.status}</span>
+                      </article>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {tab === "activity" && (
+              <>
+                {activityLoading && <p className="muted">Loading activity…</p>}
+                {!activityLoading && activity.length === 0 && (
+                  <p className="muted">No verified push activity yet.</p>
+                )}
+                <ul className="activity-feed">
+                  {activity.map((a) => (
+                    <li key={`${a.repoFullName}-${a.sha}`} className="activity-feed__item">
+                      <div className="activity-feed__repo">{a.repoFullName}</div>
+                      <div>
+                        {a.reason.slice(0, 72)}
+                        {a.reason.length > 72 ? "…" : ""}
+                      </div>
+                      <div className="activity-feed__meta">
+                        {new Date(a.ts).toLocaleString()}
+                        {" · "}
+                        <a
+                          href={`https://github.com/${a.repoFullName}/commit/${a.sha}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {a.sha.slice(0, 7)}
+                        </a>
+                        {a.linesEstimate != null && ` · ~${a.linesEstimate} lines`}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {tab === "feedback" && (
+              <>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  style={{ maxWidth: "12rem", marginBottom: "1rem" }}
+                  onClick={() => {
+                    if (!wallet) void connectWallet();
+                    setShowReviewForm((v) => !v);
+                  }}
+                >
+                  Leave feedback
+                </button>
+
+                {showReviewForm && (
+                  <form onSubmit={(e) => void submitReview(e)} className="review-form">
+                    <label>
+                      Rating
+                      <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
+                        {[5, 4, 3, 2, 1].map((n) => (
+                          <option key={n} value={n}>{n} stars</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Comment
+                      <textarea
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="Ship quality, communication, vesting transparency…"
+                        rows={3}
+                        required
+                        minLength={3}
+                      />
+                    </label>
+                    <button type="submit" className="btn btn-primary" disabled={submitting}>
+                      {submitting ? "Posting…" : wallet ? "Post review" : "Connect wallet & post"}
+                    </button>
+                  </form>
+                )}
+
+                <ul className="review-list">
+                  {reviews.map((r) => (
+                    <li key={`${r.wallet}-${r.createdAt}`} className="review-list__item">
+                      <div className="review-list__header">
+                        <StarRating rating={r.rating} />
+                        <span className="muted">{shortAddr(r.wallet)}</span>
+                        <span className="muted">{new Date(r.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <p style={{ margin: 0 }}>{r.comment}</p>
+                    </li>
+                  ))}
+                  {reviews.length === 0 && (
+                    <li className="muted">No reviews yet.</li>
+                  )}
+                </ul>
+              </>
+            )}
+          </main>
+        </div>
+      )}
     </div>
   );
 }

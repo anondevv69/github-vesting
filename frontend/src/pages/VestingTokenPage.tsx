@@ -1,18 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { VestingNav } from "../components/VestingNav";
-import { shortAddr } from "../lib/format";
+import { CopyButton } from "../components/CopyButton";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+const IS_TESTNET = import.meta.env.VITE_CHAIN === "base-sepolia";
+const explorerBase = IS_TESTNET ? "https://sepolia.basescan.org" : "https://basescan.org";
 
 type GrantSummary = {
   repoFullName: string;
   githubOwner: string;
   recipient: string;
   status: string;
+  totalLocked: string;
   totalLockedFormatted: string;
-  progress: { verifiedPushCount: number; totalPushesRequired: number; summary: string };
+  createdAt: string;
+  progress: {
+    verifiedPushCount: number;
+    totalPushesRequired: number;
+    progressPct?: number;
+  };
 };
+
+function parseLocked(wei: string): number {
+  return Number(wei) / 1e18;
+}
 
 export function VestingTokenPage() {
   const { token = "" } = useParams();
@@ -33,56 +45,116 @@ export function VestingTokenPage() {
       .finally(() => setLoading(false));
   }, [token]);
 
+  const stats = useMemo(() => {
+    const totalLocked = grants.reduce((s, g) => s + parseLocked(g.totalLocked), 0);
+    const activeCount = grants.filter((g) => g.status === "active").length;
+    const devs = new Set(grants.map((g) => g.githubOwner));
+    const fmt = (n: number) =>
+      n >= 1_000_000 ? `${(n / 1_000_000).toFixed(2)}M` :
+      n >= 1_000 ? `${(n / 1_000).toFixed(2)}k` :
+      n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return {
+      totalLocked: fmt(totalLocked),
+      totalReleased: "—",
+      activeCount,
+      uniqueDevs: devs.size,
+    };
+  }, [grants]);
+
+  const sorted = useMemo(
+    () => [...grants].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    [grants],
+  );
+
   return (
-    <div className="vesting-page">
+    <div className="vesting-page vesting-page--wide">
       <VestingNav />
-      <header>
-        <h1>Token locks</h1>
-        <p className="muted">
-          <code>{token}</code>
-          {" · "}
-          <a href={`https://www.bankr.space/community/${token}`} target="_blank" rel="noreferrer">
-            Bankr Space →
-          </a>
-        </p>
+
+      <header className="token-header">
+        <h1>Token overview</h1>
       </header>
+
+      <div className="token-header">
+        <code className="token-header__addr">{token}</code>
+        <CopyButton text={token} />
+        <a href={`${explorerBase}/address/${token}`} target="_blank" rel="noreferrer">
+          Basescan →
+        </a>
+        <a href={`https://www.bankr.space/community/${token}`} target="_blank" rel="noreferrer">
+          Bankr Space →
+        </a>
+      </div>
 
       {loading && <p className="muted">Loading…</p>}
       {error && <p className="err">{error}</p>}
-      {!loading && !error && grants.length === 0 && (
-        <p className="muted">No vesting locks on this token yet.</p>
+
+      {!loading && !error && (
+        <>
+          <div className="stat-bar">
+            <div className="stat-bar__cell">
+              <span className="stat-bar__label">Total locked</span>
+              <span className="stat-bar__value">{stats.totalLocked}</span>
+            </div>
+            <div className="stat-bar__cell">
+              <span className="stat-bar__label">Total released</span>
+              <span className="stat-bar__value">{stats.totalReleased}</span>
+            </div>
+            <div className="stat-bar__cell">
+              <span className="stat-bar__label">Active locks</span>
+              <span className="stat-bar__value">{stats.activeCount}</span>
+            </div>
+            <div className="stat-bar__cell">
+              <span className="stat-bar__label">Developers</span>
+              <span className="stat-bar__value">{stats.uniqueDevs}</span>
+            </div>
+          </div>
+
+          {grants.length === 0 ? (
+            <p className="muted">No vesting locks on this token yet.</p>
+          ) : (
+            <table className="locks-table">
+              <thead>
+                <tr>
+                  <th>Developer</th>
+                  <th>Repo</th>
+                  <th>Locked</th>
+                  <th>Progress</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((g) => {
+                  const pct = g.progress.totalPushesRequired > 0
+                    ? Math.floor((g.progress.verifiedPushCount / g.progress.totalPushesRequired) * 100)
+                    : 0;
+                  return (
+                    <tr key={g.repoFullName}>
+                      <td>
+                        <Link to={`/vesting/dev/${g.githubOwner}`}>@{g.githubOwner}</Link>
+                      </td>
+                      <td>
+                        <Link to={`/vesting/status?repo=${encodeURIComponent(g.repoFullName)}`}>
+                          {g.repoFullName}
+                        </Link>
+                      </td>
+                      <td>{g.totalLockedFormatted}</td>
+                      <td>
+                        <span className="mini-bar">
+                          <span className="mini-bar__fill" style={{ width: `${pct}%` }} />
+                        </span>
+                        {g.progress.verifiedPushCount}/{g.progress.totalPushesRequired}
+                      </td>
+                      <td>
+                        <span className={`badge ${g.status}`}>{g.status}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </>
       )}
-
-      <div className="list">
-        {grants.map((g) => (
-          <article key={g.repoFullName} className="card">
-            <h3>
-              <Link to={`/vesting/status?repo=${encodeURIComponent(g.repoFullName)}`}>
-                {g.repoFullName}
-              </Link>
-            </h3>
-            <p className="muted">
-              Dev <Link to={`/vesting/dev/${g.githubOwner}`}>@{g.githubOwner}</Link>
-              {" · "}
-              Recipient {shortAddr(g.recipient)}
-              {" · "}
-              {g.status}
-            </p>
-            <p>
-              {g.progress.verifiedPushCount}/{g.progress.totalPushesRequired} verified pushes ·{" "}
-              {g.totalLockedFormatted} locked
-            </p>
-            <p className="muted small">{g.progress.summary}</p>
-          </article>
-        ))}
-      </div>
-
-      <style>{`
-        .small { font-size: 0.85rem; }
-        .list { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
-        .card { border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem 1.25rem; }
-        .card h3 { margin: 0 0 0.35rem; }
-      `}</style>
     </div>
   );
 }

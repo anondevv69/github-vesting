@@ -12,10 +12,10 @@ import { getRedis, KEYS } from "../lib/redis";
 
 const SCOPES = "read:user,repo";
 
-const ALLOWED_RETURN_PATHS = ["/vesting/setup", "/vesting/dashboard"] as const;
+const ALLOWED_RETURN_PATHS = ["/create", "/vesting/setup", "/vesting/dashboard"] as const;
 
-function sanitizeReturnTo(raw: unknown): (typeof ALLOWED_RETURN_PATHS)[number] {
-  const fallback = "/vesting/dashboard";
+function sanitizeReturnTo(raw: unknown): string {
+  const fallback = "/create";
   if (typeof raw !== "string" || !raw.trim()) return fallback;
   const path = raw.startsWith("/") ? raw.split("?")[0]! : (() => {
     try {
@@ -24,9 +24,9 @@ function sanitizeReturnTo(raw: unknown): (typeof ALLOWED_RETURN_PATHS)[number] {
       return "";
     }
   })();
-  return (ALLOWED_RETURN_PATHS as readonly string[]).includes(path)
-    ? (path as (typeof ALLOWED_RETURN_PATHS)[number])
-    : fallback;
+  if ((ALLOWED_RETURN_PATHS as readonly string[]).includes(path)) return path;
+  if (path === "/vesting/setup") return "/create";
+  return fallback;
 }
 
 export function handleOAuthRedirect(req: Request, res: Response): void {
@@ -62,7 +62,7 @@ export async function handleOAuthCallback(req: Request, res: Response): Promise<
   }
   await redis.del(KEYS.oauthState(state));
 
-  let returnTo: (typeof ALLOWED_RETURN_PATHS)[number] = "/vesting/dashboard";
+  let returnTo = "/create";
   try {
     returnTo = sanitizeReturnTo(JSON.parse(storedRaw).returnTo);
   } catch {
