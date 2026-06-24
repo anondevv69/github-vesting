@@ -32,6 +32,7 @@ export const KEYS = {
   devProfile: (githubLogin: string) => `vesting:dev_profile:${githubLogin.toLowerCase()}`,
   repoClaim: (repoFullName: string) => `vesting:repo_claim:${repoFullName.toLowerCase()}`,
   repoClaimChallenge: (claimId: string) => `vesting:repo_claim_challenge:${claimId}`,
+  githubSession: (sessionId: string) => `vesting:github_session:${sessionId}`,
 };
 
 import type { RepoPlatform } from "./repoId";
