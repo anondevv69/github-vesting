@@ -30,6 +30,8 @@ export const KEYS = {
   seenPushShas: (repoId: string) => `vesting:seen_shas:${repoId}`,
   devReviews: (githubLogin: string) => `vesting:dev_reviews:${githubLogin.toLowerCase()}`,
   devProfile: (githubLogin: string) => `vesting:dev_profile:${githubLogin.toLowerCase()}`,
+  repoClaim: (repoFullName: string) => `vesting:repo_claim:${repoFullName.toLowerCase()}`,
+  repoClaimChallenge: (claimId: string) => `vesting:repo_claim_challenge:${claimId}`,
 };
 
 import type { RepoPlatform } from "./repoId";
@@ -55,6 +57,18 @@ export type GrantRecord = {
   /// true = streaming-allowance (tokens stay in recipient's wallet)
   /// false = pre-funded (tokens are held in the escrow contract)
   streaming: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RepoClaimRecord = {
+  claimId: string;
+  repoFullName: string;
+  wallet: string;
+  githubLogin: string;
+  status: "pending" | "verified";
+  commitSha?: string;
+  verifiedAt?: string;
   createdAt: string;
   updatedAt: string;
 };

@@ -15,6 +15,7 @@ import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { VestingNav } from "../components/VestingNav";
 import { VestingFooter } from "../components/VestingFooter";
 import { VestingPathChart } from "../components/VestingPathChart";
+import { CopyButton } from "../components/CopyButton";
 import {
   createPublicClient,
   createWalletClient,
@@ -196,6 +197,11 @@ export function CreatePage() {
   const [scheduleMode, setScheduleMode] = useState<"single" | "recurring">("single");
   const [repoValidation, setRepoValidation] = useState<"idle" | "checking" | "ok" | "err">("idle");
   const [repoValidationMsg, setRepoValidationMsg] = useState("");
+  const [repoClaimStatus, setRepoClaimStatus] = useState<"none" | "pending" | "verified">("none");
+  const [repoClaimGithub, setRepoClaimGithub] = useState<string | null>(null);
+  const [repoClaimBusy, setRepoClaimBusy] = useState(false);
+  const [repoClaimFileJson, setRepoClaimFileJson] = useState<string | null>(null);
+  const [repoClaimMessage, setRepoClaimMessage] = useState<string | null>(null);
 
   // Restore wallet connection on page load if already connected.
   useEffect(() => {
@@ -341,6 +347,93 @@ export function CreatePage() {
     }
   }
 
+  async function pollRepoClaimStatus(repo: string) {
+    if (!wallet || !repo.includes("/")) return;
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/repo-claims/status?repo=${encodeURIComponent(repo)}&wallet=${wallet}&poll=1`,
+      );
+      const d = await res.json() as {
+        verified?: boolean;
+        status?: string;
+        claim?: { githubLogin?: string };
+      };
+      if (d.verified) {
+        setRepoClaimStatus("verified");
+        setRepoClaimGithub(d.claim?.githubLogin ?? null);
+      } else if (d.status === "pending") {
+        setRepoClaimStatus("pending");
+      } else {
+        setRepoClaimStatus("none");
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function startRepoClaim() {
+    if (!wallet || !form.repoFullName.includes("/")) {
+      setError("Connect wallet and enter owner/repo first");
+      return;
+    }
+    setRepoClaimBusy(true);
+    setError(null);
+    setRepoClaimFileJson(null);
+    setRepoClaimMessage(null);
+    try {
+      const eth = (window as Window & { ethereum?: EthereumProvider }).ethereum;
+      if (!eth) throw new Error("Wallet required to sign repo claim");
+
+      const res = await fetch(`${API_BASE}/api/repo-claims/challenge`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-wallet-address": wallet },
+        body: JSON.stringify({ repo: form.repoFullName.trim() }),
+      });
+      const challenge = await res.json() as {
+        ok?: boolean;
+        error?: string;
+        claimId?: string;
+        signMessage?: string;
+      };
+      if (!challenge.ok || !challenge.signMessage || !challenge.claimId) {
+        throw new Error(challenge.error ?? "Failed to start repo claim");
+      }
+
+      const signature = (await eth.request({
+        method: "personal_sign",
+        params: [challenge.signMessage, wallet],
+      })) as string;
+
+      const prep = await fetch(`${API_BASE}/api/repo-claims/prepare-file`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ claimId: challenge.claimId, signature }),
+      });
+      const fileRes = await prep.json() as {
+        ok?: boolean;
+        error?: string;
+        filePath?: string;
+        fileContent?: unknown;
+        commitMessage?: string;
+      };
+      if (!fileRes.ok || !fileRes.fileContent) {
+        throw new Error(fileRes.error ?? "Failed to prepare claim file");
+      }
+
+      const json = JSON.stringify(fileRes.fileContent, null, 2);
+      setRepoClaimFileJson(json);
+      setRepoClaimStatus("pending");
+      setRepoClaimMessage(
+        `Push ${fileRes.filePath ?? ".proofofdev/claim.json"} to main on ${form.repoFullName}. ` +
+        `This push does not count toward vesting.`,
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Repo claim failed");
+    } finally {
+      setRepoClaimBusy(false);
+    }
+  }
+
   async function validateRepoOnBlur() {
     const repo = form.repoFullName.trim();
     if (!repo.includes("/")) {
@@ -361,6 +454,7 @@ export function CreatePage() {
       if (d.ok) {
         setRepoValidation("ok");
         setRepoValidationMsg(`✓ ${d.repo ?? repo} found on GitHub`);
+        void pollRepoClaimStatus(repo);
       } else {
         setRepoValidation("err");
         setRepoValidationMsg(d.error ?? "Repository not found");
@@ -700,6 +794,47 @@ export function CreatePage() {
               )}
             </label>
           </div>
+
+          {form.repoFullName.includes("/") && wallet && (
+            <div className="repo-claim-box">
+              <h3>Verify repo ownership</h3>
+              <p className="muted">
+                Bond your wallet to this repo by pushing a signed claim file. Optional before locking — agents can push it for you.
+              </p>
+              {repoClaimStatus === "verified" ? (
+                <p className="field-hint ok">
+                  ✓ Verified{repoClaimGithub ? ` — pushed by @${repoClaimGithub}` : ""}
+                </p>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    disabled={repoClaimBusy || repoValidation === "err"}
+                    onClick={() => void startRepoClaim()}
+                  >
+                    {repoClaimBusy ? "Signing…" : "Sign & get claim file"}
+                  </button>
+                  {repoClaimStatus === "pending" && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => void pollRepoClaimStatus(form.repoFullName.trim())}
+                    >
+                      Check status
+                    </button>
+                  )}
+                </>
+              )}
+              {repoClaimMessage && <p className="muted">{repoClaimMessage}</p>}
+              {repoClaimFileJson && (
+                <div className="agents-code-block agents-code-block--wide">
+                  <code>{repoClaimFileJson}</code>
+                  <CopyButton text={repoClaimFileJson} icon label="Copy claim JSON" />
+                </div>
+              )}
+            </div>
+          )}
 
           <button
             type="button"

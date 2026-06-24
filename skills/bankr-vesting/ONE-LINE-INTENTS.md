@@ -10,7 +10,8 @@ Linked Bankr wallet → header `x-wallet-address: 0x…` on every call.
 | **how many pushes until release?** | briefing or `GET {API}/api/agent/status?repo=owner/repo` |
 | **list my github locks** | `GET {API}/api/agent/grants?wallet=0x…` |
 | **my bankr tokens / fee tokens / what can I lock** | `GET {API}/api/agent/fee-tokens` → wallet holdings on Base |
-| **lock 855M TMP on owner/repo for 1 push** | `POST {API}/api/agent/lock` — TMP resolves from wallet balance |
+| **verify repo owner/repo** | `POST /api/repo-claims/challenge` → sign → `prepare-file` → push `.proofofdev/claim.json` |
+| **check repo claim** | `GET /api/repo-claims/status?repo=owner/repo&poll=1` |
 | **lock 855M 0x935e… on owner/repo** | `POST {API}/api/agent/lock` with `token` = contract address |
 | **vest Space on my repo** | Lock flow if wallet can sign; else `setup-link` → `/create` |
 | **start github vesting** (web) | `GET {API}/api/agent/setup-link?wallet=0x…` → paste `{VESTING_SITE_URL}/create` |
@@ -37,6 +38,18 @@ Linked Bankr wallet → header `x-wallet-address: 0x…` on every call.
 ```
 
 **Recurring schedule:** add `"pushesPerMilestone": 2` (e.g. 10 pushes, release every 2).
+
+## Repo claim flow (wallet ↔ repo bond)
+
+```
+1. POST /api/repo-claims/challenge  { "repo": "owner/repo" }  + x-wallet-address
+2. Sign signMessage with wallet (personal_sign or Bankr agent/sign)
+3. POST /api/repo-claims/prepare-file  { "claimId", "signature" }
+4. Push fileContent to .proofofdev/claim.json on main (agent can commit + push)
+5. GET /api/repo-claims/status?repo=owner/repo&poll=1
+```
+
+Claim pushes **do not** count toward vesting milestones. Then proceed with lock flow.
 
 ## Forbidden replies
 

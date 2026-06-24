@@ -8,6 +8,7 @@ import { buildProgress, formatTokenAmount } from "../lib/grantsHelper";
 import { splitRepo } from "../lib/repoId";
 import { getDevProfile } from "./devProfile";
 import { fetchBankrTokenInfo } from "./bankr";
+import { getRepoClaim } from "../lib/repoClaims";
 
 function dedupeGrants(grants: GrantRecord[]): GrantRecord[] {
   const byRepo = new Map<string, GrantRecord>();
@@ -231,6 +232,7 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
   }).sort((a, b) => Number(BigInt(b.amount) - BigInt(a.amount)));
 
   const bankr = await fetchBankrTokenInfo(grant.token);
+  const repoClaim = await getRepoClaim(repoFullName);
 
   res.json({
     ok: true,
@@ -238,6 +240,7 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
     progress,
     recentPushes,
     githubOwner,
+    repoClaim,
     released: releasedWei.toString(),
     releasedFormatted: formatTokenAmount(releasedWei.toString()),
     remaining: remainingWei.toString(),
