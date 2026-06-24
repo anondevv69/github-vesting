@@ -4,6 +4,7 @@ import { VestingNav } from "../components/VestingNav";
 import { VestingFooter } from "../components/VestingFooter";
 import { CopyButton } from "../components/CopyButton";
 import { formatTokens, shortAddr } from "../lib/format";
+import { isValidRepoFullName } from "../lib/repoId";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const IS_TESTNET = import.meta.env.VITE_CHAIN === "base-sepolia";
@@ -122,11 +123,14 @@ export function LockPage() {
       .finally(() => setLoading(false));
   }, [repoFullName, owner, repoName]);
 
-  if (!repoFullName) {
+  if (!repoFullName || !isValidRepoFullName(repoFullName)) {
     return (
       <div className="vesting-page">
         <VestingNav />
-        <p className="err">Invalid lock URL</p>
+        <p className="err">Invalid lock URL — use owner/repo, not a pasted GitHub URL path.</p>
+        <p style={{ marginTop: "1rem" }}>
+          <Link to="/create" className="btn btn-primary">Back to Create lock →</Link>
+        </p>
       </div>
     );
   }

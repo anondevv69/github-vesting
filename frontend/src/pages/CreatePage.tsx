@@ -17,7 +17,8 @@ import { VestingFooter } from "../components/VestingFooter";
 import { VestingPathChart } from "../components/VestingPathChart";
 import { CopyButton } from "../components/CopyButton";
 import { useVestingAuth } from "../hooks/useVestingAuth";
-import { normalizeRepoFullName, splitRepo } from "../lib/repoId";
+import { normalizeRepoFullName, lockPathFromRepo, isValidRepoFullName } from "../lib/repoId";
+import { buildRepoClaimAgentPrompt } from "../lib/repoClaimPrompt";
 import {
   createPublicClient,
   createWalletClient,
@@ -231,6 +232,7 @@ export function CreatePage() {
   const [repoClaimGithub, setRepoClaimGithub] = useState<string | null>(null);
   const [repoClaimBusy, setRepoClaimBusy] = useState(false);
   const [repoClaimFileJson, setRepoClaimFileJson] = useState<string | null>(null);
+  const [repoClaimAgentPrompt, setRepoClaimAgentPrompt] = useState<string | null>(null);
   const [repoClaimMessage, setRepoClaimMessage] = useState<string | null>(null);
   const [myRepos, setMyRepos] = useState<string[]>([]);
   const didAutoValidateRepo = useRef(false);
@@ -436,15 +438,17 @@ export function CreatePage() {
     setRepoClaimBusy(true);
     setError(null);
     setRepoClaimFileJson(null);
+    setRepoClaimAgentPrompt(null);
     setRepoClaimMessage(null);
     try {
+      const normalizedRepo = normalizeRepoFullName(form.repoFullName);
       const eth = (window as Window & { ethereum?: EthereumProvider }).ethereum;
       if (!eth) throw new Error("Wallet required to sign repo claim");
 
       const res = await fetch(`${API_BASE}/api/repo-claims/challenge`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-wallet-address": wallet },
-        body: JSON.stringify({ repo: form.repoFullName.trim() }),
+        body: JSON.stringify({ repo: normalizedRepo }),
         ...API_FETCH,
       });
       const challenge = await res.json() as {
@@ -479,11 +483,20 @@ export function CreatePage() {
       }
 
       const json = JSON.stringify(fileRes.fileContent, null, 2);
+      const filePath = fileRes.filePath ?? ".proofofdev/claim.json";
+      const commitMessage = fileRes.commitMessage ?? `Proof of Dev: verify repo ownership`;
       setRepoClaimFileJson(json);
+      setRepoClaimAgentPrompt(buildRepoClaimAgentPrompt({
+        repoFullName: normalizedRepo,
+        wallet,
+        claimJson: json,
+        filePath,
+        commitMessage,
+        apiBase: API_BASE,
+      }));
       setRepoClaimStatus("pending");
       setRepoClaimMessage(
-        `Push ${fileRes.filePath ?? ".proofofdev/claim.json"} to main on ${form.repoFullName}. ` +
-        `This push does not count toward vesting.`,
+        `Push ${filePath} to main on ${normalizedRepo}. This push does not count toward vesting.`,
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Repo claim failed");
@@ -497,9 +510,9 @@ export function CreatePage() {
     if (repo !== form.repoFullName.trim()) {
       setForm((f) => ({ ...f, repoFullName: repo }));
     }
-    if (!repo.includes("/")) {
+    if (!isValidRepoFullName(repo)) {
       setRepoValidation("err");
-      setRepoValidationMsg("Use owner/repo format");
+      setRepoValidationMsg("Use owner/repo or a full github.com/owner/repo URL");
       return;
     }
     if (form.platform === "gitlawb") {
@@ -786,13 +799,17 @@ export function CreatePage() {
           streaming: isBankrToken,
         }),
       });
-      const data = await res.json() as { ok: boolean; error?: string; hint?: string };
+      const data = await res.json() as {
+        ok: boolean;
+        error?: string;
+        hint?: string;
+        lockPath?: string;
+      };
       if (!data.ok && res.status !== 409) {
         throw new Error(data.error ?? "Registration failed");
       }
       sessionStorage.removeItem(WIZARD_STORAGE_KEY);
-      const [owner, name] = splitRepo(normalizedRepo);
-      navigate(`/lock/${owner}/${name}`);
+      navigate(data.lockPath ?? lockPathFromRepo(normalizedRepo));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Registration failed");
     }
@@ -927,10 +944,23 @@ export function CreatePage() {
               )}
               {repoClaimMessage && <p className="muted">{repoClaimMessage}</p>}
               {repoClaimFileJson && (
-                <div className="agents-code-block agents-code-block--wide">
-                  <code>{repoClaimFileJson}</code>
-                  <CopyButton text={repoClaimFileJson} icon label="Copy claim JSON" />
-                </div>
+                <>
+                  <div className="agents-code-block agents-code-block--wide">
+                    <code>{repoClaimFileJson}</code>
+                    <CopyButton text={repoClaimFileJson} icon label="Copy claim JSON" />
+                  </div>
+                  {repoClaimAgentPrompt && (
+                    <div className="repo-claim-agent-prompt">
+                      <p className="muted" style={{ marginBottom: "0.5rem" }}>
+                        Paste into Cursor, Claude, Codex, or @bankrbot — the agent should push the file for you:
+                      </p>
+                      <div className="agents-code-block agents-code-block--wide">
+                        <code>{repoClaimAgentPrompt}</code>
+                        <CopyButton text={repoClaimAgentPrompt} icon label="Copy agent prompt" />
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -939,7 +969,16 @@ export function CreatePage() {
             type="button"
             className="btn btn-primary"
             disabled={!wallet || !form.repoFullName || !form.tokenAddress || repoValidation === "err"}
-            onClick={() => setStep(2)}
+            onClick={() => {
+              const repo = normalizeRepoFullName(form.repoFullName);
+              if (!isValidRepoFullName(repo)) {
+                setRepoValidation("err");
+                setRepoValidationMsg("Use owner/repo or a full github.com/owner/repo URL");
+                return;
+              }
+              setForm((f) => ({ ...f, repoFullName: repo }));
+              setStep(2);
+            }}
           >
             Next →
           </button>

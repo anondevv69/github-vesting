@@ -44,9 +44,10 @@ function formatCreatedAt(iso: string): string {
   return iso.replace("T", " ").slice(0, 16);
 }
 
+import { lockPathFromRepo } from "../lib/repoId";
+
 function lockPath(repoFullName: string): string {
-  const [owner, name] = repoFullName.split("/");
-  return `/lock/${owner}/${name}`;
+  return lockPathFromRepo(repoFullName);
 }
 
 export function ExplorePage() {

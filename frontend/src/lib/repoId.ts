@@ -6,9 +6,27 @@ export function normalizeRepoFullName(input: string): string {
   return trimmed.replace(/\/$/, "");
 }
 
+export function isValidRepoFullName(input: string): boolean {
+  const normalized = normalizeRepoFullName(input);
+  if (normalized.includes("://") || normalized.startsWith("http")) return false;
+  const slash = normalized.indexOf("/");
+  if (slash <= 0 || slash >= normalized.length - 1) return false;
+  const owner = normalized.slice(0, slash);
+  const name = normalized.slice(slash + 1);
+  return owner.length > 0 && name.length > 0 && !owner.includes(" ");
+}
+
 export function splitRepo(full: string): [string, string] {
   const normalized = normalizeRepoFullName(full);
+  if (!isValidRepoFullName(normalized)) {
+    throw new Error(`Invalid repo — use owner/repo or a full GitHub URL`);
+  }
   const slash = normalized.indexOf("/");
-  if (slash === -1) throw new Error(`Invalid repo: ${full}`);
   return [normalized.slice(0, slash), normalized.slice(slash + 1)];
+}
+
+/** React-router path for a lock page, e.g. /lock/owner/repo. */
+export function lockPathFromRepo(input: string): string {
+  const [owner, name] = splitRepo(input);
+  return `/lock/${owner}/${name}`;
 }
