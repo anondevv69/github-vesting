@@ -33,7 +33,7 @@ export function AgentsPage() {
           <h3>Install</h3>
           <div className="agents-code-block">
             <code>{SKILL_INSTALL}</code>
-            <CopyButton text={SKILL_INSTALL} />
+            <CopyButton text={SKILL_INSTALL} icon />
           </div>
 
           <h3>What the skill provides</h3>
@@ -65,7 +65,7 @@ export function AgentsPage() {
           <h3>Base URL</h3>
           <div className="agents-code-block">
             <code>{API_BASE}</code>
-            <CopyButton text={API_BASE} label="Copy URL" />
+            <CopyButton text={API_BASE} icon label="Copy URL" />
           </div>
 
           <h3>Endpoints</h3>
@@ -81,7 +81,7 @@ export function AgentsPage() {
           <h3>Example</h3>
           <div className="agents-code-block agents-code-block--wide">
             <code>{CURL_EXAMPLE}</code>
-            <CopyButton text={CURL_EXAMPLE} label="Copy curl" />
+            <CopyButton text={CURL_EXAMPLE} icon label="Copy curl" />
           </div>
           <p className="muted agents-note">
             Pass <code>?wallet=0x…</code> or header <code>x-wallet-address: 0x…</code>.
