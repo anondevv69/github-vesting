@@ -9,10 +9,11 @@ import { randomBytes } from "crypto";
 import { env } from "../lib/env";
 import { getRedis, KEYS } from "../lib/redis";
 import { finishGithubOAuth } from "./githubAuth";
+import { completeGithubMagicLink } from "../lib/githubMagicLink";
 
 const SCOPES = "read:user,repo";
 
-const ALLOWED_RETURN_PATHS = ["/", "/create", "/help", "/vesting/setup", "/vesting/dashboard"] as const;
+const ALLOWED_RETURN_PATHS = ["/", "/create", "/help", "/link-github", "/vesting/setup", "/vesting/dashboard"] as const;
 
 function sanitizeReturnTo(raw: unknown): string {
   const fallback = "/";
@@ -34,8 +35,15 @@ function sanitizeReturnTo(raw: unknown): string {
 export function handleOAuthRedirect(req: Request, res: Response): void {
   const state = randomBytes(16).toString("hex");
   const returnTo = sanitizeReturnTo(req.query["returnTo"]);
+  const linkTokenRaw = String(req.query["linkToken"] ?? "").trim().toLowerCase();
+  const linkToken = /^[a-f0-9]{48}$/.test(linkTokenRaw) ? linkTokenRaw : undefined;
   const redis = getRedis();
-  void redis.set(KEYS.oauthState(state), JSON.stringify({ returnTo }), "EX", 600);
+  void redis.set(
+    KEYS.oauthState(state),
+    JSON.stringify({ returnTo, linkToken }),
+    "EX",
+    600,
+  );
 
   const params = new URLSearchParams({
     client_id: env.GITHUB_CLIENT_ID,
@@ -65,8 +73,12 @@ export async function handleOAuthCallback(req: Request, res: Response): Promise<
   await redis.del(KEYS.oauthState(state));
 
   let returnTo = "/create";
+  let linkToken: string | undefined;
   try {
-    returnTo = sanitizeReturnTo(JSON.parse(storedRaw).returnTo);
+    const parsed = JSON.parse(storedRaw) as { returnTo?: string; linkToken?: string };
+    returnTo = sanitizeReturnTo(parsed.returnTo);
+    const rawToken = String(parsed.linkToken ?? "").trim().toLowerCase();
+    linkToken = /^[a-f0-9]{48}$/.test(rawToken) ? rawToken : undefined;
   } catch {
     /* legacy state value "1" */
   }
@@ -76,6 +88,24 @@ export async function handleOAuthCallback(req: Request, res: Response): Promise<
     const sessionData = encodeURIComponent(
       JSON.stringify({ login: user.login, id: user.id, name: user.name, avatarUrl: user.avatarUrl }),
     );
+
+    if (linkToken) {
+      try {
+        const result = await completeGithubMagicLink(linkToken, user.login);
+        const profilePath = `/dev/${result.githubLogin}`;
+        res.redirect(
+          `${env.FRONTEND_URL}${profilePath}?wallet_linked=1&github_user=${sessionData}`,
+        );
+        return;
+      } catch (linkErr) {
+        const msg = linkErr instanceof Error ? linkErr.message : String(linkErr);
+        res.redirect(
+          `${env.FRONTEND_URL}/link-github?t=${linkToken}&error=${encodeURIComponent(msg)}`,
+        );
+        return;
+      }
+    }
+
     res.redirect(`${env.FRONTEND_URL}${returnTo}?github_user=${sessionData}`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

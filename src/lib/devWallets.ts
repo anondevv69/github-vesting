@@ -12,7 +12,7 @@ const LINK_CHALLENGE_TTL_SEC = 60 * 15;
 export type LinkedWallet = {
   wallet: string;
   linkedAt: string;
-  source: "signed" | "repo-claim" | "lock";
+  source: "signed" | "repo-claim" | "lock" | "bankr";
 };
 
 export type PendingWalletLink = {

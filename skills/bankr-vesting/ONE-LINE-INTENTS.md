@@ -14,6 +14,7 @@ Linked Bankr wallet → header `x-wallet-address: 0x…` on every call.
 | **check repo claim** | `GET /api/repo-claims/status?repo=owner/repo&poll=1` |
 | **lock 855M 0x935e… on owner/repo** | `POST {API}/api/agent/lock` with `token` = contract address |
 | **vest Space on my repo** | Lock flow if wallet can sign; else `setup-link` → `/create` |
+| **link github @username** | `POST {API}/api/agent/link-github` → paste `linkUrl` (DM only, 15 min) |
 | **start github vesting** (web) | `GET {API}/api/agent/setup-link?wallet=0x…` → paste `{VESTING_SITE_URL}/create` |
 | **vesting on anondevv69/github-vesting** | `GET {API}/api/agent/status?repo=anondevv69/github-vesting` |
 | **what is a milestone?** | Explain: every N verified pushes → token release (no API) |
@@ -51,6 +52,22 @@ Linked Bankr wallet → header `x-wallet-address: 0x…` on every call.
 
 Claim pushes **do not** count toward vesting milestones. Then proceed with lock flow.
 
+## Link GitHub to Bankr wallet (magic link)
+
+```
+1. POST {API}/api/agent/link-github
+   Header: x-wallet-address: 0x…
+   Body: { "githubLogin": "anondevv69" }
+
+2. Paste linkUrl from response verbatim (DM only — expires in 15 min)
+
+3. User opens link → Continue with GitHub → must sign in as that @username
+
+4. Profile shows linked wallet: {VESTING_SITE_URL}/dev/anondevv69
+```
+
+**Security:** one-time token, GitHub login must match. Never share the link publicly.
+
 ## Forbidden replies
 
 - "TMP isn't supported" / "only Space and TEST" **without** calling `POST /api/agent/lock` first
@@ -72,6 +89,13 @@ curl -X POST -H "Content-Type: application/json" \
   -H "x-wallet-address: 0xbff8c6c34f1efacf6844350de907cca6f07c76b8" \
   -d '{"repo":"owner/repo","token":"Space","amount":"3.49M","totalPushes":10}' \
   "https://api.proofofdev.xyz/api/agent/lock"
+```
+
+```bash
+curl -X POST -H "Content-Type: application/json" \
+  -H "x-wallet-address: 0xbff8c6c34f1efacf6844350de907cca6f07c76b8" \
+  -d '{"githubLogin":"anondevv69"}' \
+  "https://api.proofofdev.xyz/api/agent/link-github"
 ```
 
 ```bash
