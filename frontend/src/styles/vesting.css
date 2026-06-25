@@ -1654,6 +1654,40 @@ code {
   font-size: 0.8125rem;
 }
 
+.dev-sidebar__stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.linked-wallet-card {
+  margin: 0.5rem 0;
+  padding: 0.65rem 0.75rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.linked-wallet-card__handle {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.linked-wallet-card__handle:hover {
+  color: var(--blue);
+}
+
+.linked-wallet-card__source {
+  display: block;
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+}
+
 .profile-input {
   width: 100%;
   background: var(--bg-input);
@@ -2112,13 +2146,32 @@ code {
   max-width: 20rem;
 }
 
+.fee-recipient-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 .fee-recipient-card__label {
   display: block;
   font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
-  margin-bottom: 0.5rem;
+  margin: 0;
+}
+
+.fee-recipient-card__dev-link {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 0.35rem;
+  text-decoration: none;
+}
+
+.fee-recipient-card__dev-link:hover {
+  color: var(--blue);
 }
 
 .fee-recipient-card__person {
