@@ -187,6 +187,26 @@ export function DevProfilePage() {
     setLinkMessage(null);
     try {
       const eth = (window as Window & { ethereum?: { request: (args: { method: string; params?: unknown[] }) => Promise<string> } }).ethereum;
+
+      let useMagicSession = false;
+      if (eth) {
+        const code = await eth.request({ method: "eth_getCode", params: [wallet, "latest"] });
+        useMagicSession = Boolean(code && code !== "0x" && code !== "0x0");
+      }
+
+      if (useMagicSession) {
+        const magicRes = await fetch(`${API_BASE}/api/dev/link-wallet/magic-session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-wallet-address": wallet },
+          ...API_FETCH,
+        });
+        const magic = await magicRes.json() as { ok?: boolean; error?: string };
+        if (!magic.ok) throw new Error(magic.error ?? "Wallet link failed");
+        setLinkMessage("Bankr wallet linked to your GitHub profile.");
+        load();
+        return;
+      }
+
       if (!eth) throw new Error("Wallet required to sign link message");
 
       const challengeRes = await fetch(`${API_BASE}/api/dev/link-wallet/challenge`, {
@@ -483,6 +503,7 @@ export function DevProfilePage() {
                 )}
                 <p className="muted" style={{ fontSize: "0.8rem", marginTop: "0.5rem" }}>
                   Link your Bankr fee-recipient wallet so it shows on your dev profile and lets you edit settings.
+                  Bankr smart wallets link automatically — no signature needed.
                 </p>
                 {linkMessage && <p className={linkMessage.includes("linked") ? "ok" : "err"}>{linkMessage}</p>}
               </div>
