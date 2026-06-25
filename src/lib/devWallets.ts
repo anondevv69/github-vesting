@@ -3,9 +3,10 @@
  */
 
 import { randomBytes } from "crypto";
-import { verifyMessage } from "viem";
+import type { Address, Hex } from "viem";
 import { getRedis, KEYS } from "./redis";
 import { isValidWallet } from "./grantsHelper";
+import { verifyWalletMessage } from "./walletSignature";
 
 const LINK_CHALLENGE_TTL_SEC = 60 * 15;
 
@@ -124,11 +125,11 @@ export async function confirmWalletLink(
     throw new Error("Sign message mismatch");
   }
 
-  const valid = await verifyMessage({
-    address: addr as `0x${string}`,
-    message: signMessage,
-    signature: signature as `0x${string}`,
-  });
+  const valid = await verifyWalletMessage(
+    addr as Address,
+    signMessage,
+    signature as Hex,
+  );
   if (!valid) throw new Error("Invalid wallet signature");
 
   await getRedis().del(KEYS.devWalletLinkChallenge(challengeId));

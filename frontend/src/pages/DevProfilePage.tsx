@@ -224,7 +224,12 @@ export function DevProfilePage() {
       setLinkMessage("Wallet linked to your GitHub profile.");
       load();
     } catch (e) {
-      setLinkMessage(e instanceof Error ? e.message : "Wallet link failed");
+      const msg = e instanceof Error ? e.message : "Wallet link failed";
+      setLinkMessage(
+        msg.includes("Invalid wallet signature")
+          ? `${msg} — Bankr smart wallets: use "link github rayblancoeth" in Bankr terminal for magic link, or retry after API deploy.`
+          : msg,
+      );
     } finally {
       setLinkBusy(false);
     }

@@ -4,13 +4,13 @@
 
 import { randomBytes } from "crypto";
 import {
-  verifyMessage,
   type Address,
   type Hex,
 } from "viem";
 import { getRedis, KEYS, type RepoClaimRecord } from "./redis";
 import { normalizeRepoFullName } from "./repoId";
 import { isValidWallet } from "./grantsHelper";
+import { verifyWalletMessage } from "./walletSignature";
 import { resolveInstallationForRepo } from "../github/githubApp";
 import { getGithubApp } from "../github/githubApp";
 import { addLinkedWallet } from "./devWallets";
@@ -168,11 +168,11 @@ export async function verifyClaimFile(
   }
 
   const signMessage = buildSignMessage(file.claimId, normalizedRepo, file.wallet);
-  const valid = await verifyMessage({
-    address: file.wallet as Address,
-    message: signMessage,
-    signature: file.signature as Hex,
-  });
+  const valid = await verifyWalletMessage(
+    file.wallet as Address,
+    signMessage,
+    file.signature as Hex,
+  );
   if (!valid) {
     return { ok: false, error: "invalid wallet signature" };
   }
