@@ -63,11 +63,19 @@ export async function handleByToken(req: Request, res: Response): Promise<void> 
     (g) => g.token.toLowerCase() === token,
   );
 
+  const summaries = grants.map(grantSummary);
+  const activeCount = summaries.filter((g) => g.status === "active").length;
+  const devs = new Set(summaries.map((g) => g.githubOwner));
+
   res.json({
     ok: true,
     token,
     count: grants.length,
-    grants: grants.map(grantSummary),
+    activeCount,
+    uniqueDevs: devs.size,
+    communityUrl: `https://www.bankr.space/community/${token}`,
+    createLockUrl: `https://www.proofofdev.xyz/create?token=${token}`,
+    grants: summaries,
   });
 }
 
