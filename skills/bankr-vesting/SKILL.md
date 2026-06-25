@@ -1,24 +1,42 @@
 ---
 name: bankr-vesting
-description: Lock ANY ERC-20 on Base for GitHub-gated vesting — status, wallet tokens, full lock flow from chat or X. No token allowlist.
-tags: [github, vesting, bankr, base, defi, space]
+description: GitHub-gated token vesting on proofofdev.xyz — lock ANY ERC-20 on Base via API at api.proofofdev.xyz, link GitHub, repo claims. Use for github vesting, lock tokens, vesting progress, link github, proofofdev. NEVER use github-vesting.vercel.app for API.
+tags: [github, vesting, bankr, base, defi, proofofdev]
+version: 2
 ---
 
 # GitHub Vesting — Bankr agent skill
 
-Lock **any ERC-20 on Base** for GitHub-gated vesting. Earn tokens back by shipping verified commits to a repo. **There is no token allowlist** — TMP, Space, USDC, or any `0x` contract works.
+## CRITICAL — API host (read first)
 
-**Site:** `{VESTING_SITE_URL}` (explore, lock pages, dev profiles, create flow)  
-**API:** `{VESTING_API_URL}` (agent + webhooks)
+**Agent API:** `https://api.proofofdev.xyz`  
+**Web UI:** `https://www.proofofdev.xyz`
+
+```
+GET  https://api.proofofdev.xyz/health
+POST https://api.proofofdev.xyz/api/agent/lock
+POST https://api.proofofdev.xyz/api/agent/confirm-lock
+```
+
+**NEVER** call `github-vesting.vercel.app` for API — it is frontend-only (POST → 405).  
+**NEVER** guess `/api/lock`, `/api/v1/lock`, `/api/web/lock` — they do not exist.
+
+See `references/API-HOST.md` before any HTTP call.
 
 ---
 
-## CRITICAL — any token
+Lock **any ERC-20 on Base** for GitHub-gated vesting. **No token allowlist.** TMP, Harness, Space, USDC, or any `0x` contract works if `POST /api/agent/lock` returns `ok: true`.
 
-- **Any ERC-20 on Base** can be locked. Symbols resolve from **wallet holdings** or pass a **`0x` address**.
-- `known-escrow.json` → `supportedTokens` is **not an allowlist**. It only marks streaming tokens (Space → `lockAllowance`).
-- **Never** say "only Space and TEST" or "TMP isn't supported" without calling `POST {API}/api/agent/lock` first.
-- Do **not** confuse a token's native `release()` vesting with **GitHub vesting** (GitEscrow + verified pushes).
+**Site:** `https://www.proofofdev.xyz`  
+**API:** `https://api.proofofdev.xyz`
+
+---
+
+## CRITICAL — not an allowlist
+
+- `known-escrow.json` and `streaming-hints.json` are **streaming detection hints only** (Space → `lockAllowance`).
+- **Ignore `supportedTokens` for gating.** Never refuse a token without calling `POST https://api.proofofdev.xyz/api/agent/lock`.
+- If Bankr `agent/submit` blocks **approve** with `untrusted_address`, that is **Bankr's security scanner** — see `references/BANKR-SUBMIT.md`. Fallback: `https://www.proofofdev.xyz/create`.
 
 ---
 
@@ -47,12 +65,15 @@ Example: **10 total pushes**, **10 per milestone** → **1 milestone** → full 
 ## Mandatory routing
 
 ```
-if message mentions github vesting / lock tokens / vesting progress / verified pushes / milestones:
+if message mentions github vesting / proofofdev / lock tokens / vesting progress /
+   verified pushes / milestones / link github / vest my:
   1. use_skill("bankr-vesting")
-  2. Read ONE-LINE-INTENTS.md
-  3. Resolve linked wallet → x-wallet-address header
-  4. Call AGENT-API.md endpoint BEFORE replying
-  5. Paste replyText / tweetReply verbatim — URL on its own line
+  2. Read references/API-HOST.md — use ONLY https://api.proofofdev.xyz
+  3. Read references/ONE-LINE-INTENTS.md
+  4. Resolve linked wallet → x-wallet-address header
+  5. Call references/AGENT-API.md endpoint BEFORE replying
+  6. Paste replyText / tweetReply verbatim — URL on its own line
+  7. If agent/submit fails untrusted_address → references/BANKR-SUBMIT.md + /create link
 ```
 
 **Tweet = DM** — same pipeline on `@bankrbot` intake.
@@ -166,6 +187,9 @@ When user says **Space**, **$SPACE**, or `0xef703b860a6d422fa00cc67bbbb2662297cb
 
 | File | Purpose |
 |------|---------|
-| `ONE-LINE-INTENTS.md` | Tweet → API mapping |
-| `AGENT-API.md` | Endpoint reference + examples |
-| `known-escrow.json` | Escrow address + streaming token hints (**not** an allowlist) |
+| `references/API-HOST.md` | **Required** — correct API base URL |
+| `references/BANKR-SUBMIT.md` | Bankr security scan blocks (untrusted_address) |
+| `references/ONE-LINE-INTENTS.md` | Tweet → API mapping |
+| `references/AGENT-API.md` | Endpoint reference |
+| `streaming-hints.json` | Streaming lock hints only — **not an allowlist** |
+| `known-escrow.json` | Legacy alias for server; agents: prefer streaming-hints.json |

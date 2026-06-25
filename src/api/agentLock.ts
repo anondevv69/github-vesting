@@ -336,10 +336,15 @@ export async function handleAgentPrepareLock(req: Request, res: Response): Promi
       `Ready to lock ${prep.amountFormatted} ${prep.tokenSymbol} on ${normalizedRepo}.\n` +
       `${prep.transactions.length} Base tx(s): ${prep.needsApprove ? "approve + lock" : "lock only"}.\n` +
       `Schedule: ${scheduleSummary}.\n\n` +
-      `Bankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.`;
+      `Bankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.` +
+      (prep.needsApprove
+        ? `\n\nIf Bankr blocks approve (untrusted_address), use web UI: ${env.FRONTEND_URL}/create`
+        : "");
 
     res.json({
       ok: true,
+      apiBase: env.SERVER_URL,
+      webFallback: `${env.FRONTEND_URL}/create`,
       wallet,
       repo: normalizedRepo,
       installationId: gh.installationId,

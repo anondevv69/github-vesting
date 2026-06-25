@@ -11,20 +11,28 @@
   "apiEnvVar": "VESTING_API_URL",
   "routingKeywords": [
     "github vesting",
+    "proofofdev",
     "vesting",
     "lock tokens",
     "vest my",
+    "link github",
     "vesting progress",
     "verified pushes",
     "milestone",
     "release tokens",
-    "github-vesting",
-    "git escrow"
+    "github-vesting"
   ],
+  "forbiddenApiHosts": [
+    "github-vesting.vercel.app"
+  ],
+  "apiBaseUrl": "https://api.proofofdev.xyz",
   "allReferences": [
     "SKILL.md",
-    "ONE-LINE-INTENTS.md",
-    "AGENT-API.md",
+    "references/API-HOST.md",
+    "references/BANKR-SUBMIT.md",
+    "references/ONE-LINE-INTENTS.md",
+    "references/AGENT-API.md",
+    "streaming-hints.json",
     "known-escrow.json"
   ],
   "bankrNote": "ANY ERC-20 on Base — no allowlist. Lock: POST /api/agent/lock (symbol from wallet or 0x address) → Bankr agent/submit → POST /api/agent/confirm-lock. Reads: briefing, grants, status, fee-tokens (wallet holdings). Never refuse TMP or other tokens without calling lock API. known-escrow.json supportedTokens = streaming hints only."
