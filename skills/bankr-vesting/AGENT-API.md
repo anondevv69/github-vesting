@@ -189,6 +189,45 @@ Then call `confirm-lock` with the lock transaction hash.
 
 ---
 
+## POST /api/agent/link-github
+
+Create a one-time magic link to bind the Bankr wallet to a GitHub dev profile.
+
+```http
+POST {API}/api/agent/link-github
+Content-Type: application/json
+x-wallet-address: 0x…
+
+{ "githubLogin": "anondevv69" }
+```
+
+**Response (200):**
+
+```json
+{
+  "ok": true,
+  "wallet": "0x…",
+  "githubLogin": "anondevv69",
+  "linkUrl": "https://www.proofofdev.xyz/link-github?t=…",
+  "profileUrl": "https://www.proofofdev.xyz/dev/anondevv69",
+  "expiresAt": "2026-06-24T…",
+  "replyText": "Link GitHub @anondevv69…",
+  "tweetReply": "…"
+}
+```
+
+Paste `linkUrl` in DM only (expires in 15 minutes). User opens link → GitHub OAuth as that username → wallet appears on dev profile.
+
+## GET /api/link-github/inspect
+
+Landing page validation (not for agents — used by `/link-github` UI).
+
+```http
+GET {API}/api/link-github/inspect?t=…
+```
+
+---
+
 ## POST /api/repo-claims/challenge
 
 Start repo ownership verification (wallet ↔ repo bond).

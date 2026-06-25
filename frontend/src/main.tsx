@@ -8,6 +8,7 @@ import { DevProfilePage } from "./pages/DevProfilePage";
 import { CreatePage } from "./pages/CreatePage";
 import { HelpPage } from "./pages/HelpPage";
 import { AgentsPage } from "./pages/AgentsPage";
+import { LinkGithubPage } from "./pages/LinkGithubPage";
 import { lockPathFromRepo, isValidRepoFullName } from "./lib/repoId";
 
 function LegacyDevRedirect() {
@@ -33,6 +34,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Route path="/dev/:username" element={<DevProfilePage />} />
         <Route path="/create" element={<CreatePage />} />
         <Route path="/help" element={<HelpPage />} />
+        <Route path="/link-github" element={<LinkGithubPage />} />
         <Route path="/agents" element={<AgentsPage />} />
 
         <Route path="/vesting/explore" element={<Navigate to="/" replace />} />

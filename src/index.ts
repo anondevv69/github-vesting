@@ -12,6 +12,7 @@ import {
   handleAgentStatus,
   handleAgentSetupLink,
 } from "./api/agent";
+import { handleAgentLinkGithub, handleInspectGithubMagicLink } from "./api/githubMagicLink";
 import {
   handleAgentFeeTokens,
   handleAgentPrepareLock,
@@ -135,6 +136,7 @@ app.post("/api/webhook/gitlawb", (req, res) => void handleGitlawbWebhook(req, re
 // ─── OAuth ────────────────────────────────────────────────────────────────────
 app.get("/api/oauth/github", handleOAuthRedirect);
 app.get("/api/oauth/github/callback", (req, res) => void handleOAuthCallback(req, res));
+app.get("/api/link-github/inspect", (req, res) => void handleInspectGithubMagicLink(req, res));
 app.get("/api/auth/github/me", (req, res) => void handleGithubAuthMe(req, res));
 app.post("/api/auth/github/logout", (req, res) => void handleGithubAuthLogout(req, res));
 app.get("/api/github/installation", (req, res) => void handleGithubInstallationLookup(req, res));
@@ -184,6 +186,7 @@ app.get("/api/agent/fee-tokens", (req, res) => void handleAgentFeeTokens(req, re
 app.post("/api/agent/prepare-lock", (req, res) => void handleAgentPrepareLock(req, res));
 app.post("/api/agent/confirm-lock", (req, res) => void handleAgentConfirmLock(req, res));
 app.post("/api/agent/lock", (req, res) => void handleAgentLock(req, res));
+app.post("/api/agent/link-github", (req, res) => void handleAgentLinkGithub(req, res));
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 app.listen(env.PORT, env.HOST, () => {

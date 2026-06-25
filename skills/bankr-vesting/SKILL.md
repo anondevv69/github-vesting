@@ -70,6 +70,7 @@ All reads accept `?wallet=0x…` **or** header `x-wallet-address: 0x…`.
 | vesting on **owner/repo** | `GET {API}/api/agent/status?repo=owner/repo` |
 | my bankr tokens / fee tokens | `GET {API}/api/agent/fee-tokens` |
 | start vesting / lock tokens on github (web fallback) | `GET {API}/api/agent/setup-link?wallet=0x…` |
+| link github @username | `POST {API}/api/agent/link-github` → paste `linkUrl` |
 
 See **`AGENT-API.md`** for response fields (`replyText`, `tweetReply`, `links`).
 

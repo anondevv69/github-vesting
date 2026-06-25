@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { VestingNav } from "../components/VestingNav";
 import { VestingFooter } from "../components/VestingFooter";
 import { StarRating } from "../components/StarRating";
@@ -48,7 +48,7 @@ type ReputationStats = {
 type LinkedWallet = {
   wallet: string;
   linkedAt: string;
-  source: "signed" | "repo-claim" | "lock";
+  source: "signed" | "repo-claim" | "lock" | "bankr";
 };
 
 type FeeRecipientToken = {
@@ -73,6 +73,7 @@ function lockPath(repoFullName: string): string {
 
 export function DevProfilePage() {
   const { username = "" } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [grants, setGrants] = useState<GrantSummary[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [stats, setStats] = useState<ReputationStats | null>(null);
@@ -95,6 +96,16 @@ export function DevProfilePage() {
   const [walletLinked, setWalletLinked] = useState(false);
   const [linkBusy, setLinkBusy] = useState(false);
   const [linkMessage, setLinkMessage] = useState<string | null>(null);
+  const [linkSuccess, setLinkSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get("wallet_linked") === "1") {
+      setLinkSuccess("Bankr wallet linked to this GitHub profile.");
+      const next = new URLSearchParams(searchParams);
+      next.delete("wallet_linked");
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const load = useCallback(() => {
     if (!username) return;
@@ -476,6 +487,10 @@ export function DevProfilePage() {
               <p className="muted" style={{ fontSize: "0.8rem", marginTop: "0.5rem" }}>
                 Connected wallet is linked to this profile.
               </p>
+            )}
+
+            {linkSuccess && (
+              <p className="ok" style={{ fontSize: "0.85rem", marginTop: "0.5rem" }}>{linkSuccess}</p>
             )}
 
             {editable && !editMode && (
