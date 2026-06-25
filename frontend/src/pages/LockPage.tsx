@@ -62,6 +62,12 @@ type LockResponse = {
     };
     launchUrl: string;
   } | null;
+  feeRecipientLink?: {
+    linked: boolean;
+    githubLogin: string;
+    source?: string;
+    linkedAt?: string;
+  } | null;
 };
 
 function formatTs(ts: number): string {
@@ -240,7 +246,14 @@ export function LockPage() {
 
         {data.bankr?.feeRecipient && (
           <div className="fee-recipient-card">
-            <span className="fee-recipient-card__label">Fee recipient</span>
+            <div className="fee-recipient-card__head">
+              <span className="fee-recipient-card__label">Fee recipient</span>
+              {data.feeRecipientLink?.linked && (
+                <span className="badge-verified" title={`Linked to @${data.feeRecipientLink.githubLogin}`}>
+                  Linked & verified
+                </span>
+              )}
+            </div>
             <div className="fee-recipient-card__person">
               {data.bankr.feeRecipient.xProfileImageUrl ? (
                 <img
@@ -270,6 +283,14 @@ export function LockPage() {
                   {shortAddr(data.bankr.feeRecipient.wallet)}
                   <CopyButton text={data.bankr.feeRecipient.wallet} />
                 </span>
+                {data.feeRecipientLink?.linked && (
+                  <Link
+                    to={`/dev/${data.feeRecipientLink.githubLogin}`}
+                    className="fee-recipient-card__dev-link muted"
+                  >
+                    Verified on @{data.feeRecipientLink.githubLogin}
+                  </Link>
+                )}
               </div>
             </div>
           </div>

@@ -10,6 +10,7 @@ import { parseWei } from "../lib/wei";
 import { getDevProfile } from "./devProfile";
 import { fetchBankrTokenInfo } from "./bankr";
 import { getRepoClaim } from "../lib/repoClaims";
+import { listLinkedWallets } from "../lib/devWallets";
 
 function dedupeGrants(grants: GrantRecord[]): GrantRecord[] {
   const byRepo = new Map<string, GrantRecord>();
@@ -236,6 +237,24 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
   const bankr = await fetchBankrTokenInfo(grant.token);
   const repoClaim = await getRepoClaim(repoFullName);
 
+  const feeRecipientWallet = bankr?.feeRecipient?.wallet?.toLowerCase();
+  let feeRecipientLink: {
+    linked: boolean;
+    githubLogin: string;
+    source?: string;
+    linkedAt?: string;
+  } | null = null;
+  if (feeRecipientWallet) {
+    const linkedWallets = await listLinkedWallets(githubOwner);
+    const match = linkedWallets.find((w) => w.wallet === feeRecipientWallet);
+    feeRecipientLink = {
+      linked: Boolean(match),
+      githubLogin: githubOwner,
+      source: match?.source,
+      linkedAt: match?.linkedAt,
+    };
+  }
+
   res.json({
     ok: true,
     grant,
@@ -251,5 +270,6 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
     totalTokenLocked: totalTokenLocked.toString(),
     totalTokenLockedFormatted: formatTokenAmount(totalTokenLocked.toString()),
     bankr,
+    feeRecipientLink,
   });
 }

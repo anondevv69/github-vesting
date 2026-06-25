@@ -456,12 +456,30 @@ export function DevProfilePage() {
 
             {linkedWallets.length > 0 && (
               <div className="dev-sidebar__stats" style={{ marginTop: "0.75rem" }}>
-                <span className="dev-sidebar__stat-label">Linked wallets</span>
+                <div className="dev-sidebar__stat-row">
+                  <span className="dev-sidebar__stat-label">Linked wallets</span>
+                  <span className="badge-verified">Verified</span>
+                </div>
                 {linkedWallets.map((w) => (
-                  <p key={w.wallet} className="dev-sidebar__wallet" style={{ margin: "0.35rem 0" }}>
-                    <code>{shortAddr(w.wallet)}</code>
-                    <CopyButton text={w.wallet} />
-                  </p>
+                  <div key={w.wallet} className="linked-wallet-card">
+                    {profile?.twitter && (
+                      <a
+                        href={`https://x.com/${profile.twitter}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="linked-wallet-card__handle"
+                      >
+                        @{profile.twitter}
+                      </a>
+                    )}
+                    <p className="dev-sidebar__wallet" style={{ margin: "0.25rem 0 0" }}>
+                      <code>{shortAddr(w.wallet)}</code>
+                      <CopyButton text={w.wallet} />
+                    </p>
+                    {w.source === "bankr" && (
+                      <span className="linked-wallet-card__source muted">Bankr magic link</span>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
