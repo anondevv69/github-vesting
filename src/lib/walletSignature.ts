@@ -64,3 +64,10 @@ export async function verifyWalletMessage(
   }
   return verifyErc1271(address, message, signature);
 }
+
+/** True if address has contract bytecode (Bankr Kernel, smart wallet). */
+export async function isSmartWalletAddress(address: Address): Promise<boolean> {
+  const client = publicClient();
+  const code = await client.getBytecode({ address });
+  return Boolean(code && code !== "0x");
+}

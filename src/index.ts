@@ -35,6 +35,7 @@ import {
   handleListLinkedWallets,
   handleWalletLinkChallenge,
   handleWalletLinkConfirm,
+  handleWalletLinkMagicSession,
 } from "./api/devWallets";
 import { handleGrantsByRecipient } from "./api/grants";
 import { handleDevSimulatePush } from "./api/devSimulate";
@@ -174,6 +175,7 @@ app.patch("/api/vesting/dev-profile/:login", (req, res) => void handlePatchDevPr
 app.get("/api/dev/link-wallet/:login", (req, res) => void handleListLinkedWallets(req, res));
 app.post("/api/dev/link-wallet/challenge", (req, res) => void handleWalletLinkChallenge(req, res));
 app.post("/api/dev/link-wallet/confirm", (req, res) => void handleWalletLinkConfirm(req, res));
+app.post("/api/dev/link-wallet/magic-session", (req, res) => void handleWalletLinkMagicSession(req, res));
 app.post("/api/vesting/by-dev/:login/reviews", (req, res) => void handlePostDevReview(req, res));
 app.get("/api/vesting/leaderboard", (req, res) => void handleLeaderboard(req, res));
 
