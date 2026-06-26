@@ -16,8 +16,8 @@ export function VestingNav() {
 
   return (
     <nav className="vesting-nav">
-      <Link to="/" className="vesting-nav__brand">
-        GitHub Vesting
+      <Link to="/" className="vesting-nav__brand" aria-label="Proof of Dev home">
+        <img src="/logo.png" alt="" className="vesting-nav__logo" width={36} height={36} />
       </Link>
       <div className="vesting-nav__links">
         {links.map(({ to, label }) => (

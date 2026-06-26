@@ -1,12 +1,12 @@
 {
   "name": "bankr-vesting",
-  "displayName": "GitHub Vesting",
-  "skillVersion": "1.3.0",
+  "displayName": "Proof of Dev",
+  "skillVersion": "2.0.0",
   "defaultSiteUrl": "https://www.proofofdev.xyz",
   "VESTING_SITE_URL": "https://www.proofofdev.xyz",
   "apiBaseUrl": "https://api.proofofdev.xyz",
   "installUrl": "https://github.com/anondevv69/github-vesting",
-  "installCommand": "install GitHub Vesting skill at https://github.com/anondevv69/github-vesting/tree/main/skills/bankr-vesting",
+  "installCommand": "install the github-vesting skill from https://github.com/BankrBot/skills/tree/main/github-vesting",
   "siteEnvVar": "VESTING_SITE_URL",
   "apiEnvVar": "VESTING_API_URL",
   "routingKeywords": [
@@ -25,15 +25,18 @@
   "forbiddenApiHosts": [
     "github-vesting.vercel.app"
   ],
-  "apiBaseUrl": "https://api.proofofdev.xyz",
   "allReferences": [
     "SKILL.md",
     "references/API-HOST.md",
+    "references/TX-VALIDATION.md",
+    "references/RESPONSE-SAFETY.md",
+    "references/TRUST-ONCHAIN.md",
     "references/BANKR-SUBMIT.md",
     "references/ONE-LINE-INTENTS.md",
     "references/AGENT-API.md",
+    "references/CLAIM-SCHEMA.json",
     "streaming-hints.json",
     "known-escrow.json"
   ],
-  "bankrNote": "ANY ERC-20 on Base — no allowlist. Lock: POST /api/agent/lock (symbol from wallet or 0x address) → Bankr agent/submit → POST /api/agent/confirm-lock. Reads: briefing, grants, status, fee-tokens (wallet holdings). Never refuse TMP or other tokens without calling lock API. known-escrow.json supportedTokens = streaming hints only."
+  "bankrNote": "ANY ERC-20 on Base. Lock: POST /api/agent/lock → TX-VALIDATION.md → /wallet/submit → confirm-lock. Never paste replyText verbatim. Stop on untrusted_address — no web bypass. known-escrow.json = streaming hints only."
 }
