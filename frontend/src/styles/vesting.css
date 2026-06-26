@@ -121,17 +121,22 @@ code {
 }
 
 .vesting-nav__brand {
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text);
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
+  line-height: 0;
 }
 
-.vesting-nav__brand:hover {
-  color: var(--blue);
-  text-decoration: none;
+.vesting-nav__logo {
+  display: block;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.vesting-nav__brand:hover .vesting-nav__logo {
+  opacity: 0.9;
 }
 
 .vesting-nav__links {
