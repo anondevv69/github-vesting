@@ -4,6 +4,7 @@
 
 import { randomBytes } from "crypto";
 import {
+  isHex,
   type Address,
   type Hex,
 } from "viem";
@@ -133,6 +134,9 @@ export function parseClaimFileJson(text: string): ClaimFileV1 | null {
   try {
     const data = JSON.parse(text) as Partial<ClaimFileV1>;
     if (data.v !== 1 || !data.claimId || !data.repo || !data.wallet || !data.signature) return null;
+    if (typeof data.signature !== "string" || !isHex(data.signature) || data.signature.length < 132) {
+      return null;
+    }
     return data as ClaimFileV1;
   } catch {
     return null;
@@ -168,12 +172,17 @@ export async function verifyClaimFile(
   }
 
   const signMessage = buildSignMessage(file.claimId, normalizedRepo, file.wallet);
-  const valid = await verifyWalletMessage(
-    file.wallet as Address,
-    signMessage,
-    file.signature as Hex,
-  );
-  if (!valid) {
+  try {
+    const valid = await verifyWalletMessage(
+      file.wallet as Address,
+      signMessage,
+      file.signature as Hex,
+    );
+    if (!valid) {
+      return { ok: false, error: "invalid wallet signature" };
+    }
+  } catch (err) {
+    console.warn("[repo-claim] signature verification failed:", err);
     return { ok: false, error: "invalid wallet signature" };
   }
 
