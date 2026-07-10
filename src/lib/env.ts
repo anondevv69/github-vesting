@@ -41,6 +41,8 @@ export const env = {
   GIT_ESCROW_ADDRESS: get("GIT_ESCROW_ADDRESS"),
   /** GitEscrow on Robinhood Chain mainnet (4663) */
   GIT_ESCROW_ROBINHOOD_ADDRESS: get("GIT_ESCROW_ROBINHOOD_ADDRESS"),
+  /** Optional — protects POST /api/admin/delete-grant */
+  ADMIN_SECRET: get("ADMIN_SECRET"),
   /** Default chain when request omits chain: base | robinhood | base-sepolia */
   DEFAULT_VESTING_CHAIN: get("DEFAULT_VESTING_CHAIN", get("VITE_CHAIN", "base")),
   VITE_CHAIN: get("VITE_CHAIN", "base"),

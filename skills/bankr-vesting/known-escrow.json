@@ -47,8 +47,8 @@
     "4663": {
       "chain": "robinhood",
       "chainId": 4663,
-      "escrowAddress": "0xe07df659266A697804cA75a72B4af4f827036116",
-      "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe07df659266A697804cA75a72B4af4f827036116",
+      "escrowAddress": "0x706038b47ba6d0CC69479bB286d064137B50f6Ae",
+      "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x706038b47ba6d0CC69479bB286d064137B50f6Ae",
       "oracleAddress": "0x252b98b9fA80D3644Ebcea6CceAB6293430e64a0",
       "supportedTokens": {}
     }

@@ -14,7 +14,8 @@
 | `REDIS_URL` | from Railway Redis |
 | `GITHUB_*` | GitHub App credentials |
 | `ORACLE_PRIVATE_KEY` | oracle hot wallet |
-| `GIT_ESCROW_ADDRESS` | `0x76dd4…` |
+| `GIT_ESCROW_ROBINHOOD_ADDRESS` | Robinhood GitEscrow (4663) |
+| `ADMIN_SECRET` | optional — `POST /api/admin/delete-grant` |
 | `BASE_RPC_URL` | Base RPC |
 | `SESSION_SECRET` | random string |
 
