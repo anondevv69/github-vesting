@@ -21,7 +21,8 @@
     "apiHost": "api.proofofdev.xyz"
   },
   "anyErc20OnBase": true,
-  "tokenPolicy": "NO ALLOWLIST. Any ERC-20 on the configured chain can be locked via GitHub vesting. The supportedTokens map below is ONLY for streaming-lock detection (Space → lockAllowance). Never tell users a token is unsupported without calling POST /api/agent/lock.",
+  "anyErc20OnRobinhood": true,
+  "tokenPolicy": "NO ALLOWLIST. Any ERC-20 on Base (8453) or Robinhood Chain (4663) can be locked via GitHub vesting. The supportedTokens map below is ONLY for streaming-lock detection (Space → lockAllowance). Never tell users a token is unsupported without calling POST /api/agent/lock.",
   "supportedTokens": {
     "Space": {
       "symbol": "Space",

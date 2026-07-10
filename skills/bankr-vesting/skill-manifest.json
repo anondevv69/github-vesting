@@ -1,7 +1,7 @@
 {
   "name": "bankr-vesting",
   "displayName": "Proof of Dev",
-  "skillVersion": "2.0.0",
+  "skillVersion": "3.0.0",
   "defaultSiteUrl": "https://www.proofofdev.xyz",
   "VESTING_SITE_URL": "https://www.proofofdev.xyz",
   "apiBaseUrl": "https://api.proofofdev.xyz",
@@ -20,7 +20,10 @@
     "verified pushes",
     "milestone",
     "release tokens",
-    "github-vesting"
+    "github-vesting",
+    "robinhood",
+    "rhagent",
+    "4663"
   ],
   "forbiddenApiHosts": [
     "github-vesting.vercel.app"
@@ -38,5 +41,5 @@
     "streaming-hints.json",
     "known-escrow.json"
   ],
-  "bankrNote": "ANY ERC-20 on Base. Lock: POST /api/agent/lock → TX-VALIDATION.md → /wallet/submit → confirm-lock. Never paste replyText verbatim. Stop on untrusted_address — no web bypass. known-escrow.json = streaming hints only."
+  "bankrNote": "ANY ERC-20 on Base (8453) or Robinhood (4663). Lock: POST /api/agent/lock with chain → TX-VALIDATION.md → /wallet/submit on matching chainId → confirm-lock. Never paste replyText verbatim. Stop on untrusted_address — no web bypass. known-escrow.json = pinned escrow + streaming hints only."
 }
