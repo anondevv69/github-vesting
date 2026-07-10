@@ -3,7 +3,7 @@
  */
 
 import type { Request, Response } from "express";
-import { listAllGrants, getGrantByRepoFullName, getRedis, KEYS, type GrantRecord } from "../lib/redis";
+import { listAllGrants, getGrantByRepoFullName, getRedis, KEYS, updateGrant, type GrantRecord } from "../lib/redis";
 import { buildProgress, formatTokenAmount } from "../lib/grantsHelper";
 import { splitRepo } from "../lib/repoId";
 import { parseWei } from "../lib/wei";
@@ -11,6 +11,7 @@ import { getDevProfile } from "./devProfile";
 import { fetchBankrTokenInfo } from "./bankr";
 import { getRepoClaim } from "../lib/repoClaims";
 import { listLinkedWallets } from "../lib/devWallets";
+import { detectChainFromLockTx } from "../lib/detectGrantChain";
 
 function dedupeGrants(grants: GrantRecord[]): GrantRecord[] {
   const byRepo = new Map<string, GrantRecord>();
@@ -198,6 +199,13 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
     return;
   }
 
+  let resolvedGrant = grant;
+  const detectedChain = await detectChainFromLockTx(grant.onChainTxHash);
+  if (detectedChain && detectedChain !== grant.chain) {
+    await updateGrant(grant.repoId, { chain: detectedChain });
+    resolvedGrant = { ...grant, chain: detectedChain };
+  }
+
   const redis = getRedis();
   const pushLog = await redis.lrange(KEYS.pushLog(grant.repoId), -50, -1);
   const recentPushes = pushLog
@@ -206,14 +214,14 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
     })
     .filter(Boolean);
 
-  const progress = buildProgress(grant);
-  const [githubOwner] = splitRepo(grant.repoFullName, grant.platform ?? "github");
+  const progress = buildProgress(resolvedGrant);
+  const [githubOwner] = splitRepo(resolvedGrant.repoFullName, resolvedGrant.platform ?? "github");
 
-  const releasedWei = parseWei(grant.tokensPerMilestone) * BigInt(grant.lastPaidMilestone);
-  const remainingWei = parseWei(grant.totalLocked) - releasedWei;
+  const releasedWei = parseWei(resolvedGrant.tokensPerMilestone) * BigInt(resolvedGrant.lastPaidMilestone);
+  const remainingWei = parseWei(resolvedGrant.totalLocked) - releasedWei;
 
   const allGrants = dedupeGrants(await listAllGrants());
-  const sameToken = allGrants.filter((g) => g.token.toLowerCase() === grant.token.toLowerCase());
+  const sameToken = allGrants.filter((g) => g.token.toLowerCase() === resolvedGrant.token.toLowerCase());
   const totalTokenLocked = sameToken.reduce((s, g) => s + parseWei(g.totalLocked), 0n);
 
   const tokenHolders = sameToken.map((g) => {
@@ -234,7 +242,7 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
     };
   }).sort((a, b) => Number(parseWei(b.amount) - parseWei(a.amount)));
 
-  const bankr = await fetchBankrTokenInfo(grant.token);
+  const bankr = await fetchBankrTokenInfo(resolvedGrant.token, resolvedGrant.chain);
   const repoClaim = await getRepoClaim(repoFullName);
 
   const feeRecipientWallet = bankr?.feeRecipient?.wallet?.toLowerCase();
@@ -257,7 +265,7 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
 
   res.json({
     ok: true,
-    grant,
+    grant: resolvedGrant,
     progress,
     recentPushes,
     githubOwner,

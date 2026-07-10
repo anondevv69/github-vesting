@@ -1600,6 +1600,59 @@ code {
   color: var(--text-muted);
 }
 
+.create-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.create-header__main h1 {
+  margin-bottom: 0.25rem;
+}
+
+.chain-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-input);
+}
+
+.chain-toggle__btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.chain-toggle__btn + .chain-toggle__btn {
+  border-left: 1px solid var(--border);
+}
+
+.chain-toggle__btn:hover:not(:disabled) {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.chain-toggle__btn.active {
+  color: var(--text);
+  background: var(--blue-dim);
+  box-shadow: inset 0 0 0 1px var(--blue);
+}
+
+.chain-toggle__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .stat-bar__value--white {
   color: var(--text);
 }

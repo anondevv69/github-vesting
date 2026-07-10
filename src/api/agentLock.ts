@@ -443,7 +443,7 @@ export async function handleAgentConfirmLock(req: Request, res: Response): Promi
   }
 
   const gh = await checkGithubInstallation(normalizedRepo);
-  const bankrMeta = await fetchBankrTokenInfo(locked.token);
+  const bankrMeta = await fetchBankrTokenInfo(locked.token, chain);
   const chainId = cfg.chainId;
   const chainTokens =
     (knownEscrow as { chains?: Record<string, { supportedTokens?: typeof knownEscrow.supportedTokens }> })
