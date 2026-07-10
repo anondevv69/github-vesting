@@ -97,11 +97,12 @@ export type BankrTokenInfo = {
 };
 
 export function bankrLaunchUrl(tokenAddress: string, chain?: VestingChainKey | string | null): string {
+  const token = tokenAddress.trim().toLowerCase();
   const key = parseVestingChain(chain ?? undefined);
   if (key === "robinhood") {
-    return `https://hood.markets/?token=${tokenAddress.trim().toLowerCase()}`;
+    return `https://bankr.bot/terminal/discover/${token}`;
   }
-  return `https://bankr.bot/launches/${tokenAddress.trim().toLowerCase()}`;
+  return `https://bankr.bot/launches/${token}`;
 }
 
 export async function fetchBankrTokenInfo(
