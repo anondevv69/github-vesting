@@ -38,11 +38,23 @@ import {
   type FrontendChainConfig,
   type VestingChainKey,
 } from "../lib/chains";
-import { detectStreamingToken } from "../lib/detectLockMode";
+import { detectStreamingToken, defaultLockFunction } from "../lib/detectLockMode";
 
 type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
 };
+
+function extractErrorMessage(err: unknown): string {
+  if (err instanceof Error) {
+    const cause = (err as Error & { cause?: unknown }).cause;
+    if (cause instanceof Error) return `${err.message} ${cause.message}`;
+    if (typeof cause === "object" && cause && "reason" in cause) {
+      return `${err.message} ${String((cause as { reason?: string }).reason ?? "")}`;
+    }
+    return err.message;
+  }
+  return String(err);
+}
 
 async function ensureWalletChain(provider: EthereumProvider, chainCfg: FrontendChainConfig) {
   const chainIdHex = `0x${chainCfg.chain.id.toString(16)}`;
@@ -375,7 +387,7 @@ export function CreatePage() {
         client.readContract({ address: addr, abi: ERC20_ABI, functionName: "balanceOf", args: [wallet] }),
       ]);
 
-      let detectedBankr = await detectStreamingToken(addr, chainKey, wallet);
+      let detectedBankr = await detectStreamingToken(addr, chainKey, wallet, GIT_ESCROW_ADDRESS);
 
       setForm((f) => ({
         ...f,
@@ -663,7 +675,18 @@ export function CreatePage() {
         throw new Error("Approve confirmed but allowance is still too low.");
       }
       setAllowanceReady(true);
-      setTxStatus("Approve confirmed. Click 'Lock tokens' below.");
+      const streamingAfterApprove = await detectStreamingToken(
+        tokenAddr,
+        chainKey,
+        wallet,
+        GIT_ESCROW_ADDRESS,
+      );
+      setIsBankrToken(streamingAfterApprove);
+      setTxStatus(
+        streamingAfterApprove
+          ? "Approve confirmed. This token uses streaming lock (lockAllowance). Click 'Lock tokens' below."
+          : "Approve confirmed. Click 'Lock tokens' below.",
+      );
     } catch (e: unknown) {
       console.error("handleApproveTokens error:", e);
       setError(e instanceof Error ? e.message : JSON.stringify(e));
@@ -706,9 +729,15 @@ export function CreatePage() {
         setAllowanceReady(true);
       }
 
-      const useStreaming = await detectStreamingToken(tokenAddr, chainKey, wallet);
+      const useStreaming = await detectStreamingToken(
+        tokenAddr,
+        chainKey,
+        wallet,
+        GIT_ESCROW_ADDRESS,
+      );
       setIsBankrToken(useStreaming);
-      let lockFnToUse = useStreaming ? "lockAllowance" : "lock";
+      let lockFnToUse: "lock" | "lockAllowance" =
+        useStreaming ? "lockAllowance" : defaultLockFunction(chainKey);
 
       const lockNonce = await getBaseNonce(readClient, wallet);
       try {
@@ -720,10 +749,19 @@ export function CreatePage() {
           account: wallet,
         });
       } catch (simErr: unknown) {
-        const msg = simErr instanceof Error ? simErr.message : String(simErr);
+        const msg = extractErrorMessage(simErr);
         if (lockFnToUse === "lock" && /pull failed|lockAllowance|restricted/i.test(msg)) {
           lockFnToUse = "lockAllowance";
           setIsBankrToken(true);
+          await readClient.simulateContract({
+            address: GIT_ESCROW_ADDRESS,
+            abi: ESCROW_ABI,
+            functionName: lockFnToUse,
+            args: lockArgs,
+            account: wallet,
+          });
+        } else if (lockFnToUse === "lockAllowance" && /insufficient allowance/i.test(msg)) {
+          throw new Error("Allowance too low — approve GitEscrow for the full lock amount, then retry.");
         } else {
           throw simErr;
         }

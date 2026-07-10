@@ -76,10 +76,17 @@ export async function detectStreamingToken(
   token: Address,
   chainKey: VestingChainKey,
   wallet?: Address,
+  escrowOverride?: Address,
 ): Promise<boolean> {
   if (isKnownStreamingToken(token, chainKey)) return true;
 
   const cfg = getVestingChainConfig(chainKey);
+  const escrow = (escrowOverride ?? cfg.escrowAddress) as Address | undefined;
+  if (!escrow) {
+    // Hood / Bankr deploy tokens are almost always allowance-locked.
+    return chainKey === "robinhood";
+  }
+
   const client = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
 
   try {
@@ -93,12 +100,11 @@ export async function detectStreamingToken(
     /* not Bankr isPoolUnlocked interface */
   }
 
-  const escrow = cfg.escrowAddress as Address | undefined;
-  if (wallet && escrow) {
+  if (wallet) {
     return escrowPullBlocked(client, token, escrow, wallet);
   }
 
-  return false;
+  return chainKey === "robinhood";
 }
 
 export type LockFunctionName = "lock" | "lockAllowance";
