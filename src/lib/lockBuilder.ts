@@ -20,7 +20,7 @@ import {
   parseVestingChain,
   type VestingChainKey,
 } from "./chains";
-import knownEscrow from "../../skills/bankr-vesting/known-escrow.json";
+import { detectStreamingToken } from "./detectLockMode";
 
 const ESCROW_ABI = parseAbi([
   "function lock(bytes32 repoId, address token, uint256 amount, uint256 totalPushes, uint256 pushesPerMile) external",
@@ -75,31 +75,6 @@ function repoIdBytes32(repoFullName: string): Hex {
   return keccak256(toBytes(repoFullName.trim()));
 }
 
-function isKnownStreamingToken(token: string, chainKey: VestingChainKey): boolean {
-  const t = token.toLowerCase();
-  const chainId = getVestingChainConfig(chainKey).chainId;
-  const chainTokens =
-    (knownEscrow as { chains?: Record<string, { supportedTokens?: typeof knownEscrow.supportedTokens }> })
-      .chains?.[String(chainId)]?.supportedTokens ?? knownEscrow.supportedTokens;
-  return Object.values(chainTokens).some((x) => x.streaming && x.address.toLowerCase() === t);
-}
-
-async function detectStreamingToken(token: Address, chainKey: VestingChainKey): Promise<boolean> {
-  if (isKnownStreamingToken(token, chainKey)) return true;
-  const cfg = getVestingChainConfig(chainKey);
-  const client = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
-  try {
-    await client.readContract({
-      address: token,
-      abi: ERC20_ABI,
-      functionName: "isPoolUnlocked",
-    });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export async function prepareLockTransactions(params: PrepareLockParams): Promise<PrepareLockResult> {
   const chainKey = params.chain ?? defaultVestingChain();
   const cfg = getVestingChainConfig(chainKey);
@@ -128,7 +103,7 @@ export async function prepareLockTransactions(params: PrepareLockParams): Promis
     throw new Error(`Insufficient ${symbol} balance (have ${balance}, need ${amountWei})`);
   }
 
-  const streaming = await detectStreamingToken(params.token, chainKey);
+  const streaming = await detectStreamingToken(params.token, chainKey, params.wallet);
   const lockFunction = streaming ? "lockAllowance" : "lock";
   const milestones = totalPushes / pushesPerMilestone;
   const tokensPerMilestone = (amountWei / BigInt(milestones)).toString();

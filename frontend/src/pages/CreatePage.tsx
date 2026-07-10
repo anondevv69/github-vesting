@@ -38,6 +38,7 @@ import {
   type FrontendChainConfig,
   type VestingChainKey,
 } from "../lib/chains";
+import { detectStreamingToken } from "../lib/detectLockMode";
 
 type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
@@ -374,22 +375,7 @@ export function CreatePage() {
         client.readContract({ address: addr, abi: ERC20_ABI, functionName: "balanceOf", args: [wallet] }),
       ]);
 
-      // Probe for Bankr DERC20 (locked-pool) interface by checking if
-      // the contract has bytecode at the lockPool(address) selector.
-      // We do this by attempting a static call to `isPoolUnlocked()` view
-      // (selector 0x5a9c4d63) — if it reverts with no data, it's a
-      // standard ERC-20. If it returns, it's Bankr-style.
-      let detectedBankr = false;
-      try {
-        await client.readContract({
-          address: addr,
-          abi: parseAbi(["function isPoolUnlocked() view returns (bool)"]),
-          functionName: "isPoolUnlocked",
-        });
-        detectedBankr = true;
-      } catch {
-        detectedBankr = false;
-      }
+      let detectedBankr = await detectStreamingToken(addr, chainKey, wallet);
 
       setForm((f) => ({
         ...f,
@@ -704,7 +690,7 @@ export function CreatePage() {
     try {
       await ensureWalletChain(provider, chainCfg);
       await ensureMetaMaskOnActiveChain(provider);
-      const { readClient, walletClient, amount, tokenAddr, lockFn, lockArgs } = getLockContext(provider);
+      const { readClient, walletClient, amount, tokenAddr, lockArgs } = getLockContext(provider);
 
       if (!allowanceReady) {
         let nonce = await getBaseNonce(readClient, wallet);
@@ -720,12 +706,34 @@ export function CreatePage() {
         setAllowanceReady(true);
       }
 
+      const useStreaming = await detectStreamingToken(tokenAddr, chainKey, wallet);
+      setIsBankrToken(useStreaming);
+      let lockFnToUse = useStreaming ? "lockAllowance" : "lock";
+
       const lockNonce = await getBaseNonce(readClient, wallet);
-      setTxStatus("Confirm lock in MetaMask…");
+      try {
+        await readClient.simulateContract({
+          address: GIT_ESCROW_ADDRESS,
+          abi: ESCROW_ABI,
+          functionName: lockFnToUse,
+          args: lockArgs,
+          account: wallet,
+        });
+      } catch (simErr: unknown) {
+        const msg = simErr instanceof Error ? simErr.message : String(simErr);
+        if (lockFnToUse === "lock" && /pull failed|lockAllowance|restricted/i.test(msg)) {
+          lockFnToUse = "lockAllowance";
+          setIsBankrToken(true);
+        } else {
+          throw simErr;
+        }
+      }
+
+      setTxStatus(`Confirm lock in MetaMask (${lockFnToUse === "lockAllowance" ? "streaming allowance" : "escrow deposit"})…`);
       const lockTxHash = await walletClient.writeContract({
         address: GIT_ESCROW_ADDRESS,
         abi: ESCROW_ABI,
-        functionName: lockFn,
+        functionName: lockFnToUse,
         args: lockArgs,
         nonce: lockNonce,
       });
