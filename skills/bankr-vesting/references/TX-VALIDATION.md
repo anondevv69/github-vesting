@@ -45,7 +45,7 @@ Compute expected `repoId` = `keccak256(bytes(utf8(repo.trim())))` — same as So
 
 | Field | Requirement |
 |-------|-------------|
-| `chainId` | exactly **8453** (Base mainnet) |
+| `chainId` | **8453** (Base) or **4663** (Robinhood Chain) — must match `chain` in lock API request and `known-escrow.json` → `chains` |
 | `value` | exactly **`0x0`** or **`0`** (zero ETH) |
 | `to` | valid checksummed address — see step-specific rules |
 | `data` | non-empty hex; selector must be allowlisted |
@@ -68,7 +68,7 @@ Compute expected `repoId` = `keccak256(bytes(utf8(repo.trim())))` — same as So
 
 | Check | Requirement |
 |-------|-------------|
-| `to` | exactly `known-escrow.json` → `escrowAddress` |
+| `to` | exactly `known-escrow.json` → `escrowAddress` (Base) **or** `chains["4663"].escrowAddress` (Robinhood) matching request `chainId` |
 | Selector | `0xc9c2dca6` (`lock`) **or** `0xf2bc8198` (`lockAllowance`) only |
 | Forbidden selectors | reject `lockWithPermit`, `release`, `cancel`, `setOracle`, transfers, or anything else |
 | Arg 0 `repoId` | matches `keccak256(bytes(userRepo))` |
@@ -76,7 +76,7 @@ Compute expected `repoId` = `keccak256(bytes(utf8(repo.trim())))` — same as So
 | Arg 2 `amount` | equals `amountWei` from API response |
 | Arg 3 `totalPushes` | matches user intent / API response |
 | Arg 4 `pushesPerMilestone` | matches user intent / API response |
-| `lockFunction` | streaming tokens → expect `lockAllowance`; standard ERC-20 → expect `lock` |
+| `lockFunction` | Robinhood (4663) → expect **`lockAllowance`**; Base streaming tokens → `lockAllowance`; standard Base ERC-20 → `lock` |
 
 ---
 

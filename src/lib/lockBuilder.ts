@@ -103,7 +103,9 @@ export async function prepareLockTransactions(params: PrepareLockParams): Promis
     throw new Error(`Insufficient ${symbol} balance (have ${balance}, need ${amountWei})`);
   }
 
-  const streaming = await detectStreamingToken(params.token, chainKey, params.wallet, escrow);
+  let streaming = await detectStreamingToken(params.token, chainKey, params.wallet, escrow);
+  // Robinhood deploy tokens (RHAGENT, etc.) require allowance locks; lock() reverts.
+  if (chainKey === "robinhood") streaming = true;
   const lockFunction = streaming ? "lockAllowance" : "lock";
   const milestones = totalPushes / pushesPerMilestone;
   const tokensPerMilestone = (amountWei / BigInt(milestones)).toString();
