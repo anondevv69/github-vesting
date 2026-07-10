@@ -122,6 +122,7 @@ const ESCROW_ABI = parseAbi([
   "function lockAllowance(bytes32 repoId, address token, uint256 amount, uint256 totalPushes, uint256 pushesPerMile) external",
   "function lockWithPermit(bytes32 repoId, address token, uint256 amount, uint256 totalPushes, uint256 pushesPerMile, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external",
   "function encodeRepoId(string calldata ownerSlashRepo) view returns (bytes32)",
+  "function getGrant(bytes32 repoId) view returns ((address recipient, address token, uint256 totalLocked, uint256 totalReleased, uint256 totalPushesRequired, uint256 pushesPerMilestone, uint256 tokensPerMilestone, uint256 lastPaidMilestone, bool active, bool streaming, uint64 lockedAt))",
 ]);
 
 // Bankr DERC20 tokens implement a "locked pool" guard that blocks
@@ -137,6 +138,12 @@ const ERC20_ABI = parseAbi([
 ]);
 
 type Step = 1 | 2 | 3;
+
+type ExistingLockInfo = {
+  lockPath: string;
+  onChain: boolean;
+  registered: boolean;
+};
 
 type BankrFeeToken = {
   address: string;
@@ -253,6 +260,7 @@ export function CreatePage() {
   const [repoClaimAgentPrompt, setRepoClaimAgentPrompt] = useState<string | null>(null);
   const [repoClaimMessage, setRepoClaimMessage] = useState<string | null>(null);
   const [myRepos, setMyRepos] = useState<string[]>([]);
+  const [existingLock, setExistingLock] = useState<ExistingLockInfo | null>(null);
   const didAutoValidateRepo = useRef(false);
   const prevChainRef = useRef(chainKey);
 
@@ -284,6 +292,72 @@ export function CreatePage() {
     setError(null);
     setIsBankrToken(false);
   }
+
+  function existingLockErrorMessage(lockPath: string): string {
+    return (
+      `This repo already has an active lock on ${chainCfg.label}. ` +
+      `Each repo can only be locked once. View the existing lock at ${lockPath}.`
+    );
+  }
+
+  async function refreshExistingLock(repo: string): Promise<ExistingLockInfo | null> {
+    const normalized = normalizeRepoFullName(repo.trim());
+    if (!isValidRepoFullName(normalized)) {
+      setExistingLock(null);
+      return null;
+    }
+
+    const lockPath = lockPathFromRepo(normalized);
+    const [owner, repoName] = normalized.split("/");
+    let registered = false;
+    try {
+      const res = await fetch(`${API_BASE}/api/vesting/lock/${owner}/${repoName}`);
+      registered = res.ok;
+    } catch {
+      registered = false;
+    }
+
+    let onChain = false;
+    if (GIT_ESCROW_ADDRESS) {
+      try {
+        const readClient = createPublicClient({ chain: chainCfg.chain, transport: http(chainCfg.rpcUrl) });
+        const repoId = await readClient.readContract({
+          address: GIT_ESCROW_ADDRESS,
+          abi: ESCROW_ABI,
+          functionName: "encodeRepoId",
+          args: [normalized],
+        });
+        const grant = await readClient.readContract({
+          address: GIT_ESCROW_ADDRESS,
+          abi: ESCROW_ABI,
+          functionName: "getGrant",
+          args: [repoId],
+        });
+        onChain = grant.active;
+      } catch {
+        onChain = false;
+      }
+    }
+
+    if (registered || onChain) {
+      const info = { lockPath, onChain, registered };
+      setExistingLock(info);
+      return info;
+    }
+
+    setExistingLock(null);
+    return null;
+  }
+
+  // Warn before signing if this repo is already locked on-chain or in the registry
+  useEffect(() => {
+    if (step < 2 || !form.repoFullName.includes("/")) {
+      setExistingLock(null);
+      return;
+    }
+    void refreshExistingLock(form.repoFullName);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- check when repo, chain, or step changes
+  }, [step, form.repoFullName, chainKey, GIT_ESCROW_ADDRESS]);
 
   // Sync wallet from nav auth hook
   useEffect(() => {
@@ -735,6 +809,14 @@ export function CreatePage() {
 
   async function handleLockGrant() {
     if (!wallet || !GIT_ESCROW_ADDRESS) return;
+    const normalizedRepo = normalizeRepoFullName(form.repoFullName);
+    const lockPath = lockPathFromRepo(normalizedRepo);
+    const foundLock = await refreshExistingLock(normalizedRepo);
+    if (foundLock) {
+      setError(existingLockErrorMessage(lockPath));
+      return;
+    }
+
     const provider = (window as Window & { ethereum?: EthereumProvider }).ethereum;
     if (!provider) {
       setError("MetaMask not detected.");
@@ -796,6 +878,8 @@ export function CreatePage() {
           });
         } else if (lockFnToUse === "lockAllowance" && /insufficient allowance/i.test(msg)) {
           throw new Error("Allowance too low — approve GitEscrow for the full lock amount, then retry.");
+        } else if (/already active/i.test(msg)) {
+          throw new Error(existingLockErrorMessage(lockPathFromRepo(normalizeRepoFullName(form.repoFullName))));
         } else {
           throw simErr;
         }
@@ -1152,6 +1236,16 @@ export function CreatePage() {
         <section className="vesting-card setup-card">
           <button type="button" className="btn btn-ghost" onClick={() => setStep(2)}>← Back</button>
           <h2>Review & sign</h2>
+
+          {existingLock && (
+            <div className="push-activity-callout" style={{ marginBottom: "1rem" }}>
+              <strong>Lock already active for this repo.</strong>{" "}
+              You cannot lock the same repo twice on {chainCfg.label}.
+              {" "}
+              <Link to={existingLock.lockPath}>View existing lock →</Link>
+            </div>
+          )}
+
           <div className="vesting-summary">
             <p><strong>Repo:</strong> {form.repoFullName}</p>
             <p><strong>Token:</strong> {form.tokenSymbol} ({form.tokenAddress.slice(0, 10)}…)</p>
@@ -1177,7 +1271,7 @@ export function CreatePage() {
           <button
             type="button"
             className="btn btn-primary"
-            disabled={busy || !GIT_ESCROW_ADDRESS}
+            disabled={busy || !GIT_ESCROW_ADDRESS || Boolean(existingLock)}
             onClick={() => void handleLockTokensFlow()}
           >
             {busy ? (txStatus ?? "Signing…") : "Lock tokens"}
