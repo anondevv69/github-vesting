@@ -6,7 +6,11 @@
 
 import type { Request, Response } from "express";
 import { createPublicClient, http, parseAbi, parseEventLogs, type Hash } from "viem";
-import { base, baseSepolia } from "viem/chains";
+import { env } from "../lib/env";
+import {
+  getVestingChainConfig,
+  type VestingChainKey,
+} from "../lib/chains";
 import { saveGrant, getGrant, type GrantRecord } from "../lib/redis";
 import { validateRepoAccess, resolveInstallationForRepo } from "../github/githubApp";
 import { getRedis, KEYS } from "../lib/redis";
@@ -18,7 +22,6 @@ import {
 } from "../lib/repoId";
 import { verifyGitlawbRepoExists, fetchGitlawbRepo } from "../gitlawb/client";
 import { addLinkedWallet } from "../lib/devWallets";
-import { env } from "../lib/env";
 
 const ESCROW_ABI = parseAbi([
   "event Locked(bytes32 indexed repoId, address indexed recipient, address indexed token, uint256 amount, uint256 totalPushesRequired, uint256 releasesPerMilestone, uint256 tokensPerMilestone)",
@@ -26,13 +29,12 @@ const ESCROW_ABI = parseAbi([
 
 async function repoIdFromLockTx(
   txHash: string,
-  chain: "base" | "base-sepolia",
+  chain: VestingChainKey,
 ): Promise<string | null> {
-  if (!env.GIT_ESCROW_ADDRESS) return null;
+  const cfg = getVestingChainConfig(chain);
+  if (!cfg.escrowAddress) return null;
   try {
-    const viemChain = chain === "base" ? base : baseSepolia;
-    const rpc = chain === "base" ? env.BASE_RPC_URL : env.BASE_SEPOLIA_RPC_URL;
-    const client = createPublicClient({ chain: viemChain, transport: http(rpc) });
+    const client = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
     const receipt = await client.getTransactionReceipt({ hash: txHash as Hash });
     const logs = parseEventLogs({ abi: ESCROW_ABI, logs: receipt.logs, eventName: "Locked" });
     const repoId = logs[0]?.args?.repoId;
@@ -79,13 +81,14 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     return;
   }
 
-  if (!["base", "base-sepolia"].includes(chain)) {
-    res.status(400).json({ ok: false, error: "chain must be base or base-sepolia" });
+  if (!["base", "base-sepolia", "robinhood"].includes(chain)) {
+    res.status(400).json({ ok: false, error: "chain must be base, base-sepolia, or robinhood" });
     return;
   }
 
   const normalizedRepo = normalizeRepo(repoFullName, platform);
-  const onChainRepoId = await repoIdFromLockTx(onChainTxHash, chain as "base" | "base-sepolia");
+  const chainKey = chain as VestingChainKey;
+  const onChainRepoId = await repoIdFromLockTx(onChainTxHash, chainKey);
   const repoId = onChainRepoId ?? repoIdFromPlatform(platform, repoFullName);
   const existing = await getGrant(repoId);
   if (existing && existing.status === "active") {

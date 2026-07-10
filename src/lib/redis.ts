@@ -47,7 +47,7 @@ export type GrantRecord = {
   platform: RepoPlatform;
   recipient: string;
   token: string;
-  chain: "base" | "base-sepolia";
+  chain: "base" | "base-sepolia" | "robinhood";
   totalLocked: string;
   totalPushesRequired: number;
   pushesPerMilestone: number;

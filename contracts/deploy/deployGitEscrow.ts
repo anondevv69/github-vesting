@@ -12,8 +12,14 @@ async function main() {
   await escrow.waitForDeployment();
 
   const address = await escrow.getAddress();
+  const network = await ethers.provider.getNetwork();
   console.log("GitEscrow deployed to:", address);
-  console.log("Set GIT_ESCROW_ADDRESS=" + address + " in your .env");
+  console.log("Network chainId:", network.chainId.toString());
+  if (network.chainId === 4663n) {
+    console.log("Set GIT_ESCROW_ROBINHOOD_ADDRESS=" + address + " in your .env");
+  } else {
+    console.log("Set GIT_ESCROW_ADDRESS=" + address + " in your .env");
+  }
 }
 
 main().catch((err) => {

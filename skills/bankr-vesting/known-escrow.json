@@ -21,12 +21,36 @@
     "apiHost": "api.proofofdev.xyz"
   },
   "anyErc20OnBase": true,
-  "tokenPolicy": "NO ALLOWLIST. Any ERC-20 on Base can be locked via GitHub vesting. The supportedTokens map below is ONLY for streaming-lock detection (Space → lockAllowance). Never tell users a token is unsupported without calling POST /api/agent/lock.",
+  "tokenPolicy": "NO ALLOWLIST. Any ERC-20 on the configured chain can be locked via GitHub vesting. The supportedTokens map below is ONLY for streaming-lock detection (Space → lockAllowance). Never tell users a token is unsupported without calling POST /api/agent/lock.",
   "supportedTokens": {
     "Space": {
       "symbol": "Space",
       "address": "0xef703b860a6d422fa00cc67bbbb2662297cb6ba3",
       "streaming": true
+    }
+  },
+  "chains": {
+    "8453": {
+      "chain": "base",
+      "chainId": 8453,
+      "escrowAddress": "0x76dd4C6ea986684CDf822eC0832e142A2D5C8165",
+      "explorerUrl": "https://basescan.org/address/0x76dd4C6ea986684CDf822eC0832e142A2D5C8165",
+      "oracleAddress": "0x252b98b9fA80D3644Ebcea6CceAB6293430e64a0",
+      "supportedTokens": {
+        "Space": {
+          "symbol": "Space",
+          "address": "0xef703b860a6d422fa00cc67bbbb2662297cb6ba3",
+          "streaming": true
+        }
+      }
+    },
+    "4663": {
+      "chain": "robinhood",
+      "chainId": 4663,
+      "escrowAddress": "0xe07df659266A697804cA75a72B4af4f827036116",
+      "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe07df659266A697804cA75a72B4af4f827036116",
+      "oracleAddress": "0x252b98b9fA80D3644Ebcea6CceAB6293430e64a0",
+      "supportedTokens": {}
     }
   },
   "setupPath": "/create",

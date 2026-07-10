@@ -14,7 +14,6 @@ export type GitlawbRepoInfo = {
   defaultBranch?: string;
   cloneUrl?: string;
 };
-
 export type GitlawbPushWebhook = {
   ref: string;
   before: string;

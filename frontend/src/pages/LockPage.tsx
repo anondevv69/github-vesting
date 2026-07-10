@@ -6,9 +6,9 @@ import { CopyButton } from "../components/CopyButton";
 import { formatTokens, shortAddr } from "../lib/format";
 import { isValidRepoFullName } from "../lib/repoId";
 
+import { explorerForGrantChain } from "../lib/chains";
+
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
-const IS_TESTNET = import.meta.env.VITE_CHAIN === "base-sepolia";
-const explorerBase = IS_TESTNET ? "https://sepolia.basescan.org" : "https://basescan.org";
 
 type LockResponse = {
   ok: boolean;
@@ -115,6 +115,8 @@ export function LockPage() {
   const [data, setData] = useState<LockResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const explorerBase = data ? explorerForGrantChain(data.grant.chain) : explorerForGrantChain();
+  const explorerLabel = data?.grant.chain === "robinhood" ? "Blockscout" : "Explorer";
 
   useEffect(() => {
     if (!repoFullName) return;
@@ -233,7 +235,7 @@ export function LockPage() {
               <code>{grant.token}</code>
               <CopyButton text={grant.token} />
               <a href={`${explorerBase}/address/${grant.token}`} target="_blank" rel="noreferrer">
-                Basescan
+                {explorerLabel}
               </a>
               {data.bankr?.launchUrl && (
                 <a href={data.bankr.launchUrl} target="_blank" rel="noreferrer">

@@ -18,6 +18,11 @@ const config: HardhatUserConfig = {
       accounts: [PRIVATE_KEY],
       chainId: 8453,
     },
+    robinhood: {
+      url: process.env.ROBINHOOD_RPC_URL ?? "https://rpc.mainnet.chain.robinhood.com",
+      accounts: [PRIVATE_KEY],
+      chainId: 4663,
+    },
     baseSepolia: {
       url: process.env.BASE_SEPOLIA_RPC_URL ?? "https://sepolia.base.org",
       accounts: [PRIVATE_KEY],

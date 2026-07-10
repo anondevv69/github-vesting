@@ -37,7 +37,13 @@ export const env = {
   ORACLE_PRIVATE_KEY: get("ORACLE_PRIVATE_KEY"),
   BASE_RPC_URL: get("BASE_RPC_URL", "https://mainnet.base.org"),
   BASE_SEPOLIA_RPC_URL: get("BASE_SEPOLIA_RPC_URL", "https://sepolia.base.org"),
+  ROBINHOOD_RPC_URL: get("ROBINHOOD_RPC_URL", "https://rpc.mainnet.chain.robinhood.com"),
   GIT_ESCROW_ADDRESS: get("GIT_ESCROW_ADDRESS"),
+  /** GitEscrow on Robinhood Chain mainnet (4663) */
+  GIT_ESCROW_ROBINHOOD_ADDRESS: get("GIT_ESCROW_ROBINHOOD_ADDRESS"),
+  /** Default chain when request omits chain: base | robinhood | base-sepolia */
+  DEFAULT_VESTING_CHAIN: get("DEFAULT_VESTING_CHAIN", get("VITE_CHAIN", "base")),
+  VITE_CHAIN: get("VITE_CHAIN", "base"),
 
   // Redis
   REDIS_URL: get("REDIS_URL"),

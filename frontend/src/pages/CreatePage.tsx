@@ -32,20 +32,19 @@ import {
   type Hash,
   type PublicClient,
 } from "viem";
-import { base, baseSepolia } from "viem/chains";
-
-const IS_TESTNET = import.meta.env.VITE_CHAIN === "base-sepolia";
-const activeChain = IS_TESTNET ? baseSepolia : base;
-const RPC_URL =
-  import.meta.env.VITE_BASE_RPC_URL ??
-  (IS_TESTNET ? "https://sepolia.base.org" : "https://mainnet.base.org");
+import {
+  getFrontendChainConfig,
+  resolveCreatePageChain,
+  type FrontendChainConfig,
+  type VestingChainKey,
+} from "../lib/chains";
 
 type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
 };
 
-async function ensureWalletChain(provider: EthereumProvider) {
-  const chainIdHex = `0x${activeChain.id.toString(16)}`;
+async function ensureWalletChain(provider: EthereumProvider, chainCfg: FrontendChainConfig) {
+  const chainIdHex = `0x${chainCfg.chain.id.toString(16)}`;
   try {
     await provider.request({
       method: "wallet_switchEthereumChain",
@@ -58,10 +57,10 @@ async function ensureWalletChain(provider: EthereumProvider) {
       method: "wallet_addEthereumChain",
       params: [{
         chainId: chainIdHex,
-        chainName: activeChain.name,
-        nativeCurrency: activeChain.nativeCurrency,
-        rpcUrls: [RPC_URL],
-        blockExplorerUrls: [activeChain.blockExplorers?.default.url],
+        chainName: chainCfg.chain.name,
+        nativeCurrency: chainCfg.chain.nativeCurrency,
+        rpcUrls: [chainCfg.rpcUrl],
+        blockExplorerUrls: [chainCfg.chain.blockExplorers?.default.url],
       }],
     });
   }
@@ -71,39 +70,37 @@ async function waitForTxConfirmation(
   hash: Hash,
   publicClient: PublicClient,
   label: string,
+  explorerBase: string,
+  chainLabel: string,
   timeoutMs = 120_000,
 ) {
-  const explorer = IS_TESTNET ? "https://sepolia.basescan.org" : "https://basescan.org";
-  console.log(`Waiting for ${label} on Base…`, hash);
+  console.log(`Waiting for ${label} on ${chainLabel}…`, hash);
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
-    // Poll the public Base RPC only — MetaMask's provider can report local
-    // pending txs that never actually broadcast to the network.
     const tx = await publicClient.getTransaction({ hash }).catch(() => null);
     if (tx) {
-      console.log(`${label} found on Base, waiting for receipt…`);
+      console.log(`${label} found on ${chainLabel}, waiting for receipt…`);
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
         timeout: Math.max(15_000, timeoutMs - (Date.now() - start)),
       });
       if (receipt.status !== "success") {
-        throw new Error(`${label} reverted on-chain. See ${explorer}/tx/${hash}`);
+        throw new Error(`${label} reverted on-chain. See ${explorerBase}/tx/${hash}`);
       }
       console.log(`${label} confirmed`);
       return receipt;
     }
-    console.log(`${label} not on Base yet (${Math.round((Date.now() - start) / 1000)}s)…`);
+    console.log(`${label} not on ${chainLabel} yet (${Math.round((Date.now() - start) / 1000)}s)…`);
     await new Promise((resolve) => setTimeout(resolve, 3_000));
   }
   throw new Error(
-    `${label} never appeared on Base (${explorer}/tx/${hash}). ` +
-    "MetaMask likely queued it without broadcasting. Open MetaMask → Activity, cancel ALL pending Base transactions, then try again.",
+    `${label} never appeared on ${chainLabel} (${explorerBase}/tx/${hash}). ` +
+    `Open your wallet → Activity, cancel pending ${chainLabel} transactions, then try again.`,
   );
 }
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const API_FETCH: RequestInit = { credentials: "include" };
-const GIT_ESCROW_ADDRESS = import.meta.env.VITE_GIT_ESCROW_ADDRESS as Address | undefined;
 const GITHUB_APP_SLUG = import.meta.env.VITE_GITHUB_APP_SLUG ?? "bankr-vesting";
 
 const ESCROW_ABI = parseAbi([
@@ -160,7 +157,7 @@ type FormState = {
   lockAmount: string;
   totalPushes: number;
   pushesPerMilestone: number;
-  chain: "base" | "base-sepolia";
+  chain: VestingChainKey;
 };
 
 type SavedWizard = {
@@ -186,8 +183,12 @@ function loadSavedWizard(): SavedWizard | null {
 export function CreatePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const chainKey = resolveCreatePageChain(searchParams);
+  const chainCfg = getFrontendChainConfig(chainKey);
+  const GIT_ESCROW_ADDRESS = chainCfg.escrowAddress;
   const { wallet: authWallet, githubUser, connectWallet: authConnectWallet, connectGitHub } = useVestingAuth();
   const repoFromUrl = searchParams.get("repo")?.trim() ?? "";
+  const tokenFromUrl = searchParams.get("token")?.trim() ?? "";
   const savedWizard = loadSavedWizard();
   const [step, setStep] = useState<Step>(savedWizard?.step ?? 1);
   const [wallet, setWallet] = useState<Address | null>(null);
@@ -196,14 +197,14 @@ export function CreatePage() {
     return {
       platform: "github",
       repoFullName: repoFromUrl.includes("/") ? repoFromUrl : "",
-      tokenAddress: import.meta.env.VITE_MOCK_TOKEN_ADDRESS ?? "",
+      tokenAddress: tokenFromUrl || import.meta.env.VITE_MOCK_TOKEN_ADDRESS || "",
       tokenSymbol: "",
       tokenDecimals: 18,
       tokenBalance: "0",
       lockAmount: "",
       totalPushes: 10,
       pushesPerMilestone: 10,
-      chain: IS_TESTNET ? "base-sepolia" : "base",
+      chain: chainKey,
     };
   });
   const [bankrTokens, setBankrTokens] = useState<BankrFeeToken[]>([]);
@@ -342,12 +343,11 @@ export function CreatePage() {
       const accounts = await eth.request({ method: "eth_requestAccounts" }) as string[];
       setWallet(accounts[0] as Address);
 
-      // Verify the wallet is on the correct chain (Base or Base Sepolia).
-      const expectedChainId = IS_TESTNET ? "0x14a34" : "0x2105"; // 84532 / 8453
+      const expectedChainId = `0x${chainCfg.chain.id.toString(16)}`;
       const currentChainId = await eth.request({ method: "eth_chainId" }) as string;
       if (currentChainId !== expectedChainId) {
         setError(
-          `Wrong network in MetaMask. Expected ${IS_TESTNET ? "Base Sepolia" : "Base"} (chain ${expectedChainId}), got ${currentChainId}. ` +
+          `Wrong network in MetaMask. Expected ${chainCfg.label} (chain ${expectedChainId}), got ${currentChainId}. ` +
           `Please switch networks in MetaMask and reconnect.`,
         );
         setBusy(false);
@@ -366,7 +366,7 @@ export function CreatePage() {
     setBusy(true);
     setError(null);
     try {
-      const client = createPublicClient({ chain: activeChain, transport: http(RPC_URL) });
+      const client = createPublicClient({ chain: chainCfg.chain, transport: http(chainCfg.rpcUrl) });
       const addr = tokenAddr as Address;
       const [symbol, decimals, balance] = await Promise.all([
         client.readContract({ address: addr, abi: ERC20_ABI, functionName: "symbol" }),
@@ -561,7 +561,7 @@ export function CreatePage() {
     if (step !== 3 || !wallet || !GIT_ESCROW_ADDRESS || !form.lockAmount) return;
     void (async () => {
       try {
-        const readClient = createPublicClient({ chain: activeChain, transport: http(RPC_URL) });
+        const readClient = createPublicClient({ chain: chainCfg.chain, transport: http(chainCfg.rpcUrl) });
         const amount = parseUnits(form.lockAmount, form.tokenDecimals);
         const [allowance, nonce] = await Promise.all([
           readClient.readContract({
@@ -579,14 +579,14 @@ export function CreatePage() {
         setChainNonce(null);
       }
     })();
-  }, [step, wallet, form.lockAmount, form.tokenAddress, form.tokenDecimals]);
+  }, [step, wallet, form.lockAmount, form.tokenAddress, form.tokenDecimals, chainCfg]);
 
   async function ensureMetaMaskOnActiveChain(provider: EthereumProvider) {
     const chainIdHex = await provider.request({ method: "eth_chainId" });
     const chainId = Number.parseInt(String(chainIdHex), 16);
-    if (chainId !== activeChain.id) {
+    if (chainId !== chainCfg.chain.id) {
       throw new Error(
-        `MetaMask is on the wrong network (chain ${chainId}). Switch MetaMask to ${activeChain.name} and try again.`,
+        `MetaMask is on the wrong network (chain ${chainId}). Switch MetaMask to ${chainCfg.label} and try again.`,
       );
     }
   }
@@ -601,9 +601,9 @@ export function CreatePage() {
   }
 
   function getLockContext(provider: EthereumProvider) {
-    const readClient = createPublicClient({ chain: activeChain, transport: http(RPC_URL) });
+    const readClient = createPublicClient({ chain: chainCfg.chain, transport: http(chainCfg.rpcUrl) });
     const walletClient = createWalletClient({
-      chain: activeChain,
+      chain: chainCfg.chain,
       transport: custom(provider),
       account: wallet!,
     });
@@ -637,7 +637,7 @@ export function CreatePage() {
     setError(null);
     setTxStatus(null);
     try {
-      await ensureWalletChain(provider);
+      await ensureWalletChain(provider, chainCfg);
       await ensureMetaMaskOnActiveChain(provider);
       const { readClient, walletClient, amount, tokenAddr } = getLockContext(provider);
       const nonce = await getBaseNonce(readClient, wallet);
@@ -653,7 +653,7 @@ export function CreatePage() {
 
       setTxStatus(
         `Confirm approve in MetaMask. Expected nonce: ${nonce}. ` +
-        "If MetaMask shows a higher nonce or 'deceptive request', cancel pending Base txs first.",
+        `If MetaMask shows a higher nonce or 'deceptive request', cancel pending ${chainCfg.label} txs first.`,
       );
       const approveTxHash = await walletClient.writeContract({
         address: tokenAddr,
@@ -664,8 +664,8 @@ export function CreatePage() {
       });
       console.log("Approve tx sent:", approveTxHash);
 
-      setTxStatus("Waiting for approve to confirm on Base…");
-      await waitForTxConfirmation(approveTxHash, readClient, "Approve");
+      setTxStatus(`Waiting for approve to confirm on ${chainCfg.label}…`);
+      await waitForTxConfirmation(approveTxHash, readClient, "Approve", chainCfg.explorerBase, chainCfg.label);
 
       const allowance = await readClient.readContract({
         address: tokenAddr,
@@ -702,7 +702,7 @@ export function CreatePage() {
     setError(null);
     setTxStatus(null);
     try {
-      await ensureWalletChain(provider);
+      await ensureWalletChain(provider, chainCfg);
       await ensureMetaMaskOnActiveChain(provider);
       const { readClient, walletClient, amount, tokenAddr, lockFn, lockArgs } = getLockContext(provider);
 
@@ -716,7 +716,7 @@ export function CreatePage() {
           args: [GIT_ESCROW_ADDRESS, amount],
           nonce,
         });
-        await waitForTxConfirmation(approveTxHash, readClient, "Approve");
+        await waitForTxConfirmation(approveTxHash, readClient, "Approve", chainCfg.explorerBase, chainCfg.label);
         setAllowanceReady(true);
       }
 
@@ -731,8 +731,8 @@ export function CreatePage() {
       });
       console.log("Lock tx sent:", lockTxHash);
 
-      setTxStatus("Waiting for lock to confirm on Base…");
-      await waitForTxConfirmation(lockTxHash, readClient, "Lock");
+      setTxStatus(`Waiting for lock to confirm on ${chainCfg.label}…`);
+      await waitForTxConfirmation(lockTxHash, readClient, "Lock", chainCfg.explorerBase, chainCfg.label);
 
       setLockTxHash(lockTxHash);
 

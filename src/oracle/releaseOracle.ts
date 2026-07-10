@@ -13,9 +13,9 @@ import {
   type Address,
   type Hash,
 } from "viem";
-import { base, baseSepolia } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { env } from "../lib/env";
+import { getVestingChainConfig, type VestingChainKey } from "../lib/chains";
 import { parseWei } from "../lib/wei";
 import { updateGrant, type GrantRecord } from "../lib/redis";
 import { repoIdToBytes32 } from "../lib/repoId";
@@ -41,16 +41,15 @@ function sleep(ms: number): Promise<void> {
 
 function getClients(chain: GrantRecord["chain"]) {
   const account = privateKeyToAccount(env.ORACLE_PRIVATE_KEY as `0x${string}`);
-  const rpcUrl = chain === "base" ? env.BASE_RPC_URL : env.BASE_SEPOLIA_RPC_URL;
-  const viemChain = chain === "base" ? base : baseSepolia;
+  const cfg = getVestingChainConfig(chain as VestingChainKey);
 
-  const publicClient = createPublicClient({ chain: viemChain, transport: http(rpcUrl) });
+  const publicClient = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
   const walletClient = createWalletClient({
     account,
-    chain: viemChain,
-    transport: http(rpcUrl),
+    chain: cfg.chain,
+    transport: http(cfg.rpcUrl),
   });
-  return { publicClient, walletClient, account };
+  return { publicClient, walletClient, account, cfg };
 }
 
 function payoutFromReleaseReceipt(
@@ -151,8 +150,9 @@ export async function triggerReleaseIfMilestone(
     };
   }
 
-  if (!env.GIT_ESCROW_ADDRESS) {
-    return { triggered: false, reason: "GIT_ESCROW_ADDRESS not configured" };
+  const escrowAddress = getVestingChainConfig(grant.chain as VestingChainKey).escrowAddress;
+  if (!escrowAddress) {
+    return { triggered: false, reason: `GitEscrow not configured for ${grant.chain}` };
   }
 
   console.log(
@@ -176,7 +176,7 @@ export async function triggerReleaseIfMilestone(
       : 0n;
 
     const hash = await walletClient.writeContract({
-      address: env.GIT_ESCROW_ADDRESS as Address,
+      address: escrowAddress as Address,
       abi: GIT_ESCROW_ABI,
       functionName: "release",
       args: [repoIdBytes32, BigInt(newPushCount)],

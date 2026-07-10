@@ -16,10 +16,9 @@ import {
   type Address,
   type Hash,
 } from "viem";
-import { base, baseSepolia } from "viem/chains";
 import { env } from "../lib/env";
 import { isValidWallet, formatTokenAmount } from "../lib/grantsHelper";
-import { prepareLockTransactions } from "../lib/lockBuilder";
+import { prepareLockTransactions, parseVestingChain } from "../lib/lockBuilder";
 import { handleRegister } from "./register";
 import { resolveInstallationForRepo, validateRepoAccess, getRepoInfo } from "../github/githubApp";
 import { normalizeRepoFullName, splitRepo } from "../lib/repoId";
@@ -32,10 +31,23 @@ import {
   listLockableTokens,
   resolveTokenForWallet,
 } from "../lib/walletTokens";
+import {
+  defaultVestingChain,
+  getVestingChainConfig,
+  type VestingChainKey,
+} from "../lib/chains";
 
-const IS_TESTNET = process.env.VITE_CHAIN === "base-sepolia";
-const activeChain = IS_TESTNET ? baseSepolia : base;
-const RPC_URL = IS_TESTNET ? env.BASE_SEPOLIA_RPC_URL : env.BASE_RPC_URL;
+function resolveChain(req: Request): VestingChainKey {
+  const raw = String(
+    req.body?.chain ?? req.query["chain"] ?? defaultVestingChain(),
+  ).trim();
+  return parseVestingChain(raw);
+}
+
+function chainLabel(key: VestingChainKey): string {
+  return getVestingChainConfig(key).label;
+}
+
 const GITHUB_APP_SLUG = process.env.GITHUB_APP_SLUG ?? "bankr-vesting";
 const BANKR_API = "https://api.bankr.bot";
 
@@ -154,8 +166,9 @@ function parseHumanAmount(raw: string): string | null {
 async function resolveTokenInput(
   token: string,
   wallet: string,
+  chainKey: VestingChainKey,
 ): Promise<{ address: Address } | { error: string }> {
-  const resolved = await resolveTokenForWallet(wallet, token);
+  const resolved = await resolveTokenForWallet(wallet, token, chainKey);
   if ("error" in resolved) return { error: resolved.error };
   return { address: resolved.address };
 }
@@ -168,9 +181,11 @@ async function parseLockBody(req: Request): Promise<
       amount: string;
       totalPushes: number;
       pushesPerMilestone: number;
+      chain: VestingChainKey;
     }
   | { error: string }
 > {
+  const chain = resolveChain(req);
   const wallet = resolveWallet(req);
   if (!wallet) return { error: "wallet required (x-wallet-address header or body)" };
 
@@ -184,7 +199,7 @@ async function parseLockBody(req: Request): Promise<
   const amount = parseHumanAmount(amountRaw) ?? (Number(amountRaw) > 0 ? amountRaw : null);
   if (!amount) return { error: "amount must be a positive number (supports 3.49M, 1.5K)" };
 
-  const tokenResolved = await resolveTokenInput(tokenRaw, wallet);
+  const tokenResolved = await resolveTokenInput(tokenRaw, wallet, chain);
   if ("error" in tokenResolved) return tokenResolved;
 
   const totalPushes = Number(req.body?.totalPushes ?? req.query["totalPushes"] ?? 10);
@@ -199,6 +214,7 @@ async function parseLockBody(req: Request): Promise<
     amount,
     totalPushes,
     pushesPerMilestone,
+    chain,
   };
 }
 
@@ -212,11 +228,11 @@ function buildBankrPrompt(
     .join("\n");
 
   return (
-    `Execute GitHub vesting lock on Base for wallet ${wallet}:\n` +
+    `Execute GitHub vesting lock on ${chainLabel(prep.chain)} for wallet ${wallet}:\n` +
     `Repo: ${repo}\n` +
     `Token: ${prep.tokenSymbol} (${prep.amountFormatted})\n` +
     `Schedule: ${prep.totalPushes} verified pushes, release every ${prep.pushesPerMilestone}\n\n` +
-    `Submit these ${prep.transactions.length} transaction(s) in order on Base (chainId ${prep.transactions[0]?.chainId}):\n` +
+    `Submit these ${prep.transactions.length} transaction(s) in order on ${chainLabel(prep.chain)} (chainId ${prep.transactions[0]?.chainId}):\n` +
     `${txList}\n\n` +
     `After the lock transaction confirms, call:\n` +
     `POST ${env.SERVER_URL}/api/agent/confirm-lock\n` +
@@ -232,9 +248,12 @@ export async function handleAgentFeeTokens(req: Request, res: Response): Promise
     return;
   }
 
+  const chain = resolveChain(req);
+  const label = chainLabel(chain);
+
   try {
     const [lockable, feeRecipient] = await Promise.all([
-      listLockableTokens(wallet as Address),
+      listLockableTokens(wallet as Address, chain),
       fetchFeeRecipientTokens(wallet),
     ]);
 
@@ -255,7 +274,7 @@ export async function handleAgentFeeTokens(req: Request, res: Response): Promise
       : lockable.map((t) => `${t.symbol || t.name} — ${t.address}`).join("\n");
 
     const replyText =
-      `Tokens you can lock on Base (any ERC-20 in your wallet):\n${lines || "(none indexed yet — use 0x address)"}\n\n` +
+      `Tokens you can lock on ${label} (any ERC-20 in your wallet):\n${lines || "(none indexed yet — use 0x address)"}\n\n` +
       `To lock: "lock 855M TMP on owner/repo for 10 pushes" or use a 0x contract address.`;
 
     res.json({
@@ -282,7 +301,7 @@ export async function handleAgentPrepareLock(req: Request, res: Response): Promi
     return;
   }
 
-  const { wallet, repo, token, amount, totalPushes, pushesPerMilestone } = parsed;
+  const { wallet, repo, token, amount, totalPushes, pushesPerMilestone, chain } = parsed;
   const normalizedRepo = normalizeRepoFullName(repo);
 
   const repoCheck = await validateGithubRepo(normalizedRepo);
@@ -321,6 +340,7 @@ export async function handleAgentPrepareLock(req: Request, res: Response): Promi
       amount,
       totalPushes,
       pushesPerMilestone,
+      chain,
     });
 
     const repoClaim = await getRepoClaim(normalizedRepo);
@@ -334,7 +354,7 @@ export async function handleAgentPrepareLock(req: Request, res: Response): Promi
 
     const replyText =
       `Ready to lock ${prep.amountFormatted} ${prep.tokenSymbol} on ${normalizedRepo}.\n` +
-      `${prep.transactions.length} Base tx(s): ${prep.needsApprove ? "approve + lock" : "lock only"}.\n` +
+      `${prep.transactions.length} ${chainLabel(chain)} tx(s): ${prep.needsApprove ? "approve + lock" : "lock only"}.\n` +
       `Schedule: ${scheduleSummary}.\n\n` +
       `Bankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.` +
       (prep.needsApprove
@@ -392,14 +412,16 @@ export async function handleAgentConfirmLock(req: Request, res: Response): Promi
     return;
   }
 
+  const chain = resolveChain(req);
+  const cfg = getVestingChainConfig(chain);
   const normalizedRepo = normalizeRepoFullName(repo);
-  const client = createPublicClient({ chain: activeChain, transport: http(RPC_URL) });
+  const client = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
 
   let receipt;
   try {
     receipt = await client.getTransactionReceipt({ hash: lockTxHash as Hash });
   } catch {
-    res.status(400).json({ ok: false, error: "Transaction not found on Base" });
+    res.status(400).json({ ok: false, error: `Transaction not found on ${cfg.label}` });
     return;
   }
 
@@ -422,9 +444,13 @@ export async function handleAgentConfirmLock(req: Request, res: Response): Promi
 
   const gh = await checkGithubInstallation(normalizedRepo);
   const bankrMeta = await fetchBankrTokenInfo(locked.token);
+  const chainId = cfg.chainId;
+  const chainTokens =
+    (knownEscrow as { chains?: Record<string, { supportedTokens?: typeof knownEscrow.supportedTokens }> })
+      .chains?.[String(chainId)]?.supportedTokens ?? knownEscrow.supportedTokens;
   const streaming =
     bankrMeta !== null ||
-    Object.values(knownEscrow.supportedTokens).some(
+    Object.values(chainTokens).some(
       (t) => t.streaming && t.address.toLowerCase() === locked.token.toLowerCase(),
     );
 
@@ -433,7 +459,7 @@ export async function handleAgentConfirmLock(req: Request, res: Response): Promi
     platform: "github" as const,
     recipient: wallet,
     token: locked.token,
-    chain: IS_TESTNET ? ("base-sepolia" as const) : ("base" as const),
+    chain,
     totalLocked: locked.amount.toString(),
     totalPushesRequired: Number(locked.totalPushesRequired),
     pushesPerMilestone: Number(locked.releasesPerMilestone),
@@ -526,16 +552,18 @@ export async function handleAgentLock(req: Request, res: Response): Promise<void
   const symbol = String(prep.tokenSymbol ?? "");
   const amount = String(prep.amountFormatted ?? parsed.amount);
 
+  const chain = resolveChain(req);
+  const label = chainLabel(chain);
   const tweetReply =
     `Locking ${amount} ${symbol} on ${repo} via Bankr.\n` +
-    `Submit ${(prep.transactions as unknown[])?.length ?? 1} Base tx(s), then confirm.\n` +
+    `Submit ${(prep.transactions as unknown[])?.length ?? 1} ${label} tx(s), then confirm.\n` +
     `Track: ${prep.statusUrl ?? lockUrl(repo)}`;
 
   res.json({
     ...prep,
     tweetReply,
     steps: [
-      "Submit each transaction in transactions[] via Bankr wallet (agent/submit on Base)",
+      `Submit each transaction in transactions[] via Bankr wallet (agent/submit on ${label})`,
       "Wait for lock tx confirmation",
       `POST ${env.SERVER_URL}/api/agent/confirm-lock with lockTxHash`,
     ],
