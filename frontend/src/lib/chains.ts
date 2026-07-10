@@ -47,7 +47,8 @@ export function getFrontendChainConfig(key: VestingChainKey): FrontendChainConfi
         chain: robinhood,
         rpcUrl:
           import.meta.env.VITE_ROBINHOOD_RPC_URL ?? "https://rpc.mainnet.chain.robinhood.com",
-        escrowAddress: import.meta.env.VITE_GIT_ESCROW_ROBINHOOD_ADDRESS as `0x${string}` | undefined,
+        escrowAddress: (import.meta.env.VITE_GIT_ESCROW_ROBINHOOD_ADDRESS ??
+          "0xe07df659266A697804cA75a72B4af4f827036116") as `0x${string}`,
         explorerBase: "https://robinhoodchain.blockscout.com",
         label: "Robinhood Chain",
       };

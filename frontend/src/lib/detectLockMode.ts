@@ -64,8 +64,14 @@ export async function detectStreamingToken(
   token: Address,
   chainKey: VestingChainKey,
   wallet?: Address,
+  escrowOverride?: Address,
 ): Promise<boolean> {
   const cfg = getFrontendChainConfig(chainKey);
+  const escrow = escrowOverride ?? cfg.escrowAddress;
+  if (!escrow) {
+    return chainKey === "robinhood";
+  }
+
   const client = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
 
   try {
@@ -79,9 +85,13 @@ export async function detectStreamingToken(
     /* continue */
   }
 
-  if (wallet && cfg.escrowAddress) {
-    return escrowPullBlocked(client, token, cfg.escrowAddress, wallet);
+  if (wallet) {
+    return escrowPullBlocked(client, token, escrow, wallet);
   }
 
-  return false;
+  return chainKey === "robinhood";
+}
+
+export function defaultLockFunction(chainKey: VestingChainKey): "lock" | "lockAllowance" {
+  return chainKey === "robinhood" ? "lockAllowance" : "lock";
 }
