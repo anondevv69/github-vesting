@@ -138,3 +138,23 @@ export async function listAllGrants(): Promise<GrantRecord[]> {
   const grants = await Promise.all(ids.map((id) => getGrant(id)));
   return grants.filter((g): g is GrantRecord => g !== null);
 }
+
+export async function deleteGrantByRepoFullName(
+  repoFullName: string,
+  platform?: RepoPlatform,
+): Promise<GrantRecord | null> {
+  const grant = await getGrantByRepoFullName(repoFullName, platform);
+  if (!grant) return null;
+
+  const redis = getRedis();
+  const plat = grant.platform ?? "github";
+  await redis.del(KEYS.grant(grant.repoId));
+  await redis.srem(KEYS.allGrants(), grant.repoId);
+  await redis.del(KEYS.repoByName(plat, grant.repoFullName));
+  await redis.del(`vesting:repo_name:${grant.repoFullName.toLowerCase()}`);
+  await redis.del(KEYS.pushCount(grant.repoId));
+  await redis.del(KEYS.pushLog(grant.repoId));
+  await redis.del(KEYS.seenPushShas(grant.repoId));
+
+  return grant;
+}

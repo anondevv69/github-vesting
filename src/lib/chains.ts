@@ -46,7 +46,7 @@ export function getVestingChainConfig(key: VestingChainKey): VestingChainConfig 
         chainId: 4663,
         rpcUrl: env.ROBINHOOD_RPC_URL,
         escrowAddress:
-          env.GIT_ESCROW_ROBINHOOD_ADDRESS || "0xe07df659266A697804cA75a72B4af4f827036116",
+          env.GIT_ESCROW_ROBINHOOD_ADDRESS || "0x706038b47ba6d0CC69479bB286d064137B50f6Ae",
         explorerBase: "https://robinhoodchain.blockscout.com",
         label: "Robinhood Chain",
       };

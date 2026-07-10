@@ -48,6 +48,8 @@ import {
 } from "./api/repoClaims";
 import { handleGithubRepoLookup, handleGithubReposList } from "./api/githubRepo";
 import { handleGithubAuthMe, handleGithubAuthLogout } from "./api/githubAuth";
+import { handleAdminDeleteGrant } from "./api/adminGrants";
+import { deleteGrantByRepoFullName } from "./lib/redis";
 import { handleGithubInstallationLookup } from "./api/githubInstall";
 
 const app = express();
@@ -150,6 +152,7 @@ app.get("/api/github/repos", (req, res) => void handleGithubReposList(req, res))
 
 // ─── Vesting API ──────────────────────────────────────────────────────────────
 app.post("/api/vesting/register", (req, res) => void handleRegister(req, res));
+app.post("/api/admin/delete-grant", (req, res) => void handleAdminDeleteGrant(req, res));
 app.get("/api/vesting/grants", (req, res) => void handleGrantsByRecipient(req, res));
 app.get("/api/vesting/status/:repoId", (req, res) => void handleStatus(req, res));
 app.get("/api/vesting/status", (req, res) => void handleStatus(req, res));
@@ -191,6 +194,18 @@ app.post("/api/agent/lock", (req, res) => void handleAgentLock(req, res));
 app.post("/api/agent/link-github", (req, res) => void handleAgentLinkGithub(req, res));
 
 // ─── Start ────────────────────────────────────────────────────────────────────
+void deleteGrantByRepoFullName("anondevv69/RH-Wallet")
+  .then((deleted) => {
+    if (deleted) {
+      console.log(
+        `[github-vesting] Removed stale RH-Wallet grant (old streaming lock on deprecated Robinhood GitEscrow)`,
+      );
+    }
+  })
+  .catch((err) => {
+    console.warn("[github-vesting] Grant cleanup skipped:", err instanceof Error ? err.message : err);
+  });
+
 app.listen(env.PORT, env.HOST, () => {
   const missing = getMissingEnvVars();
   console.log(`[github-vesting] Server running on ${env.HOST}:${env.PORT}`);
