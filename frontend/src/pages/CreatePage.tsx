@@ -16,6 +16,7 @@ import { VestingNav } from "../components/VestingNav";
 import { VestingFooter } from "../components/VestingFooter";
 import { VestingPathChart } from "../components/VestingPathChart";
 import { CopyButton } from "../components/CopyButton";
+import { ChainToggle, type CreateChainKey } from "../components/ChainToggle";
 import { useVestingAuth } from "../hooks/useVestingAuth";
 import { normalizeRepoFullName, lockPathFromRepo, isValidRepoFullName } from "../lib/repoId";
 import { buildRepoClaimAgentPrompt } from "../lib/repoClaimPrompt";
@@ -194,9 +195,10 @@ function loadSavedWizard(): SavedWizard | null {
 }
 
 export function CreatePage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const chainKey = resolveCreatePageChain(searchParams);
+  const chainSelection: CreateChainKey = chainKey === "robinhood" ? "robinhood" : "base";
   const chainCfg = getFrontendChainConfig(chainKey);
   const GIT_ESCROW_ADDRESS = chainCfg.escrowAddress;
   const { wallet: authWallet, githubUser, connectWallet: authConnectWallet, connectGitHub } = useVestingAuth();
@@ -206,7 +208,9 @@ export function CreatePage() {
   const [step, setStep] = useState<Step>(savedWizard?.step ?? 1);
   const [wallet, setWallet] = useState<Address | null>(null);
   const [form, setForm] = useState<FormState>(() => {
-    if (savedWizard?.form) return savedWizard.form;
+    if (savedWizard?.form) {
+      return { ...savedWizard.form, chain: chainKey };
+    }
     return {
       platform: "github",
       repoFullName: repoFromUrl.includes("/") ? repoFromUrl : "",
@@ -250,6 +254,36 @@ export function CreatePage() {
   const [repoClaimMessage, setRepoClaimMessage] = useState<string | null>(null);
   const [myRepos, setMyRepos] = useState<string[]>([]);
   const didAutoValidateRepo = useRef(false);
+  const prevChainRef = useRef(chainKey);
+
+  // Keep form.chain aligned with URL chain toggle
+  useEffect(() => {
+    setForm((f) => (f.chain === chainKey ? f : { ...f, chain: chainKey }));
+  }, [chainKey]);
+
+  // Reload token metadata when switching chains
+  useEffect(() => {
+    if (prevChainRef.current === chainKey) return;
+    prevChainRef.current = chainKey;
+    if (!wallet || !form.tokenAddress) return;
+    void loadTokenInfo();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- reload only on chain switch
+  }, [chainKey]);
+
+  function selectChain(next: CreateChainKey) {
+    if (next === chainSelection) return;
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.set("chain", next);
+      return params;
+    }, { replace: true });
+    setForm((f) => ({ ...f, chain: next }));
+    setAllowanceReady(false);
+    setLockTxHash(null);
+    setTxStatus(null);
+    setError(null);
+    setIsBankrToken(false);
+  }
 
   // Sync wallet from nav auth hook
   useEffect(() => {
@@ -835,7 +869,7 @@ export function CreatePage() {
           platform: "github",
           recipient: wallet,
           token: form.tokenAddress,
-          chain: form.chain,
+          chain: chainKey,
           totalLocked: lockAmountWei.toString(),
           totalPushesRequired: form.totalPushes,
           pushesPerMilestone: form.pushesPerMilestone,
@@ -884,9 +918,16 @@ export function CreatePage() {
   return (
     <div className="vesting-page vesting-page--wide">
       <VestingNav />
-      <header>
-        <h1>Create lock</h1>
-        <p className="setup-step-label muted">Step {step} of 3</p>
+      <header className="create-header">
+        <div className="create-header__main">
+          <h1>Create lock</h1>
+          <p className="setup-step-label muted">Step {step} of 3 · {chainCfg.label}</p>
+        </div>
+        <ChainToggle
+          value={chainSelection}
+          onChange={selectChain}
+          disabled={busy || step === 3}
+        />
       </header>
 
       {error && (

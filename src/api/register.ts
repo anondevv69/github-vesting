@@ -22,6 +22,7 @@ import {
 } from "../lib/repoId";
 import { verifyGitlawbRepoExists, fetchGitlawbRepo } from "../gitlawb/client";
 import { addLinkedWallet } from "../lib/devWallets";
+import { detectChainFromLockTx } from "../lib/detectGrantChain";
 
 const ESCROW_ABI = parseAbi([
   "event Locked(bytes32 indexed repoId, address indexed recipient, address indexed token, uint256 amount, uint256 totalPushesRequired, uint256 releasesPerMilestone, uint256 tokensPerMilestone)",
@@ -87,7 +88,8 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
   }
 
   const normalizedRepo = normalizeRepo(repoFullName, platform);
-  const chainKey = chain as VestingChainKey;
+  const detectedChain = await detectChainFromLockTx(onChainTxHash);
+  const chainKey = (detectedChain ?? chain) as VestingChainKey;
   const onChainRepoId = await repoIdFromLockTx(onChainTxHash, chainKey);
   const repoId = onChainRepoId ?? repoIdFromPlatform(platform, repoFullName);
   const existing = await getGrant(repoId);
@@ -162,7 +164,7 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     platform,
     recipient,
     token,
-    chain: chain as GrantRecord["chain"],
+    chain: chainKey,
     totalLocked,
     totalPushesRequired: Number(totalPushesRequired),
     pushesPerMilestone: Number(pushesPerMilestone),

@@ -117,6 +117,7 @@ export function LockPage() {
   const [error, setError] = useState<string | null>(null);
   const explorerBase = data ? explorerForGrantChain(data.grant.chain) : explorerForGrantChain();
   const explorerLabel = data?.grant.chain === "robinhood" ? "Blockscout" : "Explorer";
+  const tokenLinkLabel = data?.grant.chain === "robinhood" ? "Hood Markets" : "Bankr";
 
   useEffect(() => {
     if (!repoFullName) return;
@@ -239,7 +240,7 @@ export function LockPage() {
               </a>
               {data.bankr?.launchUrl && (
                 <a href={data.bankr.launchUrl} target="_blank" rel="noreferrer">
-                  Bankr
+                  {tokenLinkLabel}
                 </a>
               )}
             </div>

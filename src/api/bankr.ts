@@ -8,6 +8,7 @@
 
 import type { Request, Response } from "express";
 import { isValidWallet } from "../lib/grantsHelper";
+import { parseVestingChain, type VestingChainKey } from "../lib/chains";
 
 const BANKR_API = "https://api.bankr.bot";
 
@@ -95,7 +96,18 @@ export type BankrTokenInfo = {
   source: "bankr.launch";
 };
 
-export async function fetchBankrTokenInfo(tokenAddress: string): Promise<BankrTokenInfo | null> {
+export function bankrLaunchUrl(tokenAddress: string, chain?: VestingChainKey | string | null): string {
+  const key = parseVestingChain(chain ?? undefined);
+  if (key === "robinhood") {
+    return `https://hood.markets/?token=${tokenAddress.trim().toLowerCase()}`;
+  }
+  return `https://bankr.bot/launches/${tokenAddress.trim().toLowerCase()}`;
+}
+
+export async function fetchBankrTokenInfo(
+  tokenAddress: string,
+  chain?: VestingChainKey | string | null,
+): Promise<BankrTokenInfo | null> {
   const token = tokenAddress.trim().toLowerCase();
   if (!/^0x[a-f0-9]{40}$/.test(token)) return null;
 
@@ -121,7 +133,7 @@ export async function fetchBankrTokenInfo(tokenAddress: string): Promise<BankrTo
         xUsername: recipient?.xUsername?.replace(/^@/, ""),
         xProfileImageUrl: recipient?.xProfileImageUrl,
       },
-      launchUrl: `https://bankr.bot/launches/${launch.tokenAddress}`,
+      launchUrl: bankrLaunchUrl(launch.tokenAddress, chain),
       source: "bankr.launch",
     };
   } catch {
