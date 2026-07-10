@@ -6,6 +6,7 @@ import {
   createPublicClient,
   hashMessage,
   http,
+  isHex,
   parseAbi,
   verifyMessage,
   type Address,
@@ -24,6 +25,10 @@ function publicClient(chainKey: VestingChainKey = defaultVestingChain()) {
   return createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
 }
 
+function isValidSignatureHex(signature: unknown): signature is Hex {
+  return typeof signature === "string" && isHex(signature) && signature.length >= 4;
+}
+
 async function verifyErc1271(
   address: Address,
   message: string,
@@ -34,7 +39,7 @@ async function verifyErc1271(
   const code = await client.getBytecode({ address });
   if (!code || code === "0x") return false;
 
-  const digest = hashMessage({ message });
+  const digest = hashMessage(message);
   try {
     const result = await client.readContract({
       address,
@@ -55,6 +60,9 @@ export async function verifyWalletMessage(
   signature: Hex,
   chainKey: VestingChainKey = defaultVestingChain(),
 ): Promise<boolean> {
+  if (typeof message !== "string" || !message.trim()) return false;
+  if (!isValidSignatureHex(signature)) return false;
+
   try {
     if (await verifyMessage({ address, message, signature })) return true;
   } catch {

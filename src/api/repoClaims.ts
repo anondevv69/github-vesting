@@ -129,7 +129,11 @@ export async function handleRepoClaimStatus(req: Request, res: Response): Promis
   let claim = await getRepoClaim(normalizedRepo);
 
   if (poll && claim?.status !== "verified") {
-    claim = (await tryVerifyClaimFromGithub(normalizedRepo)) ?? claim;
+    try {
+      claim = (await tryVerifyClaimFromGithub(normalizedRepo)) ?? claim;
+    } catch (err) {
+      console.warn("[repo-claim] poll verify failed:", err);
+    }
   }
 
   if (!claim) {
