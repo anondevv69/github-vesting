@@ -114,7 +114,7 @@ See **`references/AGENT-API.md`** for response fields. **Do not** paste `replyTe
 
 ## Writes — lock via Bankr chat or X
 
-You **can** lock **any ERC-20 on Base** from terminal or X when the user has a Bankr-linked wallet that can sign transactions.
+You **can** lock **any ERC-20 on Base or Robinhood Chain (4663)** from terminal or X when the user has a Bankr-linked wallet that can sign transactions.
 
 **There is NO allowlist.** `known-escrow.json` only documents streaming tokens (Space). Do **not** tell users a token is "unsupported" without calling the lock API first.
 
@@ -122,22 +122,23 @@ You **can** lock **any ERC-20 on Base** from terminal or X when the user has a B
 
 1. **`POST https://api.proofofdev.xyz/api/agent/lock`** (always — even when user gives a `0x` address):
    - Header `x-wallet-address: 0x…`
-   - Body: `{ "repo": "owner/repo", "token": "TMP", "amount": "855M", "totalPushes": 1 }`
-   - `token` = symbol from **wallet holdings**, fee-recipient name, or **`0x` contract address**
+   - Body: `{ "chain": "robinhood", "repo": "owner/repo", "token": "0x…", "amount": "614029187", "totalPushes": 50, "pushesPerMilestone": 50 }`
+   - `chain`: `"base"` (default), `"robinhood"`, or `"base-sepolia"`
+   - `token` = symbol from **wallet holdings on that chain**, fee-recipient name, or **`0x` contract address**
    - `amount` = human units (`855000000`, `855M`, `3.49M`)
 
 2. If response has **`installUrl`** → allowlist-check, then tell user to install GitHub App, then retry.
 
 3. **`references/TX-VALIDATION.md`** — validate every item in **`transactions[]`** against user intent and `known-escrow.json`. **Abort if any check fails.**
 
-4. Submit validated txs on Base via Bankr:
+4. Submit validated txs via Bankr on the response `chainId` (**8453** Base or **4663** Robinhood):
    - `POST https://api.bankr.bot/wallet/submit` with `{ "transaction": { to, data, value, chainId }, "waitForConfirmation": true }`
    - Order: `approve` (if present) → `lock`
    - `waitForConfirmation: true` on the lock tx
 
 5. **`POST https://api.proofofdev.xyz/api/agent/confirm-lock`** with:
    - Same `x-wallet-address` header
-   - Body: `{ "repo": "owner/repo", "lockTxHash": "0x…" }`
+   - Body: `{ "chain": "robinhood", "repo": "owner/repo", "lockTxHash": "0x…" }`
 
 6. Format confirm response locally (`references/RESPONSE-SAFETY.md`) — include allowlisted lock page URL on its own line.
 
@@ -153,9 +154,11 @@ If symbol is ambiguous (two `Space` contracts), ask user to pick the `0x` addres
 
 ### Example one-liners
 
-> lock 855M TMP on anondevv69/bankr-tmp-skill for 1 push
+> lock 614029187 RHAGENT on owner/repo on robinhood for 50 pushes
 
-> lock 855M 0x935e13a28849095db45e63040f109c34b757aba3 on anondevv69/bankr-tmp-skill for 1 push
+> lock 614029187 0x894fac757250f8e02180e1856957274d84ac4ba3 on owner/repo on robinhood chain for 50 pushes
+
+> lock 855M TMP on anondevv69/bankr-tmp-skill for 1 push
 
 → `POST /api/agent/lock` → validate → `/wallet/submit` → `POST /api/agent/confirm-lock` → formatted reply.
 
