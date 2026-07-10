@@ -338,7 +338,8 @@ contract GitEscrow is Ownable, ReentrancyGuard {
         uint256 remaining = g.totalLocked - g.totalReleased;
         g.active = false;
 
-        if (remaining > 0) {
+        // Pre-funded grants hold tokens in escrow; streaming grants do not.
+        if (remaining > 0 && !g.streaming) {
             IERC20(g.token).safeTransfer(g.recipient, remaining);
         }
 

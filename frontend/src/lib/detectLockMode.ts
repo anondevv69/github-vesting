@@ -69,7 +69,7 @@ export async function detectStreamingToken(
   const cfg = getFrontendChainConfig(chainKey);
   const escrow = escrowOverride ?? cfg.escrowAddress;
   if (!escrow) {
-    return chainKey === "robinhood";
+    return false;
   }
 
   const client = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
@@ -89,9 +89,9 @@ export async function detectStreamingToken(
     return escrowPullBlocked(client, token, escrow, wallet);
   }
 
-  return chainKey === "robinhood";
+  return false;
 }
 
-export function defaultLockFunction(chainKey: VestingChainKey): "lock" | "lockAllowance" {
-  return chainKey === "robinhood" ? "lockAllowance" : "lock";
+export function defaultLockFunction(_chainKey: VestingChainKey): "lock" | "lockAllowance" {
+  return "lock";
 }
