@@ -11,12 +11,7 @@ import {
   type Address,
   type Hex,
 } from "viem";
-import { base, baseSepolia } from "viem/chains";
-import { env } from "./env";
-
-const IS_TESTNET = process.env.VITE_CHAIN === "base-sepolia";
-const activeChain = IS_TESTNET ? baseSepolia : base;
-const RPC_URL = IS_TESTNET ? env.BASE_SEPOLIA_RPC_URL : env.BASE_RPC_URL;
+import { defaultVestingChain, getVestingChainConfig, type VestingChainKey } from "./chains";
 
 const ERC1271_MAGIC = "0x1626ba7e" as const;
 
@@ -24,16 +19,18 @@ const ERC1271_ABI = parseAbi([
   "function isValidSignature(bytes32 hash, bytes signature) view returns (bytes4)",
 ]);
 
-function publicClient() {
-  return createPublicClient({ chain: activeChain, transport: http(RPC_URL) });
+function publicClient(chainKey: VestingChainKey = defaultVestingChain()) {
+  const cfg = getVestingChainConfig(chainKey);
+  return createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
 }
 
 async function verifyErc1271(
   address: Address,
   message: string,
   signature: Hex,
+  chainKey: VestingChainKey = defaultVestingChain(),
 ): Promise<boolean> {
-  const client = publicClient();
+  const client = publicClient(chainKey);
   const code = await client.getBytecode({ address });
   if (!code || code === "0x") return false;
 
@@ -56,18 +53,22 @@ export async function verifyWalletMessage(
   address: Address,
   message: string,
   signature: Hex,
+  chainKey: VestingChainKey = defaultVestingChain(),
 ): Promise<boolean> {
   try {
     if (await verifyMessage({ address, message, signature })) return true;
   } catch {
     /* EOA recovery failed — try ERC-1271 */
   }
-  return verifyErc1271(address, message, signature);
+  return verifyErc1271(address, message, signature, chainKey);
 }
 
 /** True if address has contract bytecode (Bankr Kernel, smart wallet). */
-export async function isSmartWalletAddress(address: Address): Promise<boolean> {
-  const client = publicClient();
+export async function isSmartWalletAddress(
+  address: Address,
+  chainKey: VestingChainKey = defaultVestingChain(),
+): Promise<boolean> {
+  const client = publicClient(chainKey);
   const code = await client.getBytecode({ address });
   return Boolean(code && code !== "0x");
 }

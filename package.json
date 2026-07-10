@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "compile:contracts": "hardhat compile",
     "deploy:base": "hardhat run contracts/deploy/deployGitEscrow.ts --network base",
+    "deploy:robinhood": "hardhat run contracts/deploy/deployGitEscrow.ts --network robinhood",
     "deploy:base-sepolia": "hardhat run contracts/deploy/deployGitEscrow.ts --network baseSepolia",
     "deploy:mock-token": "hardhat run contracts/deploy/deployMockERC20.ts --network baseSepolia",
     "oracle:recover": "tsx scripts/recover-stuck-tokens.ts",

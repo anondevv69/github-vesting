@@ -13,13 +13,14 @@ import {
   type Address,
   type Hex,
 } from "viem";
-import { base, baseSepolia } from "viem/chains";
 import { env } from "./env";
+import {
+  defaultVestingChain,
+  getVestingChainConfig,
+  parseVestingChain,
+  type VestingChainKey,
+} from "./chains";
 import knownEscrow from "../../skills/bankr-vesting/known-escrow.json";
-
-const IS_TESTNET = process.env.VITE_CHAIN === "base-sepolia";
-const activeChain = IS_TESTNET ? baseSepolia : base;
-const RPC_URL = IS_TESTNET ? env.BASE_SEPOLIA_RPC_URL : env.BASE_RPC_URL;
 
 const ESCROW_ABI = parseAbi([
   "function lock(bytes32 repoId, address token, uint256 amount, uint256 totalPushes, uint256 pushesPerMile) external",
@@ -52,10 +53,11 @@ export type PrepareLockParams = {
   amount: string;
   totalPushes?: number;
   pushesPerMilestone?: number;
+  chain?: VestingChainKey;
 };
 
 export type PrepareLockResult = {
-  chain: "base" | "base-sepolia";
+  chain: VestingChainKey;
   tokenSymbol: string;
   tokenDecimals: number;
   amountWei: string;
@@ -73,16 +75,19 @@ function repoIdBytes32(repoFullName: string): Hex {
   return keccak256(toBytes(repoFullName.trim()));
 }
 
-function isKnownStreamingToken(token: string): boolean {
+function isKnownStreamingToken(token: string, chainKey: VestingChainKey): boolean {
   const t = token.toLowerCase();
-  return Object.values(knownEscrow.supportedTokens).some(
-    (x) => x.streaming && x.address.toLowerCase() === t,
-  );
+  const chainId = getVestingChainConfig(chainKey).chainId;
+  const chainTokens =
+    (knownEscrow as { chains?: Record<string, { supportedTokens?: typeof knownEscrow.supportedTokens }> })
+      .chains?.[String(chainId)]?.supportedTokens ?? knownEscrow.supportedTokens;
+  return Object.values(chainTokens).some((x) => x.streaming && x.address.toLowerCase() === t);
 }
 
-async function detectStreamingToken(token: Address): Promise<boolean> {
-  if (isKnownStreamingToken(token)) return true;
-  const client = createPublicClient({ chain: activeChain, transport: http(RPC_URL) });
+async function detectStreamingToken(token: Address, chainKey: VestingChainKey): Promise<boolean> {
+  if (isKnownStreamingToken(token, chainKey)) return true;
+  const cfg = getVestingChainConfig(chainKey);
+  const client = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
   try {
     await client.readContract({
       address: token,
@@ -96,10 +101,14 @@ async function detectStreamingToken(token: Address): Promise<boolean> {
 }
 
 export async function prepareLockTransactions(params: PrepareLockParams): Promise<PrepareLockResult> {
-  const escrow = env.GIT_ESCROW_ADDRESS as Address | undefined;
-  if (!escrow) throw new Error("GIT_ESCROW_ADDRESS not configured on server");
+  const chainKey = params.chain ?? defaultVestingChain();
+  const cfg = getVestingChainConfig(chainKey);
+  const escrow = cfg.escrowAddress as Address | undefined;
+  if (!escrow) {
+    throw new Error(`GitEscrow not configured for ${cfg.label} (${chainKey})`);
+  }
 
-  const client = createPublicClient({ chain: activeChain, transport: http(RPC_URL) });
+  const client = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
   const totalPushes = params.totalPushes ?? 10;
   const pushesPerMilestone = params.pushesPerMilestone ?? totalPushes;
 
@@ -119,7 +128,7 @@ export async function prepareLockTransactions(params: PrepareLockParams): Promis
     throw new Error(`Insufficient ${symbol} balance (have ${balance}, need ${amountWei})`);
   }
 
-  const streaming = await detectStreamingToken(params.token);
+  const streaming = await detectStreamingToken(params.token, chainKey);
   const lockFunction = streaming ? "lockAllowance" : "lock";
   const milestones = totalPushes / pushesPerMilestone;
   const tokensPerMilestone = (amountWei / BigInt(milestones)).toString();
@@ -133,7 +142,7 @@ export async function prepareLockTransactions(params: PrepareLockParams): Promis
   ] as const;
 
   const transactions: AgentTransaction[] = [];
-  const chainId = activeChain.id;
+  const chainId = cfg.chainId;
 
   const allowance = await client.readContract({
     address: params.token,
@@ -172,7 +181,7 @@ export async function prepareLockTransactions(params: PrepareLockParams): Promis
   });
 
   return {
-    chain: IS_TESTNET ? "base-sepolia" : "base",
+    chain: chainKey,
     tokenSymbol: symbol,
     tokenDecimals: decimals,
     amountWei: amountWei.toString(),
@@ -186,3 +195,5 @@ export async function prepareLockTransactions(params: PrepareLockParams): Promis
     needsApprove,
   };
 }
+
+export { parseVestingChain, type VestingChainKey };
