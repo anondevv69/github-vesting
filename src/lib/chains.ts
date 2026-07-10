@@ -20,6 +20,17 @@ export const robinhood = defineChain({
 
 export type VestingChainKey = "base" | "base-sepolia" | "robinhood";
 
+/** v1 Robinhood GitEscrow — streaming-only deploy, superseded 2026-07-10 */
+const LEGACY_ROBINHOOD_ESCROW = "0xe07df659266A697804cA75a72B4af4f827036116";
+const CURRENT_ROBINHOOD_ESCROW = "0x706038b47ba6d0CC69479bB286d064137B50f6Ae";
+
+export function resolveRobinhoodEscrowAddress(configured?: string | null): string {
+  const raw = (configured ?? "").trim();
+  if (!raw) return CURRENT_ROBINHOOD_ESCROW;
+  if (raw.toLowerCase() === LEGACY_ROBINHOOD_ESCROW.toLowerCase()) return CURRENT_ROBINHOOD_ESCROW;
+  return raw;
+}
+
 export type VestingChainConfig = {
   key: VestingChainKey;
   chain: Chain;
@@ -45,8 +56,7 @@ export function getVestingChainConfig(key: VestingChainKey): VestingChainConfig 
         chain: robinhood,
         chainId: 4663,
         rpcUrl: env.ROBINHOOD_RPC_URL,
-        escrowAddress:
-          env.GIT_ESCROW_ROBINHOOD_ADDRESS || "0x706038b47ba6d0CC69479bB286d064137B50f6Ae",
+        escrowAddress: resolveRobinhoodEscrowAddress(env.GIT_ESCROW_ROBINHOOD_ADDRESS),
         explorerBase: "https://robinhoodchain.blockscout.com",
         label: "Robinhood Chain",
       };
