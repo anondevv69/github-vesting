@@ -130,8 +130,9 @@ x-wallet-address: 0x…
 | Field | Required | Notes |
 |-------|----------|-------|
 | `repo` | yes | `owner/name` on GitHub |
-| `token` | yes | Symbol from wallet (`TMP`, `Space`), or any `0x` ERC-20 on Base |
-| `amount` | yes | Human units: `3490000`, `3.49M`, `1.5K` |
+| `chain` | no | `"base"` (default), `"robinhood"`, or `"base-sepolia"` |
+| `token` | yes | Symbol from wallet on target chain, or any `0x` ERC-20 |
+| `amount` | yes | Human units: `3490000`, `3.49M`, `614029187` |
 | `totalPushes` | no | Default `10` |
 | `pushesPerMilestone` | no | Default = `totalPushes` (single release) |
 
@@ -166,7 +167,7 @@ Same as `/api/agent/lock` without the extra `steps` wrapper. Use when you alread
 
 ## POST /api/agent/confirm-lock
 
-Register the grant after the lock transaction confirms on Base.
+Register the grant after the lock transaction confirms on Base or Robinhood.
 
 ```http
 POST {API}/api/agent/confirm-lock
@@ -175,7 +176,8 @@ x-wallet-address: 0x…
 
 {
   "repo": "owner/repo",
-  "lockTxHash": "0x…"
+  "lockTxHash": "0x…",
+  "chain": "robinhood"
 }
 ```
 

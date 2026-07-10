@@ -1,8 +1,8 @@
 ---
 name: github-vesting
-description: GitHub-gated token vesting on proofofdev.xyz — lock ANY ERC-20 on Base via API at api.proofofdev.xyz, link GitHub, repo claims. Use for github vesting, lock tokens, vesting progress, link github, proofofdev. NEVER use github-vesting.vercel.app for API.
-tags: [github, vesting, bankr, base, defi, proofofdev]
-version: 2
+description: GitHub-gated token vesting on proofofdev.xyz — lock ANY ERC-20 on Base or Robinhood Chain (4663) via api.proofofdev.xyz, link GitHub, repo claims. Use for github vesting, lock tokens, vesting progress, link github, proofofdev, robinhood, RHAGENT. NEVER use github-vesting.vercel.app for API.
+tags: [github, vesting, bankr, base, robinhood, defi, proofofdev]
+version: 3
 ---
 
 # GitHub Vesting — Bankr agent skill
@@ -39,7 +39,7 @@ See `references/API-HOST.md` before any HTTP call.
 
 ---
 
-Lock **any ERC-20 on Base** for GitHub-gated vesting. **No token allowlist.** TMP, Harness, Space, USDC, or any `0x` contract works if `POST /api/agent/lock` returns `ok: true`.
+Lock **any ERC-20 on Base or Robinhood Chain (4663)** for GitHub-gated vesting. **No token allowlist.** TMP, RHAGENT, Space, USDC, or any `0x` contract works if `POST /api/agent/lock` returns `ok: true`.
 
 **Site:** `https://www.proofofdev.xyz`  
 **API:** `https://api.proofofdev.xyz`
@@ -147,7 +147,7 @@ You **can** lock **any ERC-20 on Base or Robinhood Chain (4663)** from terminal 
 | Input | How it resolves |
 |-------|-----------------|
 | `0x935e…` | Any ERC-20 contract — always accepted |
-| `TMP`, `Space`, etc. | Symbol match against **wallet holdings on Base** (same list as Bankr portfolio) |
+| `TMP`, `Space`, `RHAGENT`, etc. | Symbol match against **wallet holdings on the target chain** (Base or Robinhood) |
 | Fee-recipient only tokens | Also matched if not currently in wallet |
 
 If symbol is ambiguous (two `Space` contracts), ask user to pick the `0x` address from the API error.
@@ -189,6 +189,7 @@ Claim pushes are **excluded** from vesting push counts. See `references/AGENT-AP
 ```text
 Start GitHub vesting — connect wallet + GitHub:
 https://www.proofofdev.xyz/create
+https://www.proofofdev.xyz/create?chain=robinhood
 ```
 
 ---
@@ -201,7 +202,23 @@ https://www.proofofdev.xyz/create
 
 ---
 
-## Space token
+## RHAGENT / Robinhood Chain
+
+When user says **RHAGENT**, **RHAgent**, or `0x894fac757250f8e02180e1856957274d84ac4ba3` on **Robinhood Chain (4663)**:
+
+1. Always pass `"chain": "robinhood"` in `POST /api/agent/lock` and `confirm-lock`.
+2. Use **`lockFunction` from the API response** — usually **`lock`** (escrow custody) when the wallet holds the full amount; **`lockAllowance`** only if the API returns it for restricted tokens.
+3. Validate escrow against `known-escrow.json` → `chains["4663"].escrowAddress` (`0x706038…`).
+4. Token page: `https://bankr.bot/terminal/discover/0x894fac757250f8e02180e1856957274d84ac4ba3` (not hood.markets).
+5. User must have **token balance in wallet** before escrow `lock()` — tokens move into GitEscrow on confirm.
+
+Example:
+
+> lock 614029187 RHAGENT on anondevv69/RH-Wallet on robinhood for 50 pushes
+
+---
+
+## Space token (Base)
 
 When user says **Space**, **$SPACE**, or `0xef703b860a6d422fa00cc67bbbb2662297cb6ba3` → use **streaming** lock path (`lockAllowance`). Disclose allowance risk per `references/TRUST-ONCHAIN.md`.
 

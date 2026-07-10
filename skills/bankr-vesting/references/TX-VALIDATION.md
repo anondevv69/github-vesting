@@ -58,7 +58,7 @@ Compute expected `repoId` = `keccak256(bytes(utf8(repo.trim())))` — same as So
 |-------|-------------|
 | Selector | `0x095ea7b3` (`approve(address,uint256)`) |
 | `to` | **token contract** — must equal token address in lock calldata |
-| Spender (arg 1) | exactly `known-escrow.json` → `escrowAddress` |
+| Spender (arg 1) | exactly escrow for the request chain — `known-escrow.json` → `escrowAddress` (Base) or `chains["4663"].escrowAddress` (Robinhood) |
 | Amount (arg 2) | **≤ `amountWei`** from lock API response **and** ≤ amount user requested |
 | No infinite approve | reject `type(uint256).max` unless user explicitly requested max (they did not) |
 
@@ -76,7 +76,7 @@ Compute expected `repoId` = `keccak256(bytes(utf8(repo.trim())))` — same as So
 | Arg 2 `amount` | equals `amountWei` from API response |
 | Arg 3 `totalPushes` | matches user intent / API response |
 | Arg 4 `pushesPerMilestone` | matches user intent / API response |
-| `lockFunction` | Robinhood (4663) → expect **`lockAllowance`**; Base streaming tokens → `lockAllowance`; standard Base ERC-20 → `lock` |
+| `lockFunction` | Must match API response `lockFunction` — **`lock`** (escrow) or **`lockAllowance`** (streaming). Do **not** assume all Robinhood tokens use `lockAllowance`; RHAGENT uses **`lock`** when balance is sufficient. |
 
 ---
 
@@ -115,4 +115,4 @@ Only after lock tx confirms:
 POST https://api.proofofdev.xyz/api/agent/confirm-lock
 ```
 
-Body: `{ "repo": "owner/repo", "lockTxHash": "0x…" }` — `repo` must match validated intent; hash from Bankr submit response.
+Body: `{ "repo": "owner/repo", "lockTxHash": "0x…", "chain": "base" | "robinhood" }` — `repo` must match validated intent; hash from Bankr submit response; `chain` must match lock request.

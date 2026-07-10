@@ -27,6 +27,27 @@ Owner can call `setOracle(address)` — oracle rotation is a **trust assumption*
 
 ---
 
+## GitEscrow contract (Robinhood Chain)
+
+| Field | Value |
+|-------|-------|
+| Address | `0x706038b47ba6d0CC69479bB286d064137B50f6Ae` |
+| Chain | Robinhood Chain mainnet (`chainId` **4663**) |
+| Explorer | [robinhoodchain.blockscout.com/address/0x706038…](https://robinhoodchain.blockscout.com/address/0x706038b47ba6d0CC69479bB286d064137B50f6Ae) |
+| Source | Same [`contracts/GitEscrow.sol`](https://github.com/anondevv69/github-vesting/blob/main/contracts/GitEscrow.sol) as Base |
+| Oracle / Owner | `0x252b98b9fA80D3644Ebcea6CceAB6293430e64a0` (verify live on-chain) |
+
+**Legacy v1 Robinhood escrow** `0xe07df659…6116` — deprecated; do not use for new locks.
+
+**Robinhood lock modes:**
+
+- **Escrow `lock()`** — preferred when token supports transfer into GitEscrow (e.g. RHAGENT with balance). Tokens visible in escrow on Blockscout.
+- **`lockAllowance()`** — only when API returns `lockFunction: "lockAllowance"` (restricted / streaming tokens). Tokens stay in wallet; disclose allowance risks below.
+
+Always use `chains["4663"].escrowAddress` from `known-escrow.json` for tx validation on chainId **4663**.
+
+---
+
 ## Agent-callable selectors only
 
 | Function | Selector | When used |
