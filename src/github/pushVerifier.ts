@@ -105,7 +105,7 @@ async function lastAcceptedPushTs(repoId: string): Promise<number | null> {
 export async function verifyPush(
   repoId: string,
   payload: PushPayload,
-  options?: { bypassCooldown?: boolean; platform?: "github" | "gitlawb" },
+  options?: { bypassCooldown?: boolean; bypassDailyCap?: boolean; platform?: "github" | "gitlawb" },
 ): Promise<VerifyResult> {
   const branch = branchFromRef(payload.ref);
 
@@ -170,7 +170,7 @@ export async function verifyPush(
   const dateStr = todayDateStr();
   const dailyKey = KEYS.dailyCount(repoId, dateStr);
   const dailyCount = parseInt((await redis.get(dailyKey)) ?? "0", 10);
-  if (dailyCount >= MAX_PUSHES_PER_DAY) {
+  if (!options?.bypassDailyCap && dailyCount >= MAX_PUSHES_PER_DAY) {
     return {
       accepted: false,
       reason: `Daily cap of ${MAX_PUSHES_PER_DAY} counted pushes already reached for ${dateStr}`,
