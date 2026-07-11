@@ -14,7 +14,7 @@ export type PushProcessResult = {
 export async function processPushForGrant(
   grant: GrantRecord,
   payload: PushPayload,
-  options?: { bypassCooldown?: boolean; platform?: "github" | "gitlawb" },
+  options?: { bypassCooldown?: boolean; bypassDailyCap?: boolean; platform?: "github" | "gitlawb" },
 ): Promise<PushProcessResult> {
   const repoId = grant.repoId;
   const platform = options?.platform ?? grant.platform ?? "github";

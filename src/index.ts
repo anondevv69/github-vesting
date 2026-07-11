@@ -49,6 +49,7 @@ import {
 import { handleGithubRepoLookup, handleGithubReposList } from "./api/githubRepo";
 import { handleGithubAuthMe, handleGithubAuthLogout } from "./api/githubAuth";
 import { handleAdminDeleteGrant } from "./api/adminGrants";
+import { handleAdminBackfillPushes } from "./api/adminBackfill";
 import { handleGithubInstallationLookup } from "./api/githubInstall";
 
 const app = express();
@@ -152,6 +153,7 @@ app.get("/api/github/repos", (req, res) => void handleGithubReposList(req, res))
 // ─── Vesting API ──────────────────────────────────────────────────────────────
 app.post("/api/vesting/register", (req, res) => void handleRegister(req, res));
 app.post("/api/admin/delete-grant", (req, res) => void handleAdminDeleteGrant(req, res));
+app.post("/api/admin/backfill-pushes", (req, res) => void handleAdminBackfillPushes(req, res));
 app.get("/api/vesting/grants", (req, res) => void handleGrantsByRecipient(req, res));
 app.get("/api/vesting/status/:repoId", (req, res) => void handleStatus(req, res));
 app.get("/api/vesting/status", (req, res) => void handleStatus(req, res));
