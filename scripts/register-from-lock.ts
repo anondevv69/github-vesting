@@ -14,6 +14,7 @@ dotenv.config();
 
 import { createPublicClient, http, parseAbi, parseEventLogs } from "viem";
 import { base, baseSepolia } from "viem/chains";
+import { robinhood } from "../src/lib/chains";
 import { env } from "../src/lib/env";
 import { handleRegister } from "../src/api/register";
 import type { Request, Response } from "express";
@@ -32,15 +33,21 @@ async function main() {
   const txHash = getArg("--tx");
   const repoFullName = getArg("--repo");
   const installationId = getArg("--installation-id");
-  const chain = (getArg("--chain") ?? "base") as "base" | "base-sepolia";
+  const chain = (getArg("--chain") ?? "base") as "base" | "base-sepolia" | "robinhood";
 
   if (!txHash || !repoFullName) {
-    console.error("Usage: --tx <lockTxHash> --repo owner/name [--installation-id N]");
+    console.error("Usage: --tx <lockTxHash> --repo owner/name [--installation-id N] [--chain base|robinhood]");
     process.exit(1);
   }
 
-  const viemChain = chain === "base" ? base : baseSepolia;
-  const rpc = chain === "base" ? env.BASE_RPC_URL : env.BASE_SEPOLIA_RPC_URL;
+  const viemChain =
+    chain === "robinhood" ? robinhood : chain === "base" ? base : baseSepolia;
+  const rpc =
+    chain === "robinhood"
+      ? env.ROBINHOOD_RPC_URL
+      : chain === "base"
+        ? env.BASE_RPC_URL
+        : env.BASE_SEPOLIA_RPC_URL;
   const client = createPublicClient({ chain: viemChain, transport: http(rpc) });
   const receipt = await client.getTransactionReceipt({ hash: txHash as `0x${string}` });
   const logs = parseEventLogs({ abi: ESCROW_ABI, logs: receipt.logs, eventName: "Locked" });
@@ -59,7 +66,7 @@ async function main() {
     tokensPerMilestone: locked.tokensPerMilestone.toString(),
     onChainTxHash: txHash,
     installationId: installationId ? Number(installationId) : undefined,
-    streaming: true,
+    streaming: getArg("--streaming") === "true",
   };
 
   const mockRes = {
