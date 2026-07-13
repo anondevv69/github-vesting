@@ -1,0 +1,9 @@
+{
+  "robinhood": {
+    "chainId": 4663,
+    "address": "0xeFC8591519a2D8885C1b62C7de84ce906F22Fa78",
+    "deployer": "0x252b98b9fA80D3644Ebcea6CceAB6293430e64a0",
+    "verified": true,
+    "explorer": "https://robinhoodchain.blockscout.com/address/0xeFC8591519a2D8885C1b62C7de84ce906F22Fa78"
+  }
+}
