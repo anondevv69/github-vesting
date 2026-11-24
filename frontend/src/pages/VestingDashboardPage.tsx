@@ -138,7 +138,7 @@ export function VestingDashboardPage() {
         <summary>How this works</summary>
         <div className="drawer__body">
           <p>
-            <strong>Verified push</strong> = one real push to <code>main</code> with ≥3 lines of code
+            <strong>Verified push</strong> = one real push to a production branch (<code>main</code>, <code>master</code>, <code>production</code>, <code>prod</code>) with ≥3 lines of code
             (not docs/lockfiles). Same commit never counts twice.
           </p>
           <p>

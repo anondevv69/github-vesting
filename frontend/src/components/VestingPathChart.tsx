@@ -88,7 +88,7 @@ export function VestingPathChart({
         </div>
         <div className="vesting-path__rule">
           <strong>Meaningful code</strong>
-          ≥3 lines of real code (not docs/lockfiles) on <code>main</code>. Max 3/day · 30 min apart.
+          ≥3 lines of real code (not docs/lockfiles) on a production branch (<code>main</code>/<code>master</code>/<code>production</code>/<code>prod</code>). Max 3/day · 30 min apart.
         </div>
         <div className="vesting-path__rule">
           <strong>Commitment</strong>
