@@ -174,8 +174,8 @@ available:
 2. **Bankr, if you're running inside Bankr.** Submit each transaction via
    `POST https://api.bankr.bot/wallet/submit` with
    `{ "transaction": { to, data, value, chainId }, "waitForConfirmation": true }`.
-   (The API response text may still say `agent/submit` — `/wallet/submit`
-   is the current Bankr route.) If Bankr's scanner blocks the `approve`
+   (`/wallet/submit` is the current Bankr route; the legacy
+   `/agent/submit` route is removed.) If Bankr's scanner blocks the `approve`
    with `untrusted_address`, **stop and surface the risk to the user** —
    never route around a scanner block.
 3. **Hand off to the human.** If neither route exists, present the prepared

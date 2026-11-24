@@ -107,6 +107,7 @@ All reads accept `?wallet=0x…` **or** header `x-wallet-address: 0x…`.
 | my bankr tokens / fee tokens | `GET https://api.proofofdev.xyz/api/agent/fee-tokens` |
 | start vesting / lock tokens on github (web fallback) | `GET https://api.proofofdev.xyz/api/agent/setup-link?wallet=0x…` |
 | link github @username | `POST https://api.proofofdev.xyz/api/agent/link-github` → allowlisted `linkUrl` only |
+| merge rewards / what did that merge earn | Counted merged PRs pay the author a flat reward — **no lock required**; unlinked authors accrue pending rewards that pay on link. Check `GET https://api.proofofdev.xyz/api/dev/link-wallet/<login>` (`pendingRewards[]`) — see `AGENT-API.md` § Merge rewards |
 
 See **`references/AGENT-API.md`** for response fields. **Do not** paste `replyText` / `tweetReply` verbatim.
 

@@ -136,7 +136,7 @@ x-wallet-address: 0x…
     { "step": "approve", "to": "0x…", "data": "0x…", "value": "0x0", "chainId": 8453 },
     { "step": "lock", "to": "0x76dd…", "data": "0x…", "value": "0x0", "chainId": 8453 }
   ],
-  "bankrSubmitUrl": "https://api.bankr.bot/agent/submit",
+  "bankrSubmitUrl": "https://api.bankr.bot/wallet/submit",
   "confirmUrl": "https://api.proofofdev.xyz/api/agent/confirm-lock",
   "statusUrl": "https://www.proofofdev.xyz/lock/owner/repo",
   "tweetReply": "…",
@@ -183,7 +183,7 @@ For each transaction in `transactions[]`, in order:
 POST https://api.bankr.bot/wallet/submit
 ```
 
-Legacy `/agent/submit` is **removed** (returns 403) — do not use it, even though the prepare-lock response's `bankrSubmitUrl` field still names it (known stale field in the API response; the route in this section is the current one).
+Legacy `/agent/submit` is **removed** (returns 403) — do not use it. The prepare-lock response's `bankrSubmitUrl` field names the current `/wallet/submit` route (fixed 2026-11-23, audit H4).
 
 Use fields `to`, `data`, `value`, `chainId` from the prepare response. Set `waitForConfirmation: true` on the final lock tx.
 
@@ -288,3 +288,28 @@ GET {API}/health
 ```
 
 Returns `{ "ok": true, "service": "github-vesting" }`.
+
+---
+
+## Merge rewards (ShipRewards) — no lock required
+
+Every **counted** merged PR pays its author a flat per-merge reward from a
+pre-funded pool — on any repo with the GitHub App installed, **with or
+without a vesting grant** (same verifier / anti-gaming rules as vesting).
+The reward goes to the author's **most recently linked** wallet, keyed
+on-chain by merge commit hash (never payable twice). If the author has no
+linked wallet, the reward **accrues as pending** at the earn-time amount
+and pays out automatically when a wallet is linked — no claim step.
+
+Read state (no auth):
+
+```http
+GET {API}/api/dev/link-wallet/<github-login>
+```
+
+Returns `wallets[]` plus `pendingRewards[]` (`{repoId, repoFullName,
+mergeSha, amount, chain, earnedAt}`) and `pendingRewardsTotal` (wei).
+Rewards are inert when the server has no pool configured for the chain or
+the per-merge amount is 0: merges still count, nothing pays or accrues.
+Ship-report endpoints (`POST /api/agent/report-ship`, `GET
+/api/agent/ship-report(s)`) are documented in `docs/agent.md`.

@@ -348,6 +348,26 @@ Returns `{ "ok": true, "service": "github-vesting" }`.
 
 ---
 
+## Merge rewards (ShipRewards) — no lock required
+
+Every **counted** merged PR pays its author a flat per-merge reward from a
+pre-funded pool — on any repo with the GitHub App installed, **with or
+without a vesting grant** (same verifier / anti-gaming rules as vesting).
+The reward goes to the author's **most recently linked** wallet, keyed
+on-chain by merge commit hash (never payable twice). If the author has no
+linked wallet, the reward **accrues as pending** at the earn-time amount
+and pays out automatically when a wallet is linked — no claim step.
+
+Read state (no auth): `GET {API}/api/dev/link-wallet/<github-login>`
+returns `wallets[]` plus `pendingRewards[]` (`{repoId, repoFullName,
+mergeSha, amount, chain, earnedAt}`) and `pendingRewardsTotal` (wei).
+Rewards are inert when the server has no pool configured for the chain or
+the per-merge amount is 0: merges still count, nothing pays or accrues.
+Ship-report endpoints (`POST /api/agent/report-ship`, `GET
+/api/agent/ship-report(s)`) are documented in the repo's `docs/agent.md`.
+
+---
+
 ## On-chain reference
 
 See `references/TRUST-ONCHAIN.md` and `known-escrow.json` for escrow address, verified source, selectors, oracle/owner, and allowance risks.
