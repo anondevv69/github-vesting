@@ -1,0 +1,79 @@
+/**
+ * TEST-ONLY webhook sender: builds a GitHub push payload, HMAC-SHA256
+ * signs it with the test webhook secret, POSTs it to the local server.
+ * Usage: node tests/e2e/send-webhook.mjs <case>
+ *   case = plain | docs | squash
+ */
+import { createHmac } from "crypto";
+
+const SECRET = "test-webhook-secret";
+const URL = "http://127.0.0.1:3210/api/webhook/github";
+
+const codeFiles = (prefix, n) =>
+  Array.from({ length: n }, (_, i) => `src/feature/${prefix}${i + 1}.ts`);
+
+const CASES = {
+  plain: {
+    after: "a11ce00000000000000000000000000000000001",
+    message: "feat: add feature module",
+    added: codeFiles("f", 11),
+    modified: [],
+  },
+  docs: {
+    after: "d0c500000000000000000000000000000000000002",
+    message: "docs: update readme",
+    added: ["README.md", "docs/guide.md"],
+    modified: [],
+  },
+  squash: {
+    after: "59aa550000000000000000000000000000000003",
+    message: "feat: shiny thing (#42)",
+    added: codeFiles("g", 11),
+    modified: [],
+  },
+};
+
+const c = CASES[process.argv[2]];
+if (!c) {
+  console.error("unknown case:", process.argv[2]);
+  process.exit(1);
+}
+// ensure valid 40-char hex sha
+c.after = c.after.padEnd(40, "0").slice(0, 40);
+
+const payload = {
+  ref: "refs/heads/main",
+  forced: false,
+  before: "0".repeat(40),
+  after: c.after,
+  commits: [
+    {
+      id: c.after,
+      message: c.message,
+      added: c.added,
+      removed: [],
+      modified: c.modified,
+      timestamp: new Date().toISOString(),
+    },
+  ],
+  repository: { full_name: "testowner/testrepo" },
+  pusher: { name: "testdev" },
+  sender: { login: "testdev", type: "User" },
+};
+
+const body = JSON.stringify(payload);
+const sig = "sha256=" + createHmac("sha256", SECRET).update(body).digest("hex");
+
+const started = Date.now();
+const res = await fetch(URL, {
+  method: "POST",
+  headers: {
+    "content-type": "application/json",
+    "x-hub-signature-256": sig,
+    "x-github-event": "push",
+  },
+  body,
+});
+const text = await res.text();
+console.log(`[webhook:${process.argv[2]}] HTTP ${res.status} in ${Date.now() - started}ms`);
+console.log(text);
