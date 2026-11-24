@@ -12,6 +12,7 @@ Public guide for bots and terminals integrating with GitHub vesting.
 | Path | Who | What you need |
 |------|-----|---------------|
 | **Bankr skill** | @bankrbot, Bankr CLI, Bankr terminals | Install skill package (below) |
+| **Claude skill** | Claude Code, Muse agents | Install skill package (below) |
 | **Regular agent** | Custom bots, OpenClaw, scripts, any HTTP client | Call REST endpoints directly (below) |
 
 Both paths use the same Agent API. The Bankr skill adds intent routing, tweet formatting, and setup-link rules.
@@ -48,6 +49,18 @@ if message mentions github vesting / lock tokens / vesting progress / verified p
 - Space token → streaming lock path (allowance, not escrow)
 
 Full skill docs: `SKILL.md`, `AGENT-API.md`, `ONE-LINE-INTENTS.md` in the skill folder.
+
+---
+
+## Claude agents (Claude Code / Muse)
+
+Install the Claude skill — same Agent API, with Claude-specific signing routes (own wallet tooling, Bankr, or human hand-off; Claude has no built-in wallet):
+
+```text
+copy skills/claude-vesting/ from https://github.com/anondevv69/github-vesting/tree/ship/pr-credit-and-rewards/skills/claude-vesting into your skills directory (e.g. ~/.claude/skills/claude-vesting/)
+```
+
+**Skill folder:** [skills/claude-vesting/](https://github.com/anondevv69/github-vesting/tree/ship/pr-credit-and-rewards/skills/claude-vesting)
 
 ---
 
