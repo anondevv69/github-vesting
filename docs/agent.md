@@ -115,6 +115,13 @@ hashes on the record), or `rejected` (with the verifier's reason); a report
 with no webhook within 24h reads as `expired`. Every report response
 carries `"settlement": "github-webhook"` and `"reportMovesMoney": false`.
 
+**MCP:** all of the above is also exposed as MCP tools (vesting status,
+briefing, grants, prepare-lock, ship reports, link status). Remote
+endpoint — connect with just the URL, no install:
+`https://api.proofofdev.xyz/mcp` (Streamable HTTP, stateless; live when
+the backend is deployed). A stdio variant ships in the repo's `mcp/`
+directory for local installs. See `mcp/README.md`.
+
 ### Example
 
 ```bash

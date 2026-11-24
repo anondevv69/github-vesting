@@ -460,13 +460,13 @@ authority. **Your report is a claim; the webhook is the verdict.**
 
 ### MCP server (first-class tools instead of raw curl)
 
-The repo ships a stdio MCP server named `proofofdev` (`mcp/` directory)
-wrapping this API: `vesting_status`, `agent_briefing`, `agent_grants`,
-`repo_recent_pushes`, `prepare_lock`, `report_ship`, `ship_report`,
-`link_status`. If it's configured in the user's Claude client, prefer its
-tools over hand-built curl. Install: see `mcp/README.md` in the repo
-(`claude mcp add proofofdev -- npx tsx <path>/mcp/src/server.ts`, API base
-via `POD_API_URL`, default `https://api.proofofdev.xyz`).
+Proof of Dev exposes an MCP server named `proofofdev` wrapping this API:
+`vesting_status`, `agent_briefing`, `agent_grants`, `repo_recent_pushes`,
+`prepare_lock`, `report_ship`, `ship_report`, `link_status`. If it's
+configured in the user's Claude client, prefer its tools over hand-built
+curl. **Remote (no install):** `claude mcp add --transport http proofofdev
+https://api.proofofdev.xyz/mcp` (live when the backend is deployed).
+Stdio variant in the repo's `mcp/` directory — see `mcp/README.md`.
 
 ### Claude Code push hook (automatic reporting)
 

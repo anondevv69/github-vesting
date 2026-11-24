@@ -1,8 +1,21 @@
 # proofofdev — MCP server
 
-A stdio [MCP](https://modelcontextprotocol.io) server that wraps the
+An [MCP](https://modelcontextprotocol.io) server that wraps the
 [Proof of Dev](https://www.proofofdev.xyz) agent API, so Claude Code /
-Claude clients get first-class tools instead of hand-built curl:
+Claude clients get first-class tools instead of hand-built curl. It comes
+in two transports with **identical tools** (one shared definition module,
+`src/lib/mcpTools.ts` in the backend repo — the E2E suite diffs the two
+tool lists so they cannot drift):
+
+- **Remote (recommended):** hosted on the API itself — connect with just
+  a URL, nothing to install. See "Remote install" below.
+- **Stdio (local):** run it yourself from this package. See
+  "Install (Claude Code)" below.
+
+> **Live status:** the remote endpoint goes live when the Proof of Dev
+> backend is redeployed — `https://api.proofofdev.xyz/mcp` does not
+> resolve until then. The stdio server works today against any running
+> backend (local or deployed) via `POD_API_URL`.
 
 | Tool | What it does |
 |---|---|
@@ -19,6 +32,30 @@ Trust model, same as the API: reads are unauthenticated; `prepare_lock`
 returns **unsigned** transactions and this server holds no keys and cannot
 move funds; `report_ship` is a claim that never releases tokens —
 settlement is always the GitHub webhook → verifier → oracle.
+
+## Remote install (Claude Code)
+
+```bash
+claude mcp add --transport http proofofdev https://api.proofofdev.xyz/mcp
+```
+
+Or in `.mcp.json` / your Claude config:
+
+```json
+{
+  "mcpServers": {
+    "proofofdev": {
+      "type": "http",
+      "url": "https://api.proofofdev.xyz/mcp"
+    }
+  }
+}
+```
+
+The remote server is **stateless** (Streamable HTTP, JSON responses, no
+sessions) — it survives backend restarts and needs no sticky routing.
+Prefer remote unless you're developing the backend itself; prefer stdio
+for a local/unreleased API.
 
 ## Install (Claude Code)
 
