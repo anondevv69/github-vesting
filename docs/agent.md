@@ -100,6 +100,20 @@ Optional: `x-client: agent`
 | POST | `/api/agent/prepare-lock` | body + wallet header | Same as `/api/agent/lock` without the extra `steps` wrapper |
 | POST | `/api/agent/confirm-lock` | `repo`, `lockTxHash` | Register grant after on-chain lock |
 | POST | `/api/agent/link-github` | body (`githubLogin`) + wallet header | Create a one-time magic link binding the wallet to a GitHub dev profile |
+| POST | `/api/agent/report-ship` | body (`repo`, `headSha`, optional `prNumber`, `authorLogin`) | File a ship report (attestation) for a shipped/merged commit |
+| GET | `/api/agent/ship-report` | `?repo=owner/repo&sha=<headSha>` | Current state of one ship report |
+| GET | `/api/agent/ship-reports` | `?repo=owner/repo` | Recent ship reports for a repo (newest first, cap 20) |
+
+**Ship reports (attestation layer):** a ship report is a developer-side
+agent's claim that it shipped a commit — a signal for instant feedback,
+**never** a settlement. Reports are unauthenticated by design (they are
+worthless to fake): a report alone never releases tokens and never
+influences the verifier. Settlement is only ever the GitHub push webhook →
+verifier → oracle. The webhook resolves a matching report to `confirmed`
+(counted, no payout on that push), `paid` (release and/or merge-reward tx
+hashes on the record), or `rejected` (with the verifier's reason); a report
+with no webhook within 24h reads as `expired`. Every report response
+carries `"settlement": "github-webhook"` and `"reportMovesMoney": false`.
 
 ### Example
 
