@@ -114,6 +114,25 @@ verifier → oracle. The webhook resolves a matching report to `confirmed`
 hashes on the record), or `rejected` (with the verifier's reason); a report
 with no webhook within 24h reads as `expired`. Every report response
 carries `"settlement": "github-webhook"` and `"reportMovesMoney": false`.
+On repos **without** a vesting grant there is no progress to `confirm`:
+reports resolve to `paid` (when the merge reward actually pays) or
+`rejected`, and otherwise stay `reported` until they expire — or flip to
+`paid` later if an accrued reward settles on wallet link.
+
+**Merge rewards (ShipRewards):** every counted merged PR pays its author a
+flat per-merge reward from a pre-funded pool — **with or without a vesting
+grant**. Any repo with the GitHub App installed is verified under the same
+anti-gaming rules; a grant only adds the vesting unlock on top. The reward
+goes to the author's **most recently linked** wallet, keyed on-chain by
+merge commit hash (a merge can never be paid twice). If the author has
+**no linked wallet**, the reward **accrues as pending** at the amount
+configured at earn time and pays out automatically to the wallet as soon
+as one is linked through any link flow — no claim step. Read state (no
+auth): `GET /api/dev/link-wallet/<github-login>` returns `wallets[]` plus
+`pendingRewards[]` (`{repoId, repoFullName, mergeSha, amount, chain,
+earnedAt}`) and `pendingRewardsTotal` (wei). Rewards are inert when the
+server has no pool configured for the chain or the per-merge amount is 0:
+merges still count, but nothing pays or accrues.
 
 **MCP:** all of the above is also exposed as MCP tools (vesting status,
 briefing, grants, prepare-lock, ship reports, link status). Remote

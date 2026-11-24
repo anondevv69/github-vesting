@@ -20,15 +20,19 @@ version: 1
    grant's recipient wallet, fixed on-chain at lock time.
 2. **Merge rewards (ShipRewards):** on **every counted merged PR**, the PR
    *author* is additionally paid a flat reward in the platform reward token
-   from a pre-funded `ShipRewards` pool — but only on repos that have an
-   **active vesting grant**: the webhook ignores pushes to repos with no
-   active grant, so no grant means no counting and no reward. The reward
-   goes to the author's **most recently linked** wallet (the linked-wallet
-   list is newest-first and the oracle pays the first entry) and is keyed
-   by the merge commit hash, so a merge can never be paid twice. Rewards
-   also require the server to be configured with a `ShipRewards` pool
-   address and a non-zero per-merge amount; when either is unset, merges
-   still count toward vesting but pay no reward.
+   from a pre-funded `ShipRewards` pool. **No vesting grant is required:**
+   any repo with the Proof of Dev GitHub App installed is verified with
+   the same anti-gaming rules, and counted merges earn the reward whether
+   or not anything is locked (a grant only adds the vesting *unlock* on
+   top). The reward goes to the author's **most recently linked** wallet
+   (the linked-wallet list is newest-first and the oracle pays the first
+   entry) and is keyed by the merge commit hash, so a merge can never be
+   paid twice. If the author has **no linked wallet**, the reward is not
+   lost — it accrues as a pending reward and pays out automatically when
+   they link one (see "Pending rewards" below). Rewards also require the
+   server to be configured with a `ShipRewards` pool address and a
+   non-zero per-merge amount; when either is unset, merges still count
+   but pay (and accrue) no reward.
 
 **API base URL:** `https://api.proofofdev.xyz`
 **Canonical protocol:** before your first session with this API, fetch
@@ -207,9 +211,10 @@ confirm response.
 
 ## What counts as a verified push (the verifier's actual rules)
 
-A push/merge earns vesting progress **and** the merge reward only if it
-passes every rule. These are the verifier's real constants and filters —
-quote them exactly; don't soften them.
+A push/merge earns the merge reward only if it passes every rule below;
+on repos with a vesting grant, the same counted pushes also earn vesting
+progress. These are the verifier's real constants and filters — quote
+them exactly; don't soften them.
 
 - **Branch:** the push must land on a production branch: `main`, `master`,
   `production`, or `prod`.
@@ -266,7 +271,9 @@ flow; an agent without that session cannot do this part for them):
 3. `POST /api/dev/link-wallet/confirm` with the signature → wallet linked.
 
 Check state any time (no auth): `GET /api/dev/link-wallet/<github-login>`
-returns `wallets[]` with `source` and `linkedAt`.
+returns `wallets[]` with `source` and `linkedAt`, plus `pendingRewards[]`
+(rewards accrued while no wallet was linked — each with repo, merge SHA,
+amount in wei, chain, and earn time) and `pendingRewardsTotal`.
 
 ### Flow B — agent-created magic link (best for chat/agent flows)
 
@@ -294,18 +301,24 @@ Claim pushes are excluded from vesting counts by design.
 
 ### Pending rewards — say this exactly
 
-If a counted merge's author has **no linked wallet**, the oracle skips
-payment for that merge and logs the reason. Be exact about what that
-means: **nothing is accrued or recorded for later** — that merge's reward
-is simply never paid, even if the author links a wallet afterwards.
-Linking only makes *future* counted merges pay. The reward is **never**
-sent to a guessed, derived, or "probably theirs" address. Tell the author
-to link a wallet (Flow A or B) so future counted merges pay out, and never
-claim a skipped reward was sent or is waiting for them. Once linked,
-rewards pay to the most recently linked wallet. Each reward is keyed on-chain by the
-merge commit hash (`isPaid` check before paying, and the contract itself
-refuses a second payment for the same hash) — **double-payment is
-impossible**, so never re-submit a reward for a merge.
+If a counted merge's author has **no linked wallet**, the reward for that
+merge **accrues as a pending reward**: it is recorded server-side at the
+amount configured when the merge counted, keyed by the merge commit
+hash. It is **never** sent to a guessed, derived, or "probably theirs"
+address. The moment the author links a wallet — through *any* link flow
+(Flow A signature, Flow B magic link, repo claim, or a lock) — the system
+automatically pays the full pending backlog to that newly linked wallet;
+no claim step, no button. If a settlement payment fails (e.g. the reward
+pool is empty), the remainder stays pending and retries on the next link.
+Check anyone's pending state any time (no auth):
+`GET /api/dev/link-wallet/<github-login>` → `pendingRewards[]` +
+`pendingRewardsTotal`. So the honest phrasing is: *"that merge earned a
+reward; it's pending until you link a wallet, then it pays out
+automatically."* Never claim a pending reward was already sent. Each
+reward is keyed on-chain by the merge commit hash (`isPaid` check before
+paying, and the contract itself refuses a second payment for the same
+hash) — **double-payment is impossible**, so never re-submit a reward for
+a merge.
 
 ---
 
@@ -348,8 +361,12 @@ only state the guarantee to the user once all check out**:
    `production` / `prod`) — `/ship` targeting any other branch never
    counts.
 4. For the author's merge **reward** (separate from the vesting unlock):
-   the author's GitHub is linked to a wallet. The vesting unlock does not
-   need this; the reward does.
+   the reward pays immediately if the author's GitHub is linked to a
+   wallet. If it isn't, the reward still earns — it accrues as pending
+   and pays out automatically when they link one. The reward also does
+   not need a grant at all: it fires on counted merges on any
+   App-installed repo. The vesting unlock is the only part that needs
+   the lock.
 
 Once armed, phrase it to the user exactly as it works: *"Locked and
 armed — from now on, every counted /ship merge auto-unlocks the next
@@ -412,7 +429,7 @@ you report a ship ──▶ reported ──webhook counts it, no payout──▶
                           │──────webhook counts it + release
                           │       and/or merge-reward tx───────▶ paid
                           │──────webhook rejects it (docs-only,
-                          │       bot, cap, cooldown, no grant)─▶ rejected
+                          │       bot, cap, cooldown)───────────▶ rejected
                           └──────no webhook within 24h─────────▶ expired
 ```
 
@@ -420,15 +437,18 @@ you report a ship ──▶ reported ──webhook counts it, no payout──▶
   "reported, awaiting GitHub confirmation" — **never** "paid", "earned",
   or "released" at this state.
 - `confirmed` — the webhook counted the push; this particular push hit no
-  milestone and paid no reward (or rewards aren't configured).
+  milestone and paid no reward (or rewards aren't configured). Grant-less
+  repos have no progress to confirm, so their reports skip this state.
 - `paid` — the counted push produced a vesting release and/or a merge
   reward; the record carries the tx hash(es). Only now may you say money
-  moved, and quote the hash(es) from the record.
+  moved, and quote the hash(es) from the record. A grant-less report can
+  also flip to `paid` later, when an accrued pending reward settles on
+  wallet link.
 - `rejected` — the verifier refused it; the record carries the reason.
   Relay it as-is.
 - `expired` — no matching webhook arrived within 24h. The ship either
-  never landed on a production branch or the repo has no App install /
-  grant. Treat as "not counted", and troubleshoot via the counting rules.
+  never landed on a production branch or the repo has no App install.
+  Treat as "not counted", and troubleshoot via the counting rules.
 
 ### Reporting a ship
 
