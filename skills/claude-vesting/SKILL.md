@@ -1,6 +1,6 @@
 ---
 name: claude-vesting
-description: Proof of Dev — GitHub-gated token vesting (proofofdev.xyz). Lock any ERC-20 on Base so verified pushes and merged PRs release it on a milestone schedule, check vesting progress for a wallet or repo, link a GitHub account to a wallet, and earn the per-counted-merge ShipRewards payout as a PR author. Use when the user mentions Proof of Dev, proofofdev, github vesting, locking tokens against a repo, vesting progress / verified pushes / milestones, linking a wallet to GitHub, merge rewards, or asks what a Claude Ship / /ship merge earned. Works entirely over the agent API at https://api.proofofdev.xyz — no website required.
+description: Proof of Dev — GitHub-gated token vesting (proofofdev.xyz). Lock any ERC-20 on Base so verified pushes and merged PRs release it on a milestone schedule, check vesting progress for a wallet or repo, link a GitHub account to a wallet, and earn the per-counted-merge ShipRewards payout as a PR author. Use when the user mentions Proof of Dev, proofofdev, github vesting, locking tokens against a repo, vesting progress / verified pushes / milestones, linking a wallet to GitHub, merge rewards, reporting a ship (attestation) or checking a ship report's state, or asks what a Claude Ship / /ship merge earned. Works entirely over the agent API at https://api.proofofdev.xyz — no website required.
 tags: [github, vesting, claude, base, defi, proofofdev, rewards]
 version: 1
 ---
@@ -358,7 +358,10 @@ to do."* If a later merge doesn't advance the counter, check the counted-
 push rules first (docs-only? bot-authored? daily cap? cooldown?) before
 assuming the system is broken.
 
-After a Ship merge, report what it earned:
+After a Ship merge, report the ship and then report what it earned (see
+**Attestation layer** below for the full flow): file the ship report for
+the merge SHA, poll its state until the webhook resolves it, and check
+repo status:
 
 ```bash
 curl -s "https://api.proofofdev.xyz/api/agent/status?repo=owner/repo"
@@ -366,7 +369,10 @@ curl -s "https://api.proofofdev.xyz/api/agent/status?repo=owner/repo"
 
 …and state plainly whether the counter advanced and whether the author
 was paid or is pending a wallet link (if you know their link state via
-`GET /api/dev/link-wallet/<login>`).
+`GET /api/dev/link-wallet/<login>`). Remember the narration rule from the
+attestation section: "reported, awaiting GitHub confirmation" is not
+"paid" — only a `paid` ship-report state (or an on-chain tx) proves money
+moved.
 
 ### Optional CLAUDE.md snippet
 
@@ -381,6 +387,103 @@ the PR author a per-merge reward. Check status:
 GET https://api.proofofdev.xyz/api/agent/status?repo=<owner>/<repo>
 Docs-only, bot-authored, and .claude//.github/-only changes don't count.
 ```
+
+---
+
+## Attestation layer — ship reports (signal only, never settlement)
+
+A **ship report** is a developer-side Claude (you) telling the API "I just
+shipped this commit." It exists so the user gets instant, in-conversation
+feedback about a ship instead of waiting silently for the webhook. It is
+**not** part of settlement, and you must never present it as such.
+
+**The design law, stated plainly:** a report alone **never** releases
+tokens, never advances a vesting counter, and never influences the
+verifier. Reports are unauthenticated and worthless to fake — that's
+precisely why they're safe to accept from anyone. Settlement is, and
+remains, exactly one path: **GitHub push webhook → verifier → oracle**.
+Every report response says so in its own payload:
+`"settlement": "github-webhook"`, `"reportMovesMoney": false`.
+
+### The flow and the states
+
+```
+you report a ship ──▶ reported ──webhook counts it, no payout──▶ confirmed
+                          │──────webhook counts it + release
+                          │       and/or merge-reward tx───────▶ paid
+                          │──────webhook rejects it (docs-only,
+                          │       bot, cap, cooldown, no grant)─▶ rejected
+                          └──────no webhook within 24h─────────▶ expired
+```
+
+- `reported` — the API has your claim; GitHub hasn't weighed in yet. Say
+  "reported, awaiting GitHub confirmation" — **never** "paid", "earned",
+  or "released" at this state.
+- `confirmed` — the webhook counted the push; this particular push hit no
+  milestone and paid no reward (or rewards aren't configured).
+- `paid` — the counted push produced a vesting release and/or a merge
+  reward; the record carries the tx hash(es). Only now may you say money
+  moved, and quote the hash(es) from the record.
+- `rejected` — the verifier refused it; the record carries the reason.
+  Relay it as-is.
+- `expired` — no matching webhook arrived within 24h. The ship either
+  never landed on a production branch or the repo has no App install /
+  grant. Treat as "not counted", and troubleshoot via the counting rules.
+
+### Reporting a ship
+
+After a `/ship`, a merge, or a push you performed for the user, report it
+(unless the hook below is installed — then it happens automatically):
+
+```bash
+curl -s -X POST "https://api.proofofdev.xyz/api/agent/report-ship" \
+  -H "content-type: application/json" \
+  -d '{ "repo": "owner/repo", "headSha": "<40-hex HEAD sha>",
+        "prNumber": 42, "authorLogin": "their-login" }'
+```
+
+`headSha` is the push's head commit (`git rev-parse HEAD` after a push, or
+the merge commit SHA). `prNumber` / `authorLogin` are optional — include
+them when you know them, never guess.
+
+Then poll the outcome and narrate the state honestly:
+
+```bash
+curl -s "https://api.proofofdev.xyz/api/agent/ship-report?repo=owner/repo&sha=<headSha>"
+curl -s "https://api.proofofdev.xyz/api/agent/ship-reports?repo=owner/repo"   # recent reports, newest first
+```
+
+The webhook usually resolves a report within seconds of the push landing.
+If it's still `reported` after a minute, say it's awaiting confirmation
+and check again later — do not upgrade the user's expectations on your own
+authority. **Your report is a claim; the webhook is the verdict.**
+
+### MCP server (first-class tools instead of raw curl)
+
+The repo ships a stdio MCP server named `proofofdev` (`mcp/` directory)
+wrapping this API: `vesting_status`, `agent_briefing`, `agent_grants`,
+`repo_recent_pushes`, `prepare_lock`, `report_ship`, `ship_report`,
+`link_status`. If it's configured in the user's Claude client, prefer its
+tools over hand-built curl. Install: see `mcp/README.md` in the repo
+(`claude mcp add proofofdev -- npx tsx <path>/mcp/src/server.ts`, API base
+via `POD_API_URL`, default `https://api.proofofdev.xyz`).
+
+### Claude Code push hook (automatic reporting)
+
+`hooks/` in this skill folder ships a PostToolUse hook so reporting needs
+no model discipline at all:
+
+- `hooks/report-push.sh` — after any Bash call containing `git push`, it
+  resolves `owner/repo` from the origin remote and HEAD's SHA, and POSTs
+  the ship report. Bash + curl + git only. **It fails silently and always
+  exits 0** — a reporting hook must never block or break a developer's
+  push. Optional env: `POD_API_URL`, `POD_GITHUB_LOGIN`.
+- `hooks/pod-settings.json` — the settings snippet to merge into
+  `.claude/settings.json`; adjust the script path to where this skill is
+  installed.
+
+Offer to install it when a user ships often from Claude Code; never edit
+their settings unasked.
 
 ---
 
@@ -419,4 +522,6 @@ Docs-only, bot-authored, and .claude//.github/-only changes don't count.
 | "lock 500 TOKEN on owner/repo for 10 pushes" | prepare → confirm with user → sign → confirm-lock → verify |
 | "link my wallet to my GitHub" | Flow B magic link (agent) or Flow A (if they have a site session) |
 | "did that merge earn anything?" | repo status + author's link state; answer per the counting rules |
+| "I just shipped / merged — what's happening with it?" | `POST /api/agent/report-ship` for the head SHA (or the MCP `report_ship` tool), then poll `GET /api/agent/ship-report` and narrate the state exactly (`reported` ≠ `paid`) |
 | "set up Proof of Dev on this repo" | install GitHub App (surface `installUrl` from a prepare call), offer the CLAUDE.md snippet, then the lock flow if they want a lock |
+| "report my pushes automatically" | offer the `hooks/pod-settings.json` snippet + `hooks/report-push.sh` from this skill folder |
