@@ -6,6 +6,15 @@ import type { PushPayload } from "./pushVerifier";
 import { isClaimOnlyPush } from "../lib/repoClaims";
 import { processRepoClaimFromPush } from "./repoClaimHandler";
 import { processPushForGrant } from "./processPush";
+import { resolveShipReport } from "../api/shipReport";
+
+/** Head SHA of the push (GitHub `after`, else the last commit's id). */
+function pushHeadSha(payload: PushPayload): string | null {
+  if (payload.after) return payload.after.toLowerCase();
+  const commits = payload.commits ?? [];
+  const last = commits[commits.length - 1];
+  return last?.id ? last.id.toLowerCase() : null;
+}
 
 /** Verify GitHub's HMAC-SHA256 webhook signature. */
 function verifySignature(body: Buffer, signature: string): boolean {
@@ -74,11 +83,21 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
         res.json({ ok: true, repoClaim: claimResult, message: "Repo claim processed; no active vesting grant" });
         return;
       }
+      // Attestation layer: a reported ship to a grant-less repo resolves as
+      // rejected. Signal only — resolveShipReport never throws.
+      await resolveShipReport(repoFullName, pushHeadSha(payload), {
+        kind: "rejected",
+        reason: "No active vesting grant for this repo",
+      });
       res.json({ ok: true, message: "No active vesting grant for this repo" });
       return;
     }
 
     if (isClaimOnlyPush(payload.commits ?? [])) {
+      await resolveShipReport(repoFullName, pushHeadSha(payload), {
+        kind: "rejected",
+        reason: "Repo claim verification push — not counted toward vesting",
+      });
       res.json({
         ok: true,
         accepted: false,
@@ -91,6 +110,39 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
     console.log(`[webhook] push to ${repoFullName} — evaluating`);
 
     const result = await processPushForGrant(grant, payload);
+
+    // Attestation layer: resolve any matching ship report with the real
+    // outcome. Pure bookkeeping — the response below is unchanged, and
+    // resolveShipReport can never throw into this flow.
+    if (!result.accepted) {
+      await resolveShipReport(repoFullName, pushHeadSha(payload), {
+        kind: "rejected",
+        reason: result.reason,
+      });
+    } else {
+      const release = result.release;
+      const releaseTxHash =
+        release && release.triggered ? release.txHash : undefined;
+      const reward = result.reward;
+      await resolveShipReport(repoFullName, pushHeadSha(payload), {
+        kind: "counted",
+        reason: result.reason,
+        ...(result.verifiedPushCount !== undefined
+          ? { verifiedPushCount: result.verifiedPushCount }
+          : {}),
+        ...(releaseTxHash ? { releaseTxHash } : {}),
+        ...(release && release.triggered && release.milestone !== undefined
+          ? { milestone: release.milestone }
+          : {}),
+        ...(reward?.paid
+          ? {
+              rewardTxHash: reward.txHash,
+              rewardRecipient: reward.recipient,
+              rewardAmount: reward.amount,
+            }
+          : {}),
+      });
+    }
 
     if (!result.accepted) {
       console.log(`[webhook] push rejected: ${result.reason}`);

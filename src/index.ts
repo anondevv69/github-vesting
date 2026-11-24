@@ -14,6 +14,11 @@ import {
 } from "./api/agent";
 import { handleAgentLinkGithub, handleInspectGithubMagicLink } from "./api/githubMagicLink";
 import {
+  handleReportShip,
+  handleGetShipReport,
+  handleListShipReports,
+} from "./api/shipReport";
+import {
   handleAgentFeeTokens,
   handleAgentPrepareLock,
   handleAgentConfirmLock,
@@ -204,6 +209,9 @@ app.post("/api/agent/prepare-lock", (req, res) => void handleAgentPrepareLock(re
 app.post("/api/agent/confirm-lock", (req, res) => void handleAgentConfirmLock(req, res));
 app.post("/api/agent/lock", (req, res) => void handleAgentLock(req, res));
 app.post("/api/agent/link-github", (req, res) => void handleAgentLinkGithub(req, res));
+app.post("/api/agent/report-ship", (req, res) => void handleReportShip(req, res));
+app.get("/api/agent/ship-report", (req, res) => void handleGetShipReport(req, res));
+app.get("/api/agent/ship-reports", (req, res) => void handleListShipReports(req, res));
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 app.listen(env.PORT, env.HOST, () => {
