@@ -29,7 +29,7 @@ export function HelpPage() {
       <section className="vesting-card help-section">
         <h2>2. Ship verified pushes</h2>
         <p>
-          Push real code to your repo&apos;s default branch (<code>main</code>, <code>master</code>, or production).
+          Push real code to a production branch (<code>main</code>, <code>master</code>, <code>production</code>, or <code>prod</code>).
           Each push is checked by the GitHub App. Watch progress on your lock page — e.g.{" "}
           <Link to="/lock/anondevv69/github-vesting">anondevv69/github-vesting</Link>.
         </p>

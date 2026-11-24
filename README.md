@@ -1,19 +1,19 @@
 # github-vesting
 
-**GitHub-activity-gated token vesting for Bankr tokens.**
+**GitHub-activity-gated token vesting for any ERC-20.**
 
-Lock your ERC-20 tokens in escrow on Base. Earn them back incrementally as you ship verified code — every N pushes to production triggers an on-chain release.
+Lock your ERC-20 tokens in escrow on Base (Robinhood Chain also supported). Earn them back incrementally as you ship verified code — every N pushes to production triggers an on-chain release.
 
 ## How it works
 
 1. Fee recipient connects wallet + GitHub OAuth on the setup page
 2. Configures a vesting schedule (e.g. 100 total pushes, release every 10)
 3. Approves + locks tokens in the `GitEscrow` contract on Base
-4. Installs our GitHub App as a collaborator on their repo
+4. Installs our GitHub App on their repo
 5. Every push to `main`/`production` is evaluated:
    - Must target a production branch
-   - Must have ≥3 lines of real code changed
-   - Force-pushes rejected; max 3 counted pushes per day
+   - Must have ≥3 lines of real code changed (raw pushes are estimated at 5 lines per meaningful file; merged PRs are measured on the PR's real diff and credited to the PR author)
+   - Bot/App-authored pushes and force-pushes rejected; max 3 counted pushes per day
    - 30-minute cooldown between counted pushes
 6. When a milestone is hit → oracle wallet calls `GitEscrow.release()` → tokens sent automatically
 
@@ -24,15 +24,20 @@ Lock your ERC-20 tokens in escrow on Base. Earn them back incrementally as you s
 ```
 contracts/
   GitEscrow.sol           ERC-20 escrow, oracle-gated release
-  deploy/deployGitEscrow.ts
+  ShipRewards.sol         Pre-funded per-counted-merge reward pool (oracle-gated, one payment per merge hash)
+  MockERC20.sol           Test token (local/testnet only)
+  deploy/                 deployGitEscrow.ts, deployShipRewards.ts, deployMockERC20.ts
 
 src/
   github/
     webhookHandler.ts     Receives + verifies GitHub push webhooks
     pushVerifier.ts       Anti-gaming rules (branch, diff size, rate limits)
+    prCredit.ts           Credits merged PRs to the PR author (Ship integration)
+    processPush.ts        Shared push → verify → count → release + reward flow
     githubApp.ts          GitHub App client (Octokit)
   oracle/
     releaseOracle.ts      Calls GitEscrow.release on milestone
+    shipRewards.ts        Calls ShipRewards.pay on every counted merged PR
   api/
     register.ts           POST /api/vesting/register
     status.ts             GET  /api/vesting/status
@@ -50,6 +55,7 @@ frontend/
 
 skills/
   bankr-vesting/          @bankrbot agent skill (SKILL.md + agent API docs)
+  claude-vesting/         Claude Code / Muse agent skill (also served by the backend at GET /claude-skill.md)
 ```
 
 ---
