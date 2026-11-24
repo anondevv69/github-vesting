@@ -1,10 +1,12 @@
 /**
  * TEST-ONLY webhook sender: builds a GitHub push payload, HMAC-SHA256
  * signs it with the test webhook secret, POSTs it to the local server.
- * Usage: node tests/e2e/send-webhook.mjs <case>
- *   case = plain | docs | squash | prhuman | prbot
- *   prhuman/prbot need the fixture GitHub API running (github-fixture.js)
- *   and the server started with GITHUB_API_BASE_URL pointing at it.
+ * Usage: REPO=owner/repo node tests/e2e/send-webhook.mjs <case>
+ *   case = plain | docs | squash | prhuman | prbot | gl44 | gl45 | gldocs
+ *   REPO defaults to testowner/testrepo; the gl* cases target
+ *   testowner/nogrant (the grant-less repo) and need the fixture GitHub
+ *   API running (github-fixture.js) with the server started with
+ *   GITHUB_API_BASE_URL pointing at it.
  */
 import { createHmac } from "crypto";
 
@@ -47,6 +49,26 @@ const CASES = {
     added: codeFiles("b", 11),
     modified: [],
   },
+  // Grant-less cases (REPO=testowner/nogrant): `after` MUST equal the
+  // fixture API's merge_commit_sha for the PR (github-fixture.js).
+  gl44: {
+    after: "44".repeat(20),
+    message: "feat: grantless thing (#44)",
+    added: codeFiles("n", 11),
+    modified: [],
+  },
+  gl45: {
+    after: "45".repeat(20),
+    message: "feat: ghost thing (#45)",
+    added: codeFiles("h", 11),
+    modified: [],
+  },
+  gldocs: {
+    after: "dd".repeat(20),
+    message: "docs: update readme",
+    added: ["README.md", "docs/guide.md"],
+    modified: [],
+  },
 };
 
 const c = CASES[process.argv[2]];
@@ -72,7 +94,7 @@ const payload = {
       timestamp: new Date().toISOString(),
     },
   ],
-  repository: { full_name: "testowner/testrepo" },
+  repository: { full_name: process.env.REPO ?? "testowner/testrepo" },
   pusher: { name: "testdev" },
   sender: { login: "testdev", type: "User" },
 };
