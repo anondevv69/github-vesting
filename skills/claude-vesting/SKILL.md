@@ -534,11 +534,26 @@ The setup:
    `scripts/forward-unlocked.ts` (in this skill folder) after any
    counted push, or on a schedule:
    `AGENT_TOKEN=<token> AGENT_OWNER=<owner wallet> npx hardhat run skills/claude-vesting/scripts/forward-unlocked.ts --network base`
-   The script snapshots a **reserve** on first run (your balance at
-   that moment = the unvested supply, which it can never touch) and
-   forwards only balance above the reserve — i.e. exactly what the
-   escrow released, nothing else. Report each forward's tx hash to
-   the human.
+   The script tracks your **own-balance baseline** (your balance at
+   first run, minus any later locks you register with
+   `AGENT_REGISTER_LOCK=<amount>`) and forwards only balance above
+   the baseline — i.e. exactly what the escrow released, nothing
+   else. Report each forward's tx hash to the human.
+5. **Private delivery (stealth mode) — when the owner prefers it.**
+   The owner may give you a stealth **meta-address** (`st:eth:0x…`,
+   from the Agent Private Pay skill) instead of a wallet address.
+   Then no owner wallet exists anywhere in your config: run the
+   forwarder with `AGENT_OWNER_META=st:eth:0x…` instead of
+   `AGENT_OWNER`. Each forward derives a **fresh one-time stealth
+   address** (ERC-5564, schemeId 1), sends the released tokens there
+   plus a small ETH dust (`AGENT_DUST_ETH`, default 0.0002 — so the
+   owner can pay gas to move the tokens), and posts the Announcer
+   announcement. The owner discovers payments with Agent Private
+   Pay's `scan-chain` (from Announcer events alone), recovers each
+   spend key, and sweeps when they choose. Say the limit plainly:
+   you still know what you sent and when — stealth hides the owner's
+   address and links between payouts, not the payment from its
+   sender.
 5. **The owner provides only public things:** their repo name and
    their receiving wallet address. If they have no wallet at all,
    releases simply accumulate in yours (still forwardable later) —
