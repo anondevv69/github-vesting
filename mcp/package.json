@@ -1,0 +1,16 @@
+{
+  "name": "proofofdev-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Proof of Dev MCP server — Claude-first tools over the proofofdev agent API (vesting status, locks, ship reports).",
+  "type": "module",
+  "bin": { "proofofdev-mcp": "./src/server.ts" },
+  "scripts": {
+    "start": "tsx src/server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "tsx": "^4.15.0",
+    "zod": "^3.23.0"
+  }
+}
