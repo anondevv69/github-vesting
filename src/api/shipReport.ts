@@ -15,7 +15,9 @@
  *     GitHub push webhook → pushVerifier → oracle (release + reward)
  *
  * The webhook handler calls `resolveShipReport()` once the real outcome for
- * a push is known, which transitions a matching report:
+ * a push is known, which transitions a matching report. A report filed
+ * AFTER its push was already processed reconciles at creation time from
+ * the verifier's recorded push log (see reconcileFromRecordedOutcome):
  *
  *     reported ──counted, no payout──▶ confirmed
  *              ──counted + release and/or reward tx──▶ paid
@@ -36,7 +38,8 @@
  */
 
 import type { Request, Response } from "express";
-import { getRedis, KEYS } from "../lib/redis";
+import { getRedis, KEYS, getGrantByRepoFullName } from "../lib/redis";
+import { repoIdFromFullName } from "../lib/repoId";
 
 /** Reports (and the per-repo report index) live for 48h. */
 const REPORT_TTL_SECONDS = 48 * 60 * 60;
@@ -177,6 +180,109 @@ export async function resolveShipReport(
   }
 }
 
+// ─── Late-report reconciliation ──────────────────────────────────────────────
+
+type PushLogEntry = {
+  sha?: string;
+  accepted?: boolean;
+  reason?: string;
+};
+
+/**
+ * Reconcile a just-filed report against the outcome the webhook already
+ * recorded for the same push (bug found live 2026-11-24: reports filed
+ * AFTER their push sat in "reported" until expiry, because
+ * resolveShipReport only ran at webhook time).
+ *
+ * The recorded-outcome store is the verifier's per-repo push log
+ * (KEYS.pushLog): every processed push appends { sha, accepted, reason }.
+ * That is enough to reconstruct:
+ *   - rejected pushes → `rejected` with the verifier's exact reason;
+ *   - counted pushes on a grant-backed repo → `confirmed`, with the
+ *     verified push count derived exactly (the repo's authoritative
+ *     pushCount total minus the accepted log entries after this one —
+ *     entries after it are by definition still in the retained log).
+ *
+ * What the log does NOT record is per-push release/reward tx hashes, so
+ * a late report can never be reconstructed to `paid` from it — claiming
+ * `paid` without a tx hash would fabricate settlement evidence. Two
+ * cases therefore deliberately stay `reported`:
+ *   - Counted pushes on a grant-LESS repo: grant-less reports never take
+ *     `confirmed` (there is no grant progress to confirm), and `paid`
+ *     needs the reward tx hash. If the reward accrued as pending, the
+ *     settlement path on wallet link calls resolveShipReport with the
+ *     real tx and flips this record to `paid` then; if it paid
+ *     immediately, the record stays until the 24h expiry — a known,
+ *     documented limitation of the recorded data.
+ *   - Pushes with no log entry at all (e.g. repo-claim verification
+ *     pushes, which return before the verifier logs anything).
+ *
+ * NEVER throws and NEVER moves money: it only replays, through
+ * resolveShipReport, an outcome the webhook path already produced.
+ */
+async function reconcileFromRecordedOutcome(record: ShipReportRecord): Promise<void> {
+  try {
+    const grant = await getGrantByRepoFullName(record.repo);
+    const repoId = grant?.repoId ?? repoIdFromFullName(record.repo);
+    const redis = getRedis();
+    const rawEntries = await redis.lrange(KEYS.pushLog(repoId), 0, -1);
+    const entries: PushLogEntry[] = [];
+    for (const raw of rawEntries) {
+      try {
+        entries.push(JSON.parse(raw) as PushLogEntry);
+      } catch { /* skip malformed */ }
+    }
+
+    const sha = record.headSha.toLowerCase();
+    // An accepted entry for this SHA is the push's real outcome; rejected
+    // entries with the same SHA are duplicate/redelivery noise (the
+    // verifier rejects re-deliveries of an already-counted SHA), so an
+    // accepted entry wins over any rejected one.
+    let acceptedIdx = -1;
+    let rejectedIdx = -1;
+    entries.forEach((entry, i) => {
+      if (entry.sha?.toLowerCase() !== sha) return;
+      if (entry.accepted === false) rejectedIdx = i;
+      else acceptedIdx = i;
+    });
+
+    if (acceptedIdx === -1) {
+      if (rejectedIdx !== -1) {
+        await resolveShipReport(record.repo, record.headSha, {
+          kind: "rejected",
+          reason: entries[rejectedIdx]!.reason ?? "Push rejected by verifier",
+        });
+      }
+      return;
+    }
+
+    // Counted — but grant-less reports cannot take "confirmed" and cannot
+    // be reconstructed to "paid" (see header comment). Leave "reported".
+    if (!grant) return;
+
+    const entry = entries[acceptedIdx]!;
+    let verifiedPushCount: number | undefined;
+    const totalRaw = await redis.get(KEYS.pushCount(repoId));
+    const total = totalRaw ? parseInt(totalRaw, 10) : NaN;
+    if (Number.isFinite(total)) {
+      const acceptedAfter = entries
+        .slice(acceptedIdx + 1)
+        .filter((e) => e.accepted !== false).length;
+      verifiedPushCount = total - acceptedAfter;
+    }
+
+    await resolveShipReport(record.repo, record.headSha, {
+      kind: "counted",
+      reason: entry.reason ?? "Push counted by verifier",
+      ...(verifiedPushCount !== undefined ? { verifiedPushCount } : {}),
+    });
+  } catch (err) {
+    // Signal layer only — a reconciliation failure must not fail the
+    // report POST; the record simply stays "reported".
+    console.warn("[ship-report] reconcile failed (ignored):", err);
+  }
+}
+
 // ─── HTTP handlers ───────────────────────────────────────────────────────────
 
 export async function handleReportShip(req: Request, res: Response): Promise<void> {
@@ -215,9 +321,21 @@ export async function handleReportShip(req: Request, res: Response): Promise<voi
   try {
     // Idempotent: re-reporting the same ship returns the existing record
     // untouched — a late duplicate report must not rewind a confirmed/paid
-    // record back to "reported".
+    // record back to "reported". A record still sitting in "reported"
+    // first gets a chance to reconcile against the recorded push outcome
+    // (which can only move it forward, via resolveShipReport's guards).
     const existing = await loadRecord(repo, headSha);
     if (existing) {
+      if (existing.state === "reported") {
+        await reconcileFromRecordedOutcome(existing);
+        const refreshed = await loadRecord(repo, headSha);
+        res.json({
+          ok: true,
+          alreadyReported: true,
+          report: presentShipReport(refreshed ?? existing),
+        });
+        return;
+      }
       res.json({ ok: true, alreadyReported: true, report: presentShipReport(existing) });
       return;
     }
@@ -241,7 +359,13 @@ export async function handleReportShip(req: Request, res: Response): Promise<voi
     await redis.ltrim(listKey, 0, MAX_REPORTS_PER_REPO - 1);
     await redis.expire(listKey, REPORT_TTL_SECONDS);
 
-    res.json({ ok: true, report: presentShipReport(record) });
+    // The push may already have been processed (report filed after the
+    // fact — e.g. a Claude Code session reporting a merge it made
+    // earlier). Resolve immediately from the recorded outcome instead
+    // of leaving the report to expire.
+    await reconcileFromRecordedOutcome(record);
+    const refreshed = await loadRecord(repo, headSha);
+    res.json({ ok: true, report: presentShipReport(refreshed ?? record) });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     res.status(500).json({ ok: false, error: "Failed to store ship report", message: msg });

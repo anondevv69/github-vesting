@@ -29,6 +29,12 @@ const CASES = {
     added: ["README.md", "docs/guide.md"],
     modified: [],
   },
+  latedocs: {
+    after: "1a7e000000000000000000000000000000000001",
+    message: "docs: update readme again",
+    added: ["README.md", "docs/guide.md"],
+    modified: [],
+  },
   squash: {
     after: "59aa550000000000000000000000000000000003",
     message: "feat: shiny thing (#42)",

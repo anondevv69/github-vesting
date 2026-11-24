@@ -16,6 +16,10 @@ export const SHAS = {
   docs: norm("d0c500000000000000000000000000000000000002"),
   orphan: norm("e11e00000000000000000000000000000000000099"),
   old: norm("01d000000000000000000000000000000000000077"),
+  // Report-after-push cases: `late` mirrors send-webhook.mjs `plain`,
+  // `latedocs` mirrors its `latedocs` case.
+  late: norm("a11ce00000000000000000000000000000000001"),
+  latedocs: norm("1a7e000000000000000000000000000000000001"),
 };
 
 const [cmd, arg, extra] = process.argv.slice(2);

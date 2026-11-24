@@ -18,8 +18,8 @@ down. Run from the repo root:
 |---|---|
 | `tests/e2e/run-e2e.sh` | The core loop: a counted push releases a milestone tranche on-chain (500 of 1,000 test tokens); a docs-only push is rejected and moves nothing; a second counted push completes vesting; the per-merge reward pays exactly once (a second payment attempt reverts). |
 | `tests/e2e/run-pr-credit.sh` | PR-credit: a human's squash-merged PR is credited to the **PR author** with real line counts (milestone + reward in the same webhook flow); a bot-authored PR (dependabot) is rejected and earns nothing. |
-| `tests/e2e/run-attestation.sh` | Ship reports: report → `paid` with release + reward tx hashes on the record; docs-only → `rejected` with the verifier's reason; a 25h-old report reads `expired`; malformed report bodies → 400. |
-| `tests/e2e/run-rewards.sh` | Grant-less rewards + accrual: a counted merge on a repo with **no lock** pays the author; an **unlinked** author's reward accrues as pending and pays out in full when they link a wallet (real signature link flow); re-link + webhook replay never double-pays. 26 checks. |
+| `tests/e2e/run-attestation.sh` | Ship reports: report → `paid` with release + reward tx hashes on the record; docs-only → `rejected` with the verifier's reason; a 25h-old report reads `expired`; malformed report bodies → 400; a report filed **after** its push reconciles at creation (counted → `confirmed`, rejected → `rejected`). |
+| `tests/e2e/run-rewards.sh` | Grant-less rewards + accrual: a counted merge on a repo with **no lock** pays the author and appears in the recent-pushes feed; an **unlinked** author's reward accrues as pending and pays out in full when they link a wallet (real signature link flow); re-link + webhook replay never double-pays. |
 | `tests/e2e/run-mcp-remote.sh` | The remote MCP endpoint: HTTP initialize + tools/list + a real `vesting_status` call against the seeded backend; malformed requests get JSON-RPC errors (not HTML); the stdio server still passes its own smoke; both transports expose identical tool lists. |
 
 Also usable today, against a locally running backend:
@@ -105,10 +105,12 @@ answer — the frontend at www.proofofdev.xyz is up, the API is not.
 These are **not** covered by the local suites; a failure here is a
 finding, not a surprise:
 
-- **Live-fire against real api.github.com.** Every GitHub flow
-  (PR-credit, installation lookup, file reads) is proven against a
-  *fixture* GitHub API only. First contact with the real API + a real
-  App installation is the Sepolia proof in §2 step 6.
+- **Live-fire against real api.github.com.** PARTIALLY PROVEN
+  2026-11-24: the raw-push webhook path ran live end to end — real
+  pushes to anondevv69/pod-test were delivered by GitHub, signature-
+  verified, counted by the verifier (total verified pushes = 1), and
+  two follow-ups were correctly rejected by the 30-minute cooldown.
+  Still fixture-only: PR-credit, installation lookup, file reads.
 - **Real Redis semantics.** The harness uses a fake-Redis stub;
   production runs real Redis (DEPLOY.md's post-deploy checks exercise
   it, but no suite does).
@@ -125,6 +127,28 @@ finding, not a surprise:
   input), not inside a real Claude Code session.
 - **Cooldown / daily-cap rejection paths** were not re-exercised in the
   newest drivers (covered by the verifier's design + earlier suites).
+
+Fixed since the last tester pass:
+
+- **Ship reports filed AFTER their push never reconcile — FIXED
+  2026-11-24.** Found live 2026-11-24: `resolveShipReport` ran only
+  at webhook time, so a report filed for an already-processed push
+  sat in `reported` until expiry even though the outcome was already
+  recorded. Report creation now reconciles against the verifier's
+  recorded push log: rejected pushes resolve to `rejected` with the
+  recorded reason, counted pushes on grant-backed repos resolve to
+  `confirmed` with the derived verified push count. (The log records
+  no per-push tx hashes, so a late report is never reconstructed to
+  `paid`; counted pushes on grant-less repos stay `reported` — they
+  never take `confirmed`, and a pending-accrued reward still flips
+  the report to `paid` with the real tx when it settles on wallet
+  link.) Covered by run-attestation.sh case (f).
+- **Recent-pushes feed showed grant-backed pushes only — FIXED
+  2026-11-24.** Grant-less counted pushes were processed into the
+  same push log but no grant existed for the feed to enumerate.
+  `processPushGrantless` now indexes grant-less-active repos and
+  `GET /api/vesting/recent-pushes` merges both sources (response
+  shape unchanged). Covered by run-rewards.sh case (a).
 
 ## 5. Reporting a bug
 

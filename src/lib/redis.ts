@@ -42,6 +42,8 @@ export const KEYS = {
     `vesting:ship_report:${repoFullName.toLowerCase()}:${headSha.toLowerCase()}`,
   shipReportsByRepo: (repoFullName: string) =>
     `vesting:ship_reports:${repoFullName.toLowerCase()}`,
+  /** Repo full names that have had grant-less pushes processed (feed index). */
+  grantlessRepos: () => `vesting:grantless_repos`,
 };
 
 import type { RepoPlatform } from "./repoId";

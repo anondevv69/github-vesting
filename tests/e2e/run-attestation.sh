@@ -11,6 +11,9 @@
 #       with the verifier's reason
 #   (d) report with no webhook -> stays "reported"; a report seeded 25h
 #       old -> GET shows "expired" (lazy expiry)
+#   (f) report filed AFTER its push already processed -> reconciles at
+#       creation from the recorded push log: counted -> "confirmed"
+#       with the verified push count; rejected -> "rejected" + reason
 #   (+) MCP smoke: initialize + tools/list + vesting_status tools/call
 # No external calls, no real keys (Hardhat test accounts + throwaway RSA).
 set -u
@@ -154,6 +157,18 @@ timeout 180 node tests/e2e/send-webhook.mjs docs
 GET="$(node tests/e2e/ship-report.mjs get docs)"; echo "$GET"
 check "c: state rejected" "$GET" '"state":"rejected"'
 check "c: rejection reason stored" "$GET" '"reason":"Only docs/lockfiles changed'
+
+echo "=== 9b. (f) reports filed AFTER their push reconcile at creation ==="
+timeout 180 node tests/e2e/send-webhook.mjs plain
+OUT="$(node tests/e2e/ship-report.mjs post late)"; echo "$OUT"
+check "f: late report for counted push -> confirmed" "$OUT" '"state":"confirmed"'
+check "f: late report carries verified push count" "$OUT" '"verifiedPushCount":2'
+GET="$(node tests/e2e/ship-report.mjs get late)"; echo "$GET"
+check "f: GET agrees (confirmed)" "$GET" '"state":"confirmed"'
+timeout 180 node tests/e2e/send-webhook.mjs latedocs
+OUT="$(node tests/e2e/ship-report.mjs post latedocs)"; echo "$OUT"
+check "f: late report for rejected push -> rejected" "$OUT" '"state":"rejected"'
+check "f: late rejection reason stored" "$OUT" '"reason":"Only docs/lockfiles changed'
 
 echo "=== 10. (d) orphan report stays reported; 25h-old report reads expired ==="
 OUT="$(node tests/e2e/ship-report.mjs post orphan)"; echo "$OUT"

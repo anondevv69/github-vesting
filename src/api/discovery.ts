@@ -5,7 +5,7 @@
 import type { Request, Response } from "express";
 import { listAllGrants, getGrantByRepoFullName, getRedis, KEYS, updateGrant, type GrantRecord } from "../lib/redis";
 import { buildProgress, formatTokenAmount } from "../lib/grantsHelper";
-import { splitRepo } from "../lib/repoId";
+import { splitRepo, repoIdFromFullName } from "../lib/repoId";
 import { parseWei } from "../lib/wei";
 import { getDevProfile } from "./devProfile";
 import { fetchBankrTokenInfo } from "./bankr";
@@ -143,31 +143,49 @@ export async function handleRecentPushes(req: Request, res: Response): Promise<v
 
   const rows: PushRow[] = [];
 
+  const collectFromLog = async (repoId: string, repoFullName: string, platform: "github" | "gitlawb") => {
+    const [owner] = splitRepo(repoFullName, platform);
+    const log = await redis.lrange(KEYS.pushLog(repoId), -10, -1);
+    for (const entry of log) {
+      try {
+        const p = JSON.parse(entry) as {
+          ts: number;
+          sha: string;
+          linesEstimate?: number;
+          commitCount?: number;
+          accepted?: boolean;
+        };
+        if (p.accepted === false) continue;
+        rows.push({
+          ts: p.ts,
+          repoFullName,
+          githubOwner: owner,
+          sha: p.sha,
+          linesEstimate: p.linesEstimate,
+          commitCount: p.commitCount,
+        });
+      } catch { /* skip */ }
+    }
+  };
+
   await Promise.all(
-    grants.map(async (grant) => {
-      const [owner] = splitRepo(grant.repoFullName, grant.platform ?? "github");
-      const log = await redis.lrange(KEYS.pushLog(grant.repoId), -10, -1);
-      for (const entry of log) {
-        try {
-          const p = JSON.parse(entry) as {
-            ts: number;
-            sha: string;
-            linesEstimate?: number;
-            commitCount?: number;
-            accepted?: boolean;
-          };
-          if (p.accepted === false) continue;
-          rows.push({
-            ts: p.ts,
-            repoFullName: grant.repoFullName,
-            githubOwner: owner,
-            sha: p.sha,
-            linesEstimate: p.linesEstimate,
-            commitCount: p.commitCount,
-          });
-        } catch { /* skip */ }
-      }
-    }),
+    grants.map((grant) => collectFromLog(grant.repoId, grant.repoFullName, grant.platform ?? "github")),
+  );
+
+  // Grant-less counted pushes (audit H1) live in the same push log, keyed
+  // by the repo's standard repoId — but there is no grant to enumerate.
+  // processPushGrantless indexes those repos in KEYS.grantlessRepos();
+  // merge them in here. Skip any repo that now has a grant: its log was
+  // already collected above (same key), so reading it twice would
+  // duplicate every row.
+  const grantRepoNames = new Set(grants.map((g) => g.repoFullName.toLowerCase()));
+  const grantlessRepos = (await redis.smembers(KEYS.grantlessRepos())).filter(
+    (name) => !grantRepoNames.has(name.toLowerCase()),
+  );
+  await Promise.all(
+    grantlessRepos.map((repoFullName) =>
+      collectFromLog(repoIdFromFullName(repoFullName), repoFullName, "github"),
+    ),
   );
 
   rows.sort((a, b) => b.ts - a.ts);

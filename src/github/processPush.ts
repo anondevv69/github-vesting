@@ -1,5 +1,5 @@
 import type { GrantRecord } from "../lib/redis";
-import { updateGrant } from "../lib/redis";
+import { updateGrant, getRedis, KEYS } from "../lib/redis";
 import { verifyPush, recordVerifiedPush, recordRejectedPush, type PushPayload } from "./pushVerifier";
 import { resolveMergedPrCredit, type MergedPrCredit } from "./prCredit";
 import { triggerReleaseIfMilestone } from "../oracle/releaseOracle";
@@ -163,6 +163,15 @@ export async function processPushGrantless(
   payload: PushPayload,
 ): Promise<PushProcessResult> {
   const repoId = repoIdFromFullName(repoFullName);
+
+  // Index the repo as grant-less-active so the recent-pushes feed
+  // (discovery.ts) can find its push log — the feed enumerates grants,
+  // and this repo has none. Bookkeeping only; never fail processing on it.
+  try {
+    await getRedis().sadd(KEYS.grantlessRepos(), repoFullName);
+  } catch (err) {
+    console.warn("[processPush] grantless repo index failed (ignored):", err);
+  }
 
   const evaluated = await evaluateAndRecordPush({
     repoId,

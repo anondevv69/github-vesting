@@ -6,7 +6,8 @@
 # testowner/testrepo (seeded grant); the grant-less repo is
 # testowner/nogrant (fixture PRs #44/#45, NO grant seeded). Proves:
 #   (a) grant-less counted PR merge (author linked) -> author paid
-#       exactly 10 RWD; ship report resolves paid. Docs-only push to the
+#       exactly 10 RWD; ship report resolves paid; the push appears in
+#       GET /api/vesting/recent-pushes. Docs-only push to the
 #       grant-less repo -> rejected, nothing paid, report rejected.
 #   (b) grant-less counted PR merge (author UNLINKED) -> no payment, a
 #       pending reward is recorded and visible on
@@ -154,6 +155,9 @@ check "a: author RWD = 10" "$BAL" 'author RWD=10 |'
 GET="$(report_get "$SHA44")"; echo "$GET"
 check "a: ship report paid" "$GET" '"state":"paid"'
 check "a: ship report has reward tx" "$GET" '"rewardTxHash":"0x'
+FEED="$(curl -s "http://127.0.0.1:3210/api/vesting/recent-pushes?limit=30")"; echo "$FEED"
+check "a: recent-pushes feed includes grant-less push" "$FEED" "\"sha\":\"$SHA44\""
+check "a: feed row names the grant-less repo" "$FEED" '"repoFullName":"testowner/nogrant"'
 
 echo "=== 9. (a2) grant-less docs-only push -> rejected, nothing paid ==="
 OUT="$(report_post "$SHADOCS" 46 testauthor)"; echo "$OUT"
