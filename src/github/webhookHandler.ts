@@ -108,6 +108,8 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       reason: result.reason,
       verifiedPushCount: result.verifiedPushCount,
       release: result.release,
+      ...(result.prCredit ? { prCredit: result.prCredit } : {}),
+      ...(result.reward ? { reward: result.reward } : {}),
       ...(claimResult.processed ? { repoClaim: claimResult } : {}),
     });
   } catch (err) {

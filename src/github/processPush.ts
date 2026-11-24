@@ -1,13 +1,19 @@
 import type { GrantRecord } from "../lib/redis";
 import { updateGrant } from "../lib/redis";
 import { verifyPush, recordVerifiedPush, recordRejectedPush, type PushPayload } from "./pushVerifier";
+import { resolveMergedPrCredit, type MergedPrCredit } from "./prCredit";
 import { triggerReleaseIfMilestone } from "../oracle/releaseOracle";
+import { payRewardForMerge, type RewardResult } from "../oracle/shipRewards";
 
 export type PushProcessResult = {
   accepted: boolean;
   reason: string;
   verifiedPushCount?: number;
   release?: Awaited<ReturnType<typeof triggerReleaseIfMilestone>>;
+  /** Set when the counted push was credited to a merged PR (Ship spec §8). */
+  prCredit?: { prNumber: number; authorLogin: string };
+  /** Per-merge Ship reward outcome (spec §8B) — only for PR-credited pushes. */
+  reward?: RewardResult;
 };
 
 /** Shared push → verify → count → optional release flow (webhook + dev simulate). */
@@ -18,22 +24,58 @@ export async function processPushForGrant(
 ): Promise<PushProcessResult> {
   const repoId = grant.repoId;
   const platform = options?.platform ?? grant.platform ?? "github";
-  const verifyResult = await verifyPush(repoId, payload, { ...options, platform });
+
+  // Ship PR-credit (§8): a merged PR is evaluated on the PR's own diff/author
+  // and normalised to a single commit, so one merge counts at most once.
+  // Non-PR pushes (and any PR-lookup failure) keep the legacy raw-push flow.
+  let prCredit: MergedPrCredit | null = null;
+  let effectivePayload = payload;
+  let linesOverride: number | undefined;
+  if (platform === "github") {
+    prCredit = await resolveMergedPrCredit(grant.repoFullName, payload, grant.installationId);
+    if (prCredit) {
+      effectivePayload = prCredit.payload;
+      linesOverride = prCredit.linesChanged;
+    }
+  }
+
+  const verifyResult = await verifyPush(repoId, effectivePayload, {
+    ...options,
+    platform,
+    ...(linesOverride !== undefined ? { linesOverride } : {}),
+  });
 
   if (!verifyResult.accepted) {
-    await recordRejectedPush(repoId, payload, verifyResult);
+    await recordRejectedPush(repoId, effectivePayload, verifyResult);
     return { accepted: false, reason: verifyResult.reason };
   }
 
-  const newPushCount = await recordVerifiedPush(repoId, payload, verifyResult);
+  const newPushCount = await recordVerifiedPush(repoId, effectivePayload, verifyResult);
   await updateGrant(repoId, { verifiedPushCount: newPushCount });
   const release = await triggerReleaseIfMilestone(repoId, grant, newPushCount);
+
+  // Ship dual reward (§8B): every counted merged PR also pays the flat
+  // per-merge reward to the PR author's linked wallet. Safely no-ops when
+  // ShipRewards is not configured, the amount is 0, or no wallet is linked.
+  let reward: RewardResult | undefined;
+  if (prCredit) {
+    reward = await payRewardForMerge({
+      grant,
+      repoId,
+      authorLogin: prCredit.authorLogin,
+      mergeCommitSha: prCredit.mergeCommitSha,
+    });
+  }
 
   return {
     accepted: true,
     reason: verifyResult.reason,
     verifiedPushCount: newPushCount,
     release,
+    ...(prCredit
+      ? { prCredit: { prNumber: prCredit.prNumber, authorLogin: prCredit.authorLogin } }
+      : {}),
+    ...(reward ? { reward } : {}),
   };
 }
 

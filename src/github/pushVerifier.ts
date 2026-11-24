@@ -35,6 +35,9 @@ const IGNORED_PATTERNS = [
   /LICENSE/i,
   /NOTICE/i,
   /^\.proofofdev\//,
+  // Ship exclusions (spec §8): policy/claim/workflow-only diffs never count.
+  /^\.claude\//,
+  /^\.github\//,
 ];
 
 export type PushPayload = {
@@ -52,7 +55,7 @@ export type PushPayload = {
   }>;
   repository: { full_name: string };
   pusher: { name: string };
-  sender?: { login?: string };
+  sender?: { login?: string; type?: string };
 };
 
 export type VerifyResult =
@@ -63,8 +66,19 @@ function branchFromRef(ref: string): string {
   return ref.replace("refs/heads/", "");
 }
 
-function isMeaningfulFile(path: string): boolean {
+export function isMeaningfulFile(path: string): boolean {
   return !IGNORED_PATTERNS.some((p) => p.test(path));
+}
+
+/** True when the sender is a bot / GitHub App account (Ship spec §8: bot pushes never count). */
+export function isBotSender(payload: PushPayload): boolean {
+  const login = payload.sender?.login ?? "";
+  const pusher = payload.pusher?.name ?? "";
+  return (
+    payload.sender?.type === "Bot" ||
+    login.endsWith("[bot]") ||
+    pusher.endsWith("[bot]")
+  );
 }
 
 function headCommitSha(payload: PushPayload): string | null {
@@ -105,13 +119,24 @@ async function lastAcceptedPushTs(repoId: string): Promise<number | null> {
 export async function verifyPush(
   repoId: string,
   payload: PushPayload,
-  options?: { bypassCooldown?: boolean; bypassDailyCap?: boolean; platform?: "github" | "gitlawb" },
+  options?: {
+    bypassCooldown?: boolean;
+    bypassDailyCap?: boolean;
+    platform?: "github" | "gitlawb";
+    /** Real diff line count (e.g. from a merged PR's file stats) — overrides the per-file estimate. */
+    linesOverride?: number;
+  },
 ): Promise<VerifyResult> {
   const branch = branchFromRef(payload.ref);
 
   // 1. Must target a production branch.
   if (!PRODUCTION_BRANCHES.has(branch)) {
     return { accepted: false, reason: `Branch "${branch}" is not a production branch` };
+  }
+
+  // 1b. Bot / GitHub App senders never count (Ship spec §8).
+  if (isBotSender(payload)) {
+    return { accepted: false, reason: "Bot/App-authored push — not counted" };
   }
 
   // 2. Force-pushes don't count (they can erase history).
@@ -139,7 +164,8 @@ export async function verifyPush(
   }
 
   // 5. Estimate lines changed (GitLawb webhooks omit diff — use adapter estimate).
-  const linesEstimate = estimateLines(payload.commits);
+  //    PR-credit path supplies the merged PR's real diff line count instead.
+  const linesEstimate = options?.linesOverride ?? estimateLines(payload.commits);
   const isGitlawb = options?.platform === "gitlawb";
   if (!isGitlawb && linesEstimate < MIN_LINES_CHANGED) {
     return {

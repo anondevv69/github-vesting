@@ -39,6 +39,10 @@ export const env = {
   BASE_SEPOLIA_RPC_URL: get("BASE_SEPOLIA_RPC_URL", "https://sepolia.base.org"),
   ROBINHOOD_RPC_URL: get("ROBINHOOD_RPC_URL", "https://rpc.mainnet.chain.robinhood.com"),
   GIT_ESCROW_ADDRESS: get("GIT_ESCROW_ADDRESS"),
+  // ShipRewards pool (spec §8B) — optional; unset address or 0 amount disables rewards.
+  SHIP_REWARDS_ADDRESS: get("SHIP_REWARDS_ADDRESS"),
+  /** Flat per-counted-merge reward, in the reward token's smallest unit (wei). */
+  SHIP_REWARD_PER_MERGE: get("SHIP_REWARD_PER_MERGE"),
   /** GitEscrow on Robinhood Chain mainnet (4663) */
   GIT_ESCROW_ROBINHOOD_ADDRESS: get("GIT_ESCROW_ROBINHOOD_ADDRESS"),
   /** Optional — protects POST /api/admin/delete-grant */
