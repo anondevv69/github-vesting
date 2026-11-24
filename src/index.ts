@@ -3,6 +3,7 @@ import cors from "cors";
 import fs from "fs";
 import path from "path";
 import { env, getMissingEnvVars, getAllowedCorsOrigins } from "./lib/env";
+import { handleMcpHttp } from "./mcpHttp";
 import { handleWebhook } from "./github/webhookHandler";
 import { handleRegister } from "./api/register";
 import { handleStatus, handleList } from "./api/status";
@@ -139,6 +140,11 @@ app.get("/agent.md", (_req, res) => {
 
 // Claude skill, served from this API so agents can install it from the
 // product domain — no GitHub (or any code host) involved in distribution.
+// Remote MCP endpoint (Streamable HTTP, stateless) — the public MCP link:
+// https://api.proofofdev.xyz/mcp. Tools are shared with the stdio server
+// via src/lib/mcpTools.ts; see src/mcpHttp.ts for the exposure notes.
+app.all("/mcp", (req, res) => void handleMcpHttp(req, res));
+
 app.get("/claude-skill.md", (_req, res) => {
   const skillPath = path.join(__dirname, "..", "skills", "claude-vesting", "SKILL.md");
   try {
@@ -212,6 +218,20 @@ app.post("/api/agent/link-github", (req, res) => void handleAgentLinkGithub(req,
 app.post("/api/agent/report-ship", (req, res) => void handleReportShip(req, res));
 app.get("/api/agent/ship-report", (req, res) => void handleGetShipReport(req, res));
 app.get("/api/agent/ship-reports", (req, res) => void handleListShipReports(req, res));
+
+// Body-parser failures on /mcp must surface as JSON-RPC parse errors, not
+// Express's default HTML error page (MCP clients can't parse HTML).
+app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (req.path === "/mcp" && err instanceof SyntaxError) {
+    res.status(400).json({
+      jsonrpc: "2.0",
+      error: { code: -32700, message: "Parse error" },
+      id: null,
+    });
+    return;
+  }
+  next(err);
+});
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 app.listen(env.PORT, env.HOST, () => {
