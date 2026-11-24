@@ -19,8 +19,16 @@
  *
  *     reported ──counted, no payout──▶ confirmed
  *              ──counted + release and/or reward tx──▶ paid
- *              ──rejected (docs-only / bot / cap / cooldown / no grant)──▶ rejected
+ *              ──rejected (docs-only / bot / cap / cooldown)──▶ rejected
  *              ──no webhook within 24h──▶ expired (evaluated lazily on read)
+ *
+ * Grant-less repos (no active vesting grant — audit H1): pushes are still
+ * verified, and reports resolve to `paid` when the counted merge's reward
+ * actually pays (immediately, or later when an accrued pending reward
+ * settles on wallet link) and to `rejected` with the verifier's reason.
+ * There is no grant progress to "confirm", so a counted grant-less push
+ * whose reward accrued/unconfigured leaves the report `reported` until it
+ * expires or settlement flips it to `paid`.
  *
  * The record carries `settlement: "github-webhook"` and
  * `reportMovesMoney: false` in every API response so no client can mistake

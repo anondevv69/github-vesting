@@ -32,6 +32,7 @@ export const KEYS = {
   devReviews: (githubLogin: string) => `vesting:dev_reviews:${githubLogin.toLowerCase()}`,
   devProfile: (githubLogin: string) => `vesting:dev_profile:${githubLogin.toLowerCase()}`,
   devLinkedWallets: (githubLogin: string) => `vesting:dev_wallets:${githubLogin.toLowerCase()}`,
+  devPendingRewards: (githubLogin: string) => `vesting:dev_pending_rewards:${githubLogin.toLowerCase()}`,
   devWalletLinkChallenge: (id: string) => `vesting:dev_wallet_link:${id}`,
   githubMagicLink: (token: string) => `vesting:github_magic_link:${token.toLowerCase()}`,
   repoClaim: (repoFullName: string) => `vesting:repo_claim:${repoFullName.toLowerCase()}`,

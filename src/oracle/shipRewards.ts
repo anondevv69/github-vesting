@@ -1,16 +1,25 @@
 /**
  * Ship reward oracle (spec §8B): on every COUNTED merged PR, pay the flat
  * per-merge reward from the pre-funded ShipRewards pool to the PR author's
- * linked wallet.
+ * linked wallet. Rewards fire whether or not the repo has a vesting grant
+ * (audit H1) — the grant path and the grant-less path share
+ * `payRewardForMerge` below.
+ *
+ * Unlinked authors (audit H2): the reward is NOT lost. It accrues as a
+ * pending record (lib/pendingRewards.ts) at the amount configured at earn
+ * time, and `settlePendingRewardsForLogin` pays the backlog out to a
+ * wallet the moment one is linked for that login (any link flow funnels
+ * through `addLinkedWallet`, which triggers settlement).
  *
  * Safety rails:
- *  - No-ops (paid: false, with a reason) when SHIP_REWARDS_ADDRESS is unset,
- *    when SHIP_REWARD_PER_MERGE is unset/0/unparseable, or when the author
- *    has no linked wallet (reward stays pending until they link one — it is
- *    never sent to a guessed address).
+ *  - No-ops (paid: false, with a reason) when ShipRewards is not configured
+ *    for the chain or when SHIP_REWARD_PER_MERGE is unset/0/unparseable.
+ *    Nothing accrues in those cases either — there is no pool to pay from.
  *  - On-chain idempotency: ShipRewards.paid[mergeCommitHash] is checked
  *    before sending, and the contract itself refuses a second payment.
- *  - Never throws into the push pipeline — failures are logged and returned.
+ *    Recording a pending reward is also idempotent per merge SHA.
+ *  - Never throws into the push/link pipelines — failures are logged and
+ *    returned; a failed settlement leaves the entry pending for next time.
  */
 
 import {
@@ -28,7 +37,13 @@ import { getVestingChainConfig, type VestingChainKey } from "../lib/chains";
 import { parseWei } from "../lib/wei";
 import { repoIdToBytes32 } from "../lib/repoId";
 import { listLinkedWallets } from "../lib/devWallets";
-import type { GrantRecord } from "../lib/redis";
+import {
+  listPendingRewards,
+  recordPendingReward,
+  removePendingReward,
+  type PendingReward,
+} from "../lib/pendingRewards";
+import { resolveShipReport } from "../api/shipReport";
 
 const SHIP_REWARDS_ABI = parseAbi([
   "function pay(bytes32 repoId, address recipient, uint256 amount, bytes32 mergeCommitHash) external",
@@ -38,7 +53,14 @@ const SHIP_REWARDS_ABI = parseAbi([
 
 export type RewardResult =
   | { paid: true; txHash: string; recipient: string; amount: string }
-  | { paid: false; reason: string };
+  | {
+      paid: false;
+      reason: string;
+      /** True when the reward was recorded as pending (author unlinked). */
+      pending?: boolean;
+      /** True when the merge was already rewarded on-chain earlier. */
+      alreadyPaid?: boolean;
+    };
 
 /** Configured per-merge reward in token wei; 0n when disabled/unset/invalid. */
 export function configuredRewardPerMerge(): bigint {
@@ -68,33 +90,29 @@ export function rewardsAddressForChain(chain: string): string {
   return (env.SHIP_REWARDS_ADDRESS ?? "").trim();
 }
 
-export async function payRewardForMerge(args: {
-  grant: GrantRecord;
+/**
+ * The single payment primitive: pay `amount` wei of the chain's reward
+ * token to `recipient` for one merge, from that chain's ShipRewards pool.
+ * Used by both the immediate path (counted merge, author linked) and
+ * settlement of accrued pending rewards. Never throws.
+ */
+export async function payReward(args: {
+  chain: string;
   repoId: string;
-  authorLogin: string;
+  recipient: string;
   mergeCommitSha: string;
+  amount: bigint;
 }): Promise<RewardResult> {
-  const rewardsAddress = rewardsAddressForChain(args.grant.chain);
+  const rewardsAddress = rewardsAddressForChain(args.chain);
   if (!rewardsAddress) {
-    return { paid: false, reason: `ShipRewards not configured for chain "${args.grant.chain}" — reward skipped` };
+    return { paid: false, reason: `ShipRewards not configured for chain "${args.chain}" — reward skipped` };
   }
-
-  const amount = configuredRewardPerMerge();
-  if (amount <= 0n) {
-    return { paid: false, reason: "SHIP_REWARD_PER_MERGE is 0/unset — reward disabled" };
-  }
-
-  const linked = await listLinkedWallets(args.authorLogin);
-  const recipient = linked[0]?.wallet;
-  if (!recipient) {
-    return {
-      paid: false,
-      reason: `No linked wallet for @${args.authorLogin} — reward pending until they link one`,
-    };
+  if (args.amount <= 0n) {
+    return { paid: false, reason: "Reward amount is 0 — nothing to pay" };
   }
 
   try {
-    const cfg = getVestingChainConfig(args.grant.chain as VestingChainKey);
+    const cfg = getVestingChainConfig(args.chain as VestingChainKey);
     const account = privateKeyToAccount(env.ORACLE_PRIVATE_KEY as `0x${string}`);
     const publicClient = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
     const walletClient = createWalletClient({ account, chain: cfg.chain, transport: http(cfg.rpcUrl) });
@@ -108,24 +126,166 @@ export async function payRewardForMerge(args: {
       args: [commitKey],
     });
     if (alreadyPaid) {
-      return { paid: false, reason: `Merge ${args.mergeCommitSha.slice(0, 7)} already rewarded on-chain` };
+      return {
+        paid: false,
+        alreadyPaid: true,
+        reason: `Merge ${args.mergeCommitSha.slice(0, 7)} already rewarded on-chain`,
+      };
     }
 
     const hash = await walletClient.writeContract({
       address: rewardsAddress as Address,
       abi: SHIP_REWARDS_ABI,
       functionName: "pay",
-      args: [repoIdToBytes32(args.repoId), recipient as Address, amount, commitKey],
+      args: [repoIdToBytes32(args.repoId), args.recipient as Address, args.amount, commitKey],
       account,
     });
     await publicClient.waitForTransactionReceipt({ hash });
     console.log(
-      `[ship-rewards] Paid ${amount} to ${recipient} (@${args.authorLogin}) for merge ${args.mergeCommitSha.slice(0, 7)} (tx: ${hash})`,
+      `[ship-rewards] Paid ${args.amount} to ${args.recipient} for merge ${args.mergeCommitSha.slice(0, 7)} (tx: ${hash})`,
     );
-    return { paid: true, txHash: hash, recipient, amount: amount.toString() };
+    return { paid: true, txHash: hash, recipient: args.recipient, amount: args.amount.toString() };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`[ship-rewards] Payment failed for ${args.grant.repoFullName}:`, msg);
+    console.error(`[ship-rewards] Payment failed for merge ${args.mergeCommitSha.slice(0, 7)}:`, msg);
     return { paid: false, reason: `ShipRewards tx failed: ${msg}` };
   }
+}
+
+/**
+ * Reward for one counted merge, addressed to its author. Pays immediately
+ * when the author has a linked wallet (most recently linked — the store is
+ * newest-first); otherwise records a pending reward that settles when a
+ * wallet gets linked. Shared by the grant path and the grant-less path.
+ */
+export async function payRewardForMerge(args: {
+  chain: string;
+  repoId: string;
+  repoFullName: string;
+  authorLogin: string;
+  mergeCommitSha: string;
+}): Promise<RewardResult> {
+  if (!rewardsAddressForChain(args.chain)) {
+    return { paid: false, reason: `ShipRewards not configured for chain "${args.chain}" — reward skipped` };
+  }
+
+  const amount = configuredRewardPerMerge();
+  if (amount <= 0n) {
+    return { paid: false, reason: "SHIP_REWARD_PER_MERGE is 0/unset — reward disabled" };
+  }
+
+  const linked = await listLinkedWallets(args.authorLogin);
+  const recipient = linked[0]?.wallet;
+  if (recipient) {
+    return payReward({
+      chain: args.chain,
+      repoId: args.repoId,
+      recipient,
+      mergeCommitSha: args.mergeCommitSha,
+      amount,
+    });
+  }
+
+  // Audit H2: accrue instead of dropping. The amount is captured NOW, so a
+  // later config change never re-prices an already-earned reward.
+  await recordPendingReward({
+    login: args.authorLogin.toLowerCase(),
+    repoId: args.repoId,
+    repoFullName: args.repoFullName,
+    mergeSha: args.mergeCommitSha.toLowerCase(),
+    amount: amount.toString(),
+    chain: args.chain,
+    earnedAt: new Date().toISOString(),
+  });
+  return {
+    paid: false,
+    pending: true,
+    reason:
+      `No linked wallet for @${args.authorLogin} — reward accrued as pending; ` +
+      `it pays out automatically when they link a wallet`,
+  };
+}
+
+export type PendingSettlement = {
+  paidCount: number;
+  paidTotal: string;
+  resolvedCount: number;
+  remaining: number;
+};
+
+/**
+ * Pay out every pending reward for `login` to `wallet` (the wallet that was
+ * just linked). Called from `addLinkedWallet`, so EVERY link path triggers
+ * it. Partial failures (pool empty, tx reverts, chain unconfigured) leave
+ * the affected entries pending and logged — the next link retries them.
+ * Entries whose merge is already paid on-chain are dropped as resolved.
+ * Never throws.
+ */
+export async function settlePendingRewardsForLogin(
+  login: string,
+  wallet: string,
+): Promise<PendingSettlement> {
+  const result: PendingSettlement = { paidCount: 0, paidTotal: "0", remaining: 0, resolvedCount: 0 };
+  try {
+    const pending = await listPendingRewards(login);
+    if (pending.length === 0) return result;
+
+    let paidTotal = 0n;
+    for (const entry of pending) {
+      let amount: bigint;
+      try {
+        amount = BigInt(entry.amount);
+      } catch {
+        console.warn(`[ship-rewards] Pending reward for @${login} has unparseable amount "${entry.amount}" — leaving pending`);
+        result.remaining++;
+        continue;
+      }
+
+      const pay = await payReward({
+        chain: entry.chain,
+        repoId: entry.repoId,
+        recipient: wallet,
+        mergeCommitSha: entry.mergeSha,
+        amount,
+      });
+
+      if (pay.paid) {
+        await removePendingReward(login, entry.mergeSha);
+        result.paidCount++;
+        result.resolvedCount++;
+        paidTotal += amount;
+        // If a ship report is still open for this merge, it can now
+        // honestly read "paid" — settlement came late, via the link.
+        await resolveShipReport(entry.repoFullName, entry.mergeSha, {
+          kind: "counted",
+          reason: "Accrued merge reward settled on wallet link",
+          rewardTxHash: pay.txHash,
+          rewardRecipient: pay.recipient,
+          rewardAmount: pay.amount,
+        });
+      } else if (pay.alreadyPaid) {
+        // Paid on-chain through some other path — the pending record is
+        // settled history, not a payable. Drop it so it can't double-pay.
+        await removePendingReward(login, entry.mergeSha);
+        result.resolvedCount++;
+        console.log(
+          `[ship-rewards] Pending reward for @${login} (merge ${entry.mergeSha.slice(0, 7)}) already paid on-chain — cleared`,
+        );
+      } else {
+        result.remaining++;
+        console.warn(
+          `[ship-rewards] Pending reward for @${login} (merge ${entry.mergeSha.slice(0, 7)}) not settled: ${pay.reason}`,
+        );
+      }
+    }
+    result.paidTotal = paidTotal.toString();
+    if (result.paidCount > 0) {
+      console.log(
+        `[ship-rewards] Settled ${result.paidCount} pending reward(s) for @${login} → ${wallet} (total ${result.paidTotal} wei, ${result.remaining} still pending)`,
+      );
+    }
+  } catch (err) {
+    console.error(`[ship-rewards] Pending settlement failed for @${login}:`, err);
+  }
+  return result;
 }

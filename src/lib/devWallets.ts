@@ -52,6 +52,25 @@ export async function isWalletLinked(githubLogin: string, wallet: string): Promi
   return list.some((w) => w.wallet === wallet.toLowerCase());
 }
 
+/**
+ * Audit H2 settlement trigger: EVERY wallet-link path (signature confirm,
+ * magic link, repo claim, lock) funnels through addLinkedWallet, so this is
+ * the one place that attempts payout of rewards that accrued while the
+ * login had no wallet. Dynamic import on purpose: oracle/shipRewards
+ * statically imports this module (listLinkedWallets), so a static import
+ * back would be a cycle — at call time both modules are fully loaded.
+ * Never throws: a settlement failure leaves rewards pending, never blocks
+ * or fails the link itself.
+ */
+async function attemptPendingRewardSettlement(login: string, wallet: string): Promise<void> {
+  try {
+    const { settlePendingRewardsForLogin } = await import("../oracle/shipRewards");
+    await settlePendingRewardsForLogin(login, wallet);
+  } catch (err) {
+    console.warn(`[dev-wallets] Pending reward settlement failed for @${login} (ignored):`, err);
+  }
+}
+
 export async function addLinkedWallet(
   githubLogin: string,
   wallet: string,
@@ -61,15 +80,22 @@ export async function addLinkedWallet(
   const login = githubLogin.toLowerCase();
   const addr = wallet.toLowerCase();
   const list = await listLinkedWallets(login);
-  if (list.some((w) => w.wallet === addr)) return list;
 
-  const next: LinkedWallet[] = [
-    ...list,
-    { wallet: addr, linkedAt: new Date().toISOString(), source },
-  ].sort((a, b) => b.linkedAt.localeCompare(a.linkedAt));
+  let result = list;
+  if (!list.some((w) => w.wallet === addr)) {
+    const next: LinkedWallet[] = [
+      ...list,
+      { wallet: addr, linkedAt: new Date().toISOString(), source },
+    ].sort((a, b) => b.linkedAt.localeCompare(a.linkedAt));
 
-  await getRedis().set(linkKey(login), JSON.stringify(next));
-  return next;
+    await getRedis().set(linkKey(login), JSON.stringify(next));
+    result = next;
+  }
+
+  // Runs on re-links too: if an earlier settlement failed (e.g. empty
+  // pool), linking again — even the same wallet — retries the backlog.
+  await attemptPendingRewardSettlement(login, addr);
+  return result;
 }
 
 export async function createWalletLinkChallenge(

@@ -4,6 +4,7 @@ import { verifyPush, recordVerifiedPush, recordRejectedPush, type PushPayload } 
 import { resolveMergedPrCredit, type MergedPrCredit } from "./prCredit";
 import { triggerReleaseIfMilestone } from "../oracle/releaseOracle";
 import { payRewardForMerge, type RewardResult } from "../oracle/shipRewards";
+import { repoIdFromFullName } from "../lib/repoId";
 
 export type PushProcessResult = {
   accepted: boolean;
@@ -16,14 +17,33 @@ export type PushProcessResult = {
   reward?: RewardResult;
 };
 
-/** Shared push → verify → count → optional release flow (webhook + dev simulate). */
-export async function processPushForGrant(
-  grant: GrantRecord,
-  payload: PushPayload,
-  options?: { bypassCooldown?: boolean; bypassDailyCap?: boolean; platform?: "github" | "gitlawb" },
-): Promise<PushProcessResult> {
-  const repoId = grant.repoId;
-  const platform = options?.platform ?? grant.platform ?? "github";
+type EvaluatedPush =
+  | { accepted: false; reason: string }
+  | {
+      accepted: true;
+      reason: string;
+      verifiedPushCount: number;
+      prCredit: MergedPrCredit | null;
+    };
+
+/**
+ * The shared core of both push paths: PR-credit resolution → verifier →
+ * record. The verifier's anti-gaming rules (branch, bot, docs-only,
+ * min-lines, duplicate SHA, daily cap, cooldown) apply identically
+ * whether or not the repo has a vesting grant — counting is keyed by the
+ * repo's standard repoId either way, so a repo that later gets a grant
+ * keeps one continuous counter history.
+ */
+async function evaluateAndRecordPush(args: {
+  repoId: string;
+  repoFullName: string;
+  payload: PushPayload;
+  installationId?: number;
+  platform: "github" | "gitlawb";
+  bypassCooldown?: boolean;
+  bypassDailyCap?: boolean;
+}): Promise<EvaluatedPush> {
+  const { repoId, payload } = args;
 
   // Ship PR-credit (§8): a merged PR is evaluated on the PR's own diff/author
   // and normalised to a single commit, so one merge counts at most once.
@@ -31,8 +51,8 @@ export async function processPushForGrant(
   let prCredit: MergedPrCredit | null = null;
   let effectivePayload = payload;
   let linesOverride: number | undefined;
-  if (platform === "github") {
-    prCredit = await resolveMergedPrCredit(grant.repoFullName, payload, grant.installationId);
+  if (args.platform === "github") {
+    prCredit = await resolveMergedPrCredit(args.repoFullName, payload, args.installationId);
     if (prCredit) {
       effectivePayload = prCredit.payload;
       linesOverride = prCredit.linesChanged;
@@ -40,8 +60,9 @@ export async function processPushForGrant(
   }
 
   const verifyResult = await verifyPush(repoId, effectivePayload, {
-    ...options,
-    platform,
+    platform: args.platform,
+    ...(args.bypassCooldown ? { bypassCooldown: true } : {}),
+    ...(args.bypassDailyCap ? { bypassDailyCap: true } : {}),
     ...(linesOverride !== undefined ? { linesOverride } : {}),
   });
 
@@ -51,30 +72,121 @@ export async function processPushForGrant(
   }
 
   const newPushCount = await recordVerifiedPush(repoId, effectivePayload, verifyResult);
-  await updateGrant(repoId, { verifiedPushCount: newPushCount });
-  const release = await triggerReleaseIfMilestone(repoId, grant, newPushCount);
-
-  // Ship dual reward (§8B): every counted merged PR also pays the flat
-  // per-merge reward to the PR author's linked wallet. Safely no-ops when
-  // ShipRewards is not configured, the amount is 0, or no wallet is linked.
-  let reward: RewardResult | undefined;
-  if (prCredit) {
-    reward = await payRewardForMerge({
-      grant,
-      repoId,
-      authorLogin: prCredit.authorLogin,
-      mergeCommitSha: prCredit.mergeCommitSha,
-    });
-  }
-
   return {
     accepted: true,
     reason: verifyResult.reason,
     verifiedPushCount: newPushCount,
+    prCredit,
+  };
+}
+
+/**
+ * Ship dual reward (§8B): every counted merged PR pays the flat per-merge
+ * reward to the PR author's linked wallet — or accrues it as pending when
+ * the author has none. ONE implementation shared by the grant path and
+ * the grant-less path; safely no-ops when ShipRewards is not configured
+ * or the configured amount is 0.
+ */
+async function rewardForCountedPush(args: {
+  chain: string;
+  repoId: string;
+  repoFullName: string;
+  prCredit: MergedPrCredit | null;
+}): Promise<RewardResult | undefined> {
+  if (!args.prCredit) return undefined;
+  return payRewardForMerge({
+    chain: args.chain,
+    repoId: args.repoId,
+    repoFullName: args.repoFullName,
+    authorLogin: args.prCredit.authorLogin,
+    mergeCommitSha: args.prCredit.mergeCommitSha,
+  });
+}
+
+function prCreditSummary(prCredit: MergedPrCredit | null): Pick<PushProcessResult, "prCredit"> {
+  return prCredit
+    ? { prCredit: { prNumber: prCredit.prNumber, authorLogin: prCredit.authorLogin } }
+    : {};
+}
+
+/** Shared push → verify → count → optional release flow (webhook + dev simulate). */
+export async function processPushForGrant(
+  grant: GrantRecord,
+  payload: PushPayload,
+  options?: { bypassCooldown?: boolean; bypassDailyCap?: boolean; platform?: "github" | "gitlawb" },
+): Promise<PushProcessResult> {
+  const repoId = grant.repoId;
+  const platform = options?.platform ?? grant.platform ?? "github";
+
+  const evaluated = await evaluateAndRecordPush({
+    repoId,
+    repoFullName: grant.repoFullName,
+    payload,
+    installationId: grant.installationId,
+    platform,
+    bypassCooldown: options?.bypassCooldown,
+    bypassDailyCap: options?.bypassDailyCap,
+  });
+
+  if (!evaluated.accepted) {
+    return { accepted: false, reason: evaluated.reason };
+  }
+
+  await updateGrant(repoId, { verifiedPushCount: evaluated.verifiedPushCount });
+  const release = await triggerReleaseIfMilestone(repoId, grant, evaluated.verifiedPushCount);
+  const reward = await rewardForCountedPush({
+    chain: grant.chain,
+    repoId,
+    repoFullName: grant.repoFullName,
+    prCredit: evaluated.prCredit,
+  });
+
+  return {
+    accepted: true,
+    reason: evaluated.reason,
+    verifiedPushCount: evaluated.verifiedPushCount,
     release,
-    ...(prCredit
-      ? { prCredit: { prNumber: prCredit.prNumber, authorLogin: prCredit.authorLogin } }
-      : {}),
+    ...prCreditSummary(evaluated.prCredit),
+    ...(reward ? { reward } : {}),
+  };
+}
+
+/**
+ * Grant-less push flow (audit H1): the repo has the GitHub App installed
+ * (it webhooks us) but NO active vesting grant. Pushes are still verified
+ * and counted, and a counted merged PR earns its author the per-merge
+ * reward — paid from the Base ShipRewards pool (Base is the reward chain
+ * when no grant dictates one). There is no unlock: nothing is locked.
+ */
+export async function processPushGrantless(
+  repoFullName: string,
+  payload: PushPayload,
+): Promise<PushProcessResult> {
+  const repoId = repoIdFromFullName(repoFullName);
+
+  const evaluated = await evaluateAndRecordPush({
+    repoId,
+    repoFullName,
+    payload,
+    platform: "github",
+  });
+
+  if (!evaluated.accepted) {
+    return { accepted: false, reason: evaluated.reason };
+  }
+
+  const reward = await rewardForCountedPush({
+    chain: "base",
+    repoId,
+    repoFullName,
+    prCredit: evaluated.prCredit,
+  });
+
+  return {
+    accepted: true,
+    reason: evaluated.reason,
+    verifiedPushCount: evaluated.verifiedPushCount,
+    ...prCreditSummary(evaluated.prCredit),
     ...(reward ? { reward } : {}),
   };
 }

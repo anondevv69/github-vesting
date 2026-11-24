@@ -15,6 +15,7 @@ import {
   listLinkedWallets,
 } from "../lib/devWallets";
 import { fetchFeeRecipientTokens } from "../lib/walletTokens";
+import { listPendingRewards, pendingRewardsTotal } from "../lib/pendingRewards";
 import { createGithubMagicLink, completeGithubMagicLink } from "../lib/githubMagicLink";
 import { env } from "../lib/env";
 
@@ -50,6 +51,11 @@ export async function handleListLinkedWallets(req: Request, res: Response): Prom
     );
   }
 
+  // Audit H2: merge rewards that accrued while this login had no linked
+  // wallet. They settle automatically to the newly linked wallet on link;
+  // anything still listed here is awaiting a link (or a settlement retry).
+  const pendingRewards = await listPendingRewards(login);
+
   res.json({
     ok: true,
     githubLogin: login,
@@ -60,6 +66,8 @@ export async function handleListLinkedWallets(req: Request, res: Response): Prom
       linkedAt: w.linkedAt,
       tokens: feeRecipientTokens[i] ?? [],
     })),
+    pendingRewards,
+    pendingRewardsTotal: pendingRewardsTotal(pendingRewards),
     canLink: isSelf,
   });
 }

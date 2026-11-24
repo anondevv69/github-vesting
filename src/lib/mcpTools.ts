@@ -205,7 +205,7 @@ export function createProofofdevServer(rawBase: string): McpServer {
 
   reg.tool(
     "link_status",
-    "Wallets linked to a GitHub login (merge rewards pay the most recently linked wallet). No auth needed.",
+    "Wallets linked to a GitHub login (merge rewards pay the most recently linked wallet), plus any pendingRewards that accrued while no wallet was linked and their pendingRewardsTotal — pending rewards settle automatically when a wallet is linked. No auth needed.",
     { githubLogin: z.string().describe("GitHub login to look up") },
     async ({ githubLogin }) =>
       api("GET", `/api/dev/link-wallet/${encodeURIComponent(githubLogin)}`),

@@ -5,7 +5,7 @@ import { getGrantByRepoFullName } from "../lib/redis";
 import type { PushPayload } from "./pushVerifier";
 import { isClaimOnlyPush } from "../lib/repoClaims";
 import { processRepoClaimFromPush } from "./repoClaimHandler";
-import { processPushForGrant } from "./processPush";
+import { processPushForGrant, processPushGrantless } from "./processPush";
 import { resolveShipReport } from "../api/shipReport";
 
 /** Head SHA of the push (GitHub `after`, else the last commit's id). */
@@ -83,13 +83,72 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
         res.json({ ok: true, repoClaim: claimResult, message: "Repo claim processed; no active vesting grant" });
         return;
       }
-      // Attestation layer: a reported ship to a grant-less repo resolves as
-      // rejected. Signal only — resolveShipReport never throws.
-      await resolveShipReport(repoFullName, pushHeadSha(payload), {
-        kind: "rejected",
-        reason: "No active vesting grant for this repo",
+
+      if (isClaimOnlyPush(payload.commits ?? [])) {
+        await resolveShipReport(repoFullName, pushHeadSha(payload), {
+          kind: "rejected",
+          reason: "Repo claim verification push — not counted toward vesting",
+        });
+        res.json({
+          ok: true,
+          accepted: false,
+          grantless: true,
+          reason: "Repo claim verification push — not counted toward vesting",
+        });
+        return;
+      }
+
+      // Grant-less rewards (audit H1): the App is installed (it webhook'd
+      // us) but no grant exists — pushes are still verified with the full
+      // anti-gaming rules, and a counted merged PR earns its author the
+      // per-merge reward. There is no unlock; nothing is locked.
+      console.log(`[webhook] push to ${repoFullName} — evaluating (grant-less: rewards only)`);
+
+      const result = await processPushGrantless(repoFullName, payload);
+
+      if (!result.accepted) {
+        await resolveShipReport(repoFullName, pushHeadSha(payload), {
+          kind: "rejected",
+          reason: result.reason,
+        });
+        console.log(`[webhook] grant-less push rejected: ${result.reason}`);
+        res.json({ ok: true, accepted: false, grantless: true, reason: result.reason });
+        return;
+      }
+
+      // Attestation layer: grant-less reports resolve only on an actual
+      // reward payment (→ paid) or a rejection (above). A counted push
+      // whose reward accrued as pending (author unlinked) or is
+      // unconfigured leaves the report open — there is no grant progress
+      // to "confirm"; it reads expired after 24h, or flips to paid if
+      // settlement lands when the author links a wallet.
+      const reward = result.reward;
+      if (reward?.paid) {
+        await resolveShipReport(repoFullName, pushHeadSha(payload), {
+          kind: "counted",
+          reason: result.reason,
+          ...(result.verifiedPushCount !== undefined
+            ? { verifiedPushCount: result.verifiedPushCount }
+            : {}),
+          rewardTxHash: reward.txHash,
+          rewardRecipient: reward.recipient,
+          rewardAmount: reward.amount,
+        });
+      }
+
+      console.log(
+        `[webhook] grant-less push accepted for ${repoFullName}: total verified pushes = ${result.verifiedPushCount}`,
+      );
+
+      res.json({
+        ok: true,
+        accepted: true,
+        grantless: true,
+        reason: result.reason,
+        verifiedPushCount: result.verifiedPushCount,
+        ...(result.prCredit ? { prCredit: result.prCredit } : {}),
+        ...(result.reward ? { reward: result.reward } : {}),
       });
-      res.json({ ok: true, message: "No active vesting grant for this repo" });
       return;
     }
 
