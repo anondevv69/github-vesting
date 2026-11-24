@@ -42,6 +42,10 @@ export const KEYS = {
     `vesting:ship_report:${repoFullName.toLowerCase()}:${headSha.toLowerCase()}`,
   shipReportsByRepo: (repoFullName: string) =>
     `vesting:ship_reports:${repoFullName.toLowerCase()}`,
+  /** Settlement evidence (tx hashes) for one counted push, recorded at
+   *  webhook/settle time so late-filed ship reports can reconstruct `paid`. */
+  shipSettlement: (repoFullName: string, headSha: string) =>
+    `vesting:ship_settlement:${repoFullName.toLowerCase()}:${headSha.toLowerCase()}`,
   /** Repo full names that have had grant-less pushes processed (feed index). */
   grantlessRepos: () => `vesting:grantless_repos`,
 };

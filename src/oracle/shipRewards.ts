@@ -43,7 +43,7 @@ import {
   removePendingReward,
   type PendingReward,
 } from "../lib/pendingRewards";
-import { resolveShipReport } from "../api/shipReport";
+import { resolveShipReport, recordPushSettlement } from "../api/shipReport";
 
 const SHIP_REWARDS_ABI = parseAbi([
   "function pay(bytes32 repoId, address recipient, uint256 amount, bytes32 mergeCommitHash) external",
@@ -256,6 +256,13 @@ export async function settlePendingRewardsForLogin(
         paidTotal += amount;
         // If a ship report is still open for this merge, it can now
         // honestly read "paid" — settlement came late, via the link.
+        // Record the evidence as well, so a report filed after this
+        // settlement reconciles to "paid" too.
+        await recordPushSettlement(entry.repoFullName, entry.mergeSha, {
+          rewardTxHash: pay.txHash,
+          rewardRecipient: pay.recipient,
+          rewardAmount: pay.amount,
+        });
         await resolveShipReport(entry.repoFullName, entry.mergeSha, {
           kind: "counted",
           reason: "Accrued merge reward settled on wallet link",

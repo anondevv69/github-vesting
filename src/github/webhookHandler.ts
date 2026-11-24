@@ -6,7 +6,7 @@ import type { PushPayload } from "./pushVerifier";
 import { isClaimOnlyPush } from "../lib/repoClaims";
 import { processRepoClaimFromPush } from "./repoClaimHandler";
 import { processPushForGrant, processPushGrantless } from "./processPush";
-import { resolveShipReport } from "../api/shipReport";
+import { resolveShipReport, recordPushSettlement } from "../api/shipReport";
 
 /** Head SHA of the push (GitHub `after`, else the last commit's id). */
 function pushHeadSha(payload: PushPayload): string | null {
@@ -124,6 +124,13 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       // settlement lands when the author links a wallet.
       const reward = result.reward;
       if (reward?.paid) {
+        // Record the settlement evidence too: a report filed AFTER this
+        // webhook reconciles from it and can honestly read "paid".
+        await recordPushSettlement(repoFullName, pushHeadSha(payload), {
+          rewardTxHash: reward.txHash,
+          rewardRecipient: reward.recipient,
+          rewardAmount: reward.amount,
+        });
         await resolveShipReport(repoFullName, pushHeadSha(payload), {
           kind: "counted",
           reason: result.reason,
@@ -183,6 +190,23 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       const releaseTxHash =
         release && release.triggered ? release.txHash : undefined;
       const reward = result.reward;
+      // Record the settlement evidence too: a report filed AFTER this
+      // webhook reconciles from it and can honestly read "paid".
+      if (releaseTxHash || reward?.paid) {
+        await recordPushSettlement(repoFullName, pushHeadSha(payload), {
+          ...(releaseTxHash ? { releaseTxHash } : {}),
+          ...(release && release.triggered && release.milestone !== undefined
+            ? { milestone: release.milestone }
+            : {}),
+          ...(reward?.paid
+            ? {
+                rewardTxHash: reward.txHash,
+                rewardRecipient: reward.recipient,
+                rewardAmount: reward.amount,
+              }
+            : {}),
+        });
+      }
       await resolveShipReport(repoFullName, pushHeadSha(payload), {
         kind: "counted",
         reason: result.reason,

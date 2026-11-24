@@ -161,10 +161,11 @@ check "c: rejection reason stored" "$GET" '"reason":"Only docs/lockfiles changed
 echo "=== 9b. (f) reports filed AFTER their push reconcile at creation ==="
 timeout 180 node tests/e2e/send-webhook.mjs plain
 OUT="$(node tests/e2e/ship-report.mjs post late)"; echo "$OUT"
-check "f: late report for counted push -> confirmed" "$OUT" '"state":"confirmed"'
+check "f: late report for counted push -> paid (settlement evidence)" "$OUT" '"state":"paid"'
+check "f: late report carries the release tx hash" "$OUT" '"releaseTxHash":"0x'
 check "f: late report carries verified push count" "$OUT" '"verifiedPushCount":2'
 GET="$(node tests/e2e/ship-report.mjs get late)"; echo "$GET"
-check "f: GET agrees (confirmed)" "$GET" '"state":"confirmed"'
+check "f: GET agrees (paid)" "$GET" '"state":"paid"'
 timeout 180 node tests/e2e/send-webhook.mjs latedocs
 OUT="$(node tests/e2e/ship-report.mjs post latedocs)"; echo "$OUT"
 check "f: late report for rejected push -> rejected" "$OUT" '"state":"rejected"'

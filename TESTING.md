@@ -137,12 +137,20 @@ Fixed since the last tester pass:
   recorded. Report creation now reconciles against the verifier's
   recorded push log: rejected pushes resolve to `rejected` with the
   recorded reason, counted pushes on grant-backed repos resolve to
-  `confirmed` with the derived verified push count. (The log records
-  no per-push tx hashes, so a late report is never reconstructed to
-  `paid`; counted pushes on grant-less repos stay `reported` — they
-  never take `confirmed`, and a pending-accrued reward still flips
-  the report to `paid` with the real tx when it settles on wallet
-  link.) Covered by run-attestation.sh case (f).
+  `confirmed` with the derived verified push count. Covered by
+  run-attestation.sh case (f).
+- **Late reports never reconstructed to `paid` — FIXED 2026-11-24.**
+  Follow-on gap found by the live MCP+skill pass: a report filed
+  after its push's release/reward had already landed stuck at
+  `confirmed`, because the push log carries no tx hashes. The
+  webhook handler (both paths) and the pending-reward settlement
+  path now record settlement evidence (release/reward tx hashes)
+  under `KEYS.shipSettlement` at settlement time, and late-report
+  reconciliation reconstructs `paid` from it — grant-backed and
+  grant-less alike. A counted grant-less push whose reward merely
+  accrued still stays `reported` until settlement flips it.
+  Covered by run-attestation.sh case (f) (now asserts `paid` +
+  release tx hash) and the live pod-money-test MCP pass.
 - **Recent-pushes feed showed grant-backed pushes only — FIXED
   2026-11-24.** Grant-less counted pushes were processed into the
   same push log but no grant existed for the feed to enumerate.

@@ -135,7 +135,7 @@ author: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551594 of 16777216
-  Block #1:            0x5ad980e51a677a6085c349e92d0b9abfbda70b396a915e9f1fae0c4b676d96ac
+  Block #1:            0xee19e1f22bb21213794feff7a3810c985a6af416e1818901a2bb3a7d79fcd3b0
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -149,7 +149,7 @@ PTK: 0x5FbDB2315678afecb367f032d93F642f64180aa3 deployTx: 0x5bebf31074097527093a
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #2:            0x8a16d61cd2176f5d6024d64cc2894478a2167d6b567dba637ad10e9bc115f761
+  Block #2:            0x0fa026f933586d1c5d3505e5c5c2571b9c3fef5e7a0b02a52c3010881d9fa178
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -184,7 +184,7 @@ RWD: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 deployTx: 0x5b7587e8cafecb4cb875
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1869326 of 16777216
-  Block #3:            0xc8683c1e3e8a60a5c8d2f9693a579578565151066314d02cffbddaf4c8fee94d
+  Block #3:            0x4760f0eb79e053cc8df653e8b77a250afe77bda89b569588a417d65be70c5ac0
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -219,7 +219,7 @@ GitEscrow: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 deployTx: 0x970c5e6d3b0825
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            793530 of 16777216
-  Block #4:            0xc20a0afe08c73f2a8869985d1f6e9735b0560db9c51abdbd85397dcc11241179
+  Block #4:            0xbe404740b95b3903019471dae18d2b07b6a38cd754e329d82c5f18a76e77e297
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -233,7 +233,7 @@ ShipRewards: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9 deployTx: 0xf9bda7b950d8
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #5:            0x95aebe1c4ee727e29f4be48031126be16631035af1ea32664fc90deffb31f7af
+  Block #5:            0xd434c31473649ef039812d3c3b463e4eafd08858b787ac7d4577e9ba244a11c1
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -247,7 +247,7 @@ mint PTK→recipient tx: 0xee6c2808b4002778359d77436ae2d40bdd47bebc0aaf03ad12e28
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            68445 of 16777216
-  Block #6:            0xac81740542de6e6cda1e7c7ebfdb3de92dbb34432b5a96d01a0c2c46faafa99b
+  Block #6:            0xd0648a22dc0446069f14eef63266923f5f318f62f12f9adb821135e43be4fea2
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -262,7 +262,7 @@ repoId: 0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46383 of 16777216
-  Block #7:            0x663a536e6ce8c5067ea2755d820d859f6975aa971a0a2fa2abb64994c2af940e
+  Block #7:            0x32acee31d8c78ba793d140c97584600717a105c3ce9378a06bef235129d89bd5
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -276,7 +276,7 @@ approve tx: 0xf6b889b8b1e548e9c34d69b02d4f882bbd1d0ebdfc622d4e28e35c7e030eab43
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            263864 of 16777216
-  Block #8:            0x0dc8807606246fc3652d8458c3144fda1b043bf41d87593ce54a17da392ab963
+  Block #8:            0x59729a21115ae22bd80b5ca1e953ce73930dfa48a470eff04480599e3962b7de
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -296,7 +296,7 @@ on-chain grant: recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC totalLocked
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            46844 of 16777216
-  Block #9:            0x7fbb2489d6b284fc532d1afc18f4dbe1670a235811c4948219dedf6383d578a8
+  Block #9:            0x31dbb6dde193e6631317938918258f1b6655c966fb5f3bc514e5f66f7ecf0865
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -322,7 +322,7 @@ server up
 server-side repoId (no 0x): 533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
 on-chain repoId matches: true
 grant saved for testowner/testrepo
-linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-24T17:12:05.088Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-24T18:15:44.827Z","source":"signed"}]
 ghost wallet (unlinked): 0x1563915e194D8CfBA1943570603F7606A3115508
 === 7. balances before ===
 [32meth_accounts[0m
@@ -345,7 +345,7 @@ ghost wallet (unlinked): 0x1563915e194D8CfBA1943570603F7606A3115508
 
 [before] author RWD=0 | extra RWD=0 | ShipRewards pool RWD=10000
 === 8. (a) grant-less counted merge, linked author -> +10 RWD, report paid ===
-{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"4444444444444444444444444444444444444444","prNumber":44,"authorLogin":"testauthor","state":"reported","reportedAt":"2026-11-24T17:12:07.285Z","updatedAt":"2026-11-24T17:12:07.285Z","settlement":"github-webhook","reportMovesMoney":false}}
+{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"4444444444444444444444444444444444444444","prNumber":44,"authorLogin":"testauthor","state":"reported","reportedAt":"2026-11-24T18:15:46.862Z","updatedAt":"2026-11-24T18:15:46.862Z","settlement":"github-webhook","reportMovesMoney":false}}
 PASS: a: report accepted
 [webhook] push to testowner/nogrant — evaluating (grant-less: rewards only)
 [fixture] GET /repos/testowner/nogrant/installation -> 200
@@ -369,13 +369,13 @@ PASS: a: report accepted
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
   Gas used:            109580 of 114716
-  Block #10:           0x2db274dc68266e98e7655fbc33882660fb14ecde191413b4a0ccaefef4436eb0
+  Block #10:           0xf98866d45da2bd575792440ce84bc55d86d44735ad6e38c960d04eb83d2bed6d
 
 [32meth_getTransactionReceipt[0m
 [ship-rewards] Paid 10000000000000000000 to 0x90f79bf6eb2c4f870365e785982e1f101e93b906 for merge 4444444 (tx: 0xdcbe6a3619af2aa45c568d0b8efa7652f6bc7d8658df5125468081c4b292cd7c)
 [ship-report] testowner/nogrant@44444444 → paid (counted)
 [webhook] grant-less push accepted for testowner/nogrant: total verified pushes = 1
-[webhook:gl44] HTTP 200 in 231ms
+[webhook:gl44] HTTP 200 in 330ms
 {"ok":true,"accepted":true,"grantless":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main","verifiedPushCount":1,"prCredit":{"prNumber":44,"authorLogin":"testauthor"},"reward":{"paid":true,"txHash":"0xdcbe6a3619af2aa45c568d0b8efa7652f6bc7d8658df5125468081c4b292cd7c","recipient":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","amount":"10000000000000000000"}}
 PASS: a: webhook accepted
 PASS: a: webhook marked grantless
@@ -397,18 +397,18 @@ PASS: a: reward paid
 
 [after-gl44] author RWD=10 | extra RWD=0 | ShipRewards pool RWD=9990
 PASS: a: author RWD = 10
-{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"4444444444444444444444444444444444444444","prNumber":44,"authorLogin":"testauthor","state":"paid","reportedAt":"2026-11-24T17:12:07.285Z","updatedAt":"2026-11-24T17:12:07.598Z","reason":"1 commit(s), ~55 lines in 11 code file(s) on main","verifiedPushCount":1,"rewardTxHash":"0xdcbe6a3619af2aa45c568d0b8efa7652f6bc7d8658df5125468081c4b292cd7c","rewardRecipient":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","rewardAmount":"10000000000000000000","settlement":"github-webhook","reportMovesMoney":false}}
+{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"4444444444444444444444444444444444444444","prNumber":44,"authorLogin":"testauthor","state":"paid","reportedAt":"2026-11-24T18:15:46.862Z","updatedAt":"2026-11-24T18:15:47.277Z","reason":"1 commit(s), ~55 lines in 11 code file(s) on main","verifiedPushCount":1,"rewardTxHash":"0xdcbe6a3619af2aa45c568d0b8efa7652f6bc7d8658df5125468081c4b292cd7c","rewardRecipient":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","rewardAmount":"10000000000000000000","settlement":"github-webhook","reportMovesMoney":false}}
 PASS: a: ship report paid
 PASS: a: ship report has reward tx
-{"ok":true,"pushes":[{"ts":1795540327449,"repoFullName":"testowner/nogrant","githubOwner":"testowner","sha":"4444444444444444444444444444444444444444","linesEstimate":55,"commitCount":1,"href":"/lock/testowner/nogrant","devHref":"/dev/testowner"}]}
+{"ok":true,"pushes":[{"ts":1795544147043,"repoFullName":"testowner/nogrant","githubOwner":"testowner","sha":"4444444444444444444444444444444444444444","linesEstimate":55,"commitCount":1,"href":"/lock/testowner/nogrant","devHref":"/dev/testowner"}]}
 PASS: a: recent-pushes feed includes grant-less push
 PASS: a: feed row names the grant-less repo
 === 9. (a2) grant-less docs-only push -> rejected, nothing paid ===
-{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"dddddddddddddddddddddddddddddddddddddddd","prNumber":46,"authorLogin":"testauthor","state":"reported","reportedAt":"2026-11-24T17:12:08.984Z","updatedAt":"2026-11-24T17:12:08.984Z","settlement":"github-webhook","reportMovesMoney":false}}
+{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"dddddddddddddddddddddddddddddddddddddddd","prNumber":46,"authorLogin":"testauthor","state":"reported","reportedAt":"2026-11-24T18:15:48.703Z","updatedAt":"2026-11-24T18:15:48.703Z","settlement":"github-webhook","reportMovesMoney":false}}
 [webhook] push to testowner/nogrant — evaluating (grant-less: rewards only)
 [ship-report] testowner/nogrant@dddddddd → rejected (rejected)
 [webhook] grant-less push rejected: Only docs/lockfiles changed — not counted
-[webhook:gldocs] HTTP 200 in 41ms
+[webhook:gldocs] HTTP 200 in 33ms
 {"ok":true,"accepted":false,"grantless":true,"reason":"Only docs/lockfiles changed — not counted"}
 PASS: a2: webhook rejected
 [32meth_call[0m
@@ -428,18 +428,18 @@ PASS: a2: webhook rejected
 
 [after-gldocs] author RWD=10 | extra RWD=0 | ShipRewards pool RWD=9990
 PASS: a2: author RWD still 10
-{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"dddddddddddddddddddddddddddddddddddddddd","prNumber":46,"authorLogin":"testauthor","state":"rejected","reportedAt":"2026-11-24T17:12:08.984Z","updatedAt":"2026-11-24T17:12:09.117Z","reason":"Only docs/lockfiles changed — not counted","settlement":"github-webhook","reportMovesMoney":false}}
+{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"dddddddddddddddddddddddddddddddddddddddd","prNumber":46,"authorLogin":"testauthor","state":"rejected","reportedAt":"2026-11-24T18:15:48.703Z","updatedAt":"2026-11-24T18:15:48.816Z","reason":"Only docs/lockfiles changed — not counted","settlement":"github-webhook","reportMovesMoney":false}}
 PASS: a2: ship report rejected
 PASS: a2: rejection reason stored
 === 10. (b) grant-less counted merge, UNLINKED author -> pending accrual ===
-{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"4545454545454545454545454545454545454545","prNumber":45,"authorLogin":"ghostdev","state":"reported","reportedAt":"2026-11-24T17:12:10.808Z","updatedAt":"2026-11-24T17:12:10.808Z","settlement":"github-webhook","reportMovesMoney":false}}
+{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"4545454545454545454545454545454545454545","prNumber":45,"authorLogin":"ghostdev","state":"reported","reportedAt":"2026-11-24T18:15:50.478Z","updatedAt":"2026-11-24T18:15:50.478Z","settlement":"github-webhook","reportMovesMoney":false}}
 [webhook] push to testowner/nogrant — evaluating (grant-less: rewards only)
 [fixture] GET /repos/testowner/nogrant/installation -> 200
 [fixture] GET /repos/testowner/nogrant/pulls/45 -> 200
 [fixture] GET /repos/testowner/nogrant/pulls/45/files -> 200
 [ship-rewards] Accrued pending reward of 10000000000000000000 wei for @ghostdev (merge 4545454 on testowner/nogrant, chain base)
 [webhook] grant-less push accepted for testowner/nogrant: total verified pushes = 2
-[webhook:gl45] HTTP 200 in 42ms
+[webhook:gl45] HTTP 200 in 45ms
 {"ok":true,"accepted":true,"grantless":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)","verifiedPushCount":2,"prCredit":{"prNumber":45,"authorLogin":"ghostdev"},"reward":{"paid":false,"pending":true,"reason":"No linked wallet for @ghostdev — reward accrued as pending; it pays out automatically when they link a wallet"}}
 PASS: b: webhook accepted
 PASS: b: reward accrued (pending)
@@ -460,11 +460,11 @@ PASS: b: reward accrued (pending)
 
 [after-gl45] author RWD=10 | extra RWD=0 | ShipRewards pool RWD=9990
 PASS: b: ghost RWD still 0 (not paid)
-{"ok":true,"githubLogin":"ghostdev","wallets":[],"feeRecipientTokens":[],"pendingRewards":[{"login":"ghostdev","repoId":"e4b04b9743a9e36384d1a21841dfc98d665f0f0dd6aebb6774b2ffb04eacec4f","repoFullName":"testowner/nogrant","mergeSha":"4545454545454545454545454545454545454545","amount":"10000000000000000000","chain":"base","earnedAt":"2026-11-24T17:12:10.931Z"}],"pendingRewardsTotal":"10000000000000000000","canLink":false}
+{"ok":true,"githubLogin":"ghostdev","wallets":[],"feeRecipientTokens":[],"pendingRewards":[{"login":"ghostdev","repoId":"e4b04b9743a9e36384d1a21841dfc98d665f0f0dd6aebb6774b2ffb04eacec4f","repoFullName":"testowner/nogrant","mergeSha":"4545454545454545454545454545454545454545","amount":"10000000000000000000","chain":"base","earnedAt":"2026-11-24T18:15:50.607Z"}],"pendingRewardsTotal":"10000000000000000000","canLink":false}
 PASS: b: pending lists the merge
 PASS: b: pending amount is 10 RWD in wei
 PASS: b: pending total matches
-{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"4545454545454545454545454545454545454545","prNumber":45,"authorLogin":"ghostdev","state":"reported","reportedAt":"2026-11-24T17:12:10.808Z","updatedAt":"2026-11-24T17:12:10.808Z","settlement":"github-webhook","reportMovesMoney":false}}
+{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"4545454545454545454545454545454545454545","prNumber":45,"authorLogin":"ghostdev","state":"reported","reportedAt":"2026-11-24T18:15:50.478Z","updatedAt":"2026-11-24T18:15:50.478Z","settlement":"github-webhook","reportMovesMoney":false}}
 PASS: b: ship report still reported (no payment yet)
 === 11. (b2) link wallet via real Flow A endpoints -> settlement pays out ===
 [32meth_call[0m
@@ -484,15 +484,15 @@ PASS: b: ship report still reported (no payment yet)
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
   Gas used:            92468 of 97525
-  Block #11:           0x319ce5245fa6ee4053f56686714025e2659ae4bb80404fa8a1bb1d45a278e732
+  Block #11:           0x02e4ab9b0d2a26e9b282527dad50414cbf4bcf6e2bacbd7edf3578e2c8aca52d
 
 [32meth_getTransactionReceipt[0m
 [ship-rewards] Paid 10000000000000000000 to 0x1563915e194d8cfba1943570603f7606a3115508 for merge 4545454 (tx: 0xb876ecea5f784c0f295353c20d8a81f9ba155f30b0c5504df571f677d54ba7b4)
 [ship-report] testowner/nogrant@45454545 → paid (counted)
 [ship-rewards] Settled 1 pending reward(s) for @ghostdev → 0x1563915e194d8cfba1943570603f7606a3115508 (total 10000000000000000000 wei, 0 still pending)
 LINK_WALLET=0x1563915e194D8CfBA1943570603F7606A3115508
-challenge: {"ok":true,"githubLogin":"ghostdev","wallet":"0x1563915e194d8cfba1943570603f7606a3115508","signMessage":"Proof of Dev — link wallet to GitHub\nGitHub: ghostdev\nWallet: 0x1563915e194d8cfba1943570603f7606a3115508\nNonce: 54a144ab87d6d1e711ab4d17aedfc6c8"}
-confirm: {"ok":true,"githubLogin":"ghostdev","wallets":[{"wallet":"0x1563915e194d8cfba1943570603f7606a3115508","linkedAt":"2026-11-24T17:12:13.263Z","source":"signed"}]}
+challenge: {"ok":true,"githubLogin":"ghostdev","wallet":"0x1563915e194d8cfba1943570603f7606a3115508","signMessage":"Proof of Dev — link wallet to GitHub\nGitHub: ghostdev\nWallet: 0x1563915e194d8cfba1943570603f7606a3115508\nNonce: 9c5402dae05ad1ad6a5239ccf007ef85"}
+confirm: {"ok":true,"githubLogin":"ghostdev","wallets":[{"wallet":"0x1563915e194d8cfba1943570603f7606a3115508","linkedAt":"2026-11-24T18:15:53.055Z","source":"signed"}]}
 PASS: b2: link confirm ok
 [32meth_call[0m
   Contract call:       MockERC20#balanceOf
@@ -511,22 +511,22 @@ PASS: b2: link confirm ok
 
 [after-link] author RWD=10 | extra RWD=10 | ShipRewards pool RWD=9980
 PASS: b2: ghost RWD = 10 after link
-{"ok":true,"githubLogin":"ghostdev","wallets":[{"wallet":"0x1563915e194d8cfba1943570603f7606a3115508","linkedAt":"2026-11-24T17:12:13.263Z","source":"signed"}],"feeRecipientTokens":[{"wallet":"0x1563915e194d8cfba1943570603f7606a3115508","source":"signed","linkedAt":"2026-11-24T17:12:13.263Z","tokens":[]}],"pendingRewards":[],"pendingRewardsTotal":"0","canLink":false}
+{"ok":true,"githubLogin":"ghostdev","wallets":[{"wallet":"0x1563915e194d8cfba1943570603f7606a3115508","linkedAt":"2026-11-24T18:15:53.055Z","source":"signed"}],"feeRecipientTokens":[{"wallet":"0x1563915e194d8cfba1943570603f7606a3115508","source":"signed","linkedAt":"2026-11-24T18:15:53.055Z","tokens":[]}],"pendingRewards":[],"pendingRewardsTotal":"0","canLink":false}
 PASS: b2: pending list emptied
 PASS: b2: pending total zero
-{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"4545454545454545454545454545454545454545","prNumber":45,"authorLogin":"ghostdev","state":"paid","reportedAt":"2026-11-24T17:12:10.808Z","updatedAt":"2026-11-24T17:12:13.355Z","reason":"Accrued merge reward settled on wallet link","rewardTxHash":"0xb876ecea5f784c0f295353c20d8a81f9ba155f30b0c5504df571f677d54ba7b4","rewardRecipient":"0x1563915e194d8cfba1943570603f7606a3115508","rewardAmount":"10000000000000000000","settlement":"github-webhook","reportMovesMoney":false}}
+{"ok":true,"report":{"repo":"testowner/nogrant","headSha":"4545454545454545454545454545454545454545","prNumber":45,"authorLogin":"ghostdev","state":"paid","reportedAt":"2026-11-24T18:15:50.478Z","updatedAt":"2026-11-24T18:15:53.098Z","reason":"Accrued merge reward settled on wallet link","rewardTxHash":"0xb876ecea5f784c0f295353c20d8a81f9ba155f30b0c5504df571f677d54ba7b4","rewardRecipient":"0x1563915e194d8cfba1943570603f7606a3115508","rewardAmount":"10000000000000000000","settlement":"github-webhook","reportMovesMoney":false}}
 PASS: b2: ship report flipped to paid on settlement
 PASS: b2: ship report has reward tx
 === 12. (b3) replays do not double-pay ===
 LINK_WALLET=0x1563915e194D8CfBA1943570603F7606A3115508
-challenge: {"ok":true,"githubLogin":"ghostdev","wallet":"0x1563915e194d8cfba1943570603f7606a3115508","signMessage":"Proof of Dev — link wallet to GitHub\nGitHub: ghostdev\nWallet: 0x1563915e194d8cfba1943570603f7606a3115508\nNonce: 581aa1168fbe4dfc8beeefd288d10dc9"}
-confirm: {"ok":true,"githubLogin":"ghostdev","wallets":[{"wallet":"0x1563915e194d8cfba1943570603f7606a3115508","linkedAt":"2026-11-24T17:12:13.263Z","source":"signed"}]}
+challenge: {"ok":true,"githubLogin":"ghostdev","wallet":"0x1563915e194d8cfba1943570603f7606a3115508","signMessage":"Proof of Dev — link wallet to GitHub\nGitHub: ghostdev\nWallet: 0x1563915e194d8cfba1943570603f7606a3115508\nNonce: 45f88f83fc86a5887cfb7ae35f22ed47"}
+confirm: {"ok":true,"githubLogin":"ghostdev","wallets":[{"wallet":"0x1563915e194d8cfba1943570603f7606a3115508","linkedAt":"2026-11-24T18:15:53.055Z","source":"signed"}]}
 [webhook] push to testowner/nogrant — evaluating (grant-less: rewards only)
 [fixture] GET /repos/testowner/nogrant/installation -> 200
 [fixture] GET /repos/testowner/nogrant/pulls/45 -> 200
 [fixture] GET /repos/testowner/nogrant/pulls/45/files -> 200
 [webhook] grant-less push rejected: Commit 4545454 already counted — duplicate push ignored
-[webhook:gl45] HTTP 200 in 40ms
+[webhook:gl45] HTTP 200 in 120ms
 {"ok":true,"accepted":false,"grantless":true,"reason":"Commit 4545454 already counted — duplicate push ignored"}
 PASS: b3: webhook replay rejected (duplicate SHA)
 [32meth_call[0m

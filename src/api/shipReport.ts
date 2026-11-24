@@ -104,6 +104,67 @@ async function loadRecord(repo: string, headSha: string): Promise<ShipReportReco
   }
 }
 
+// ─── Settlement evidence ─────────────────────────────────────────────────────
+
+/**
+ * The on-chain evidence a counted push produced: a vesting release and/or
+ * a merge-reward payment. Recorded at webhook time (and again when a
+ * pending reward settles on wallet link) so a ship report filed AFTER
+ * settlement can still be reconstructed to `paid` with the real tx
+ * hashes — the verifier's push log carries no hashes, and claiming
+ * `paid` without one would fabricate settlement evidence.
+ */
+export type PushSettlementEvidence = {
+  releaseTxHash?: string;
+  milestone?: number;
+  rewardTxHash?: string;
+  rewardRecipient?: string;
+  rewardAmount?: string;
+};
+
+function hasEvidence(e: PushSettlementEvidence): boolean {
+  return Boolean(e.releaseTxHash || e.rewardTxHash);
+}
+
+/**
+ * Persist settlement evidence for one push. Merges with any evidence
+ * already recorded (a release and a reward for the same push are written
+ * by different call sites). NEVER throws — evidence is bookkeeping for
+ * the signal layer; settlement itself is already done by the caller.
+ */
+export async function recordPushSettlement(
+  repoFullName: string,
+  headSha: string | null | undefined,
+  evidence: PushSettlementEvidence,
+): Promise<void> {
+  try {
+    if (!headSha || !SHA_RE.test(headSha) || !hasEvidence(evidence)) return;
+    const existing = await loadPushSettlement(repoFullName, headSha);
+    const merged: PushSettlementEvidence = { ...existing, ...evidence };
+    await getRedis().set(
+      KEYS.shipSettlement(repoFullName, headSha),
+      JSON.stringify(merged),
+      "EX",
+      REPORT_TTL_SECONDS,
+    );
+  } catch (err) {
+    console.warn("[ship-report] record settlement failed (ignored):", err);
+  }
+}
+
+async function loadPushSettlement(
+  repoFullName: string,
+  headSha: string,
+): Promise<PushSettlementEvidence | null> {
+  const raw = await getRedis().get(KEYS.shipSettlement(repoFullName, headSha));
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as PushSettlementEvidence;
+  } catch {
+    return null;
+  }
+}
+
 /** Present a stored record with lazy expiry + the trust-model fields. */
 export function presentShipReport(record: ShipReportRecord): ShipReportView {
   const expired =
@@ -203,17 +264,21 @@ type PushLogEntry = {
  *     pushCount total minus the accepted log entries after this one —
  *     entries after it are by definition still in the retained log).
  *
- * What the log does NOT record is per-push release/reward tx hashes, so
- * a late report can never be reconstructed to `paid` from it — claiming
- * `paid` without a tx hash would fabricate settlement evidence. Two
- * cases therefore deliberately stay `reported`:
- *   - Counted pushes on a grant-LESS repo: grant-less reports never take
- *     `confirmed` (there is no grant progress to confirm), and `paid`
- *     needs the reward tx hash. If the reward accrued as pending, the
- *     settlement path on wallet link calls resolveShipReport with the
- *     real tx and flips this record to `paid` then; if it paid
- *     immediately, the record stays until the 24h expiry — a known,
- *     documented limitation of the recorded data.
+ * The log does NOT record per-push release/reward tx hashes — claiming
+ * `paid` without a tx hash would fabricate settlement evidence. Tx
+ * hashes instead come from the settlement-evidence store
+ * (KEYS.shipSettlement), written by recordPushSettlement at webhook
+ * time and again when a pending reward settles on wallet link
+ * (fix 2026-11-24: a counted push whose report was filed after its
+ * release/reward landed previously stuck at `confirmed` forever).
+ * With evidence, a late report reconstructs to `paid` exactly. One
+ * case still deliberately stays `reported`:
+ *   - Counted pushes on a grant-LESS repo whose reward accrued as
+ *     pending (no evidence yet): grant-less reports never take
+ *     `confirmed` (there is no grant progress to confirm). If the
+ *     reward later settles on wallet link, the settlement path calls
+ *     resolveShipReport with the real tx and flips the record to
+ *     `paid` then; if it never settles, the report expires at 24h.
  *   - Pushes with no log entry at all (e.g. repo-claim verification
  *     pushes, which return before the verifier logs anything).
  *
@@ -256,11 +321,30 @@ async function reconcileFromRecordedOutcome(record: ShipReportRecord): Promise<v
       return;
     }
 
-    // Counted — but grant-less reports cannot take "confirmed" and cannot
-    // be reconstructed to "paid" (see header comment). Leave "reported".
-    if (!grant) return;
-
     const entry = entries[acceptedIdx]!;
+
+    // Settlement evidence recorded at webhook/settle time carries the tx
+    // hashes the push log lacks — with it, a late report reconstructs to
+    // `paid` exactly; without it, `paid` is never claimed.
+    const evidence = await loadPushSettlement(record.repo, record.headSha);
+
+    if (!grant) {
+      // Grant-less reports cannot take "confirmed" (no grant progress to
+      // confirm). They resolve to "paid" only on real reward evidence;
+      // otherwise they stay "reported" (accrual settles later, or the
+      // report expires) — see the header comment.
+      if (evidence?.rewardTxHash) {
+        await resolveShipReport(record.repo, record.headSha, {
+          kind: "counted",
+          reason: entry.reason ?? "Push counted by verifier",
+          rewardTxHash: evidence.rewardTxHash,
+          ...(evidence.rewardRecipient ? { rewardRecipient: evidence.rewardRecipient } : {}),
+          ...(evidence.rewardAmount ? { rewardAmount: evidence.rewardAmount } : {}),
+        });
+      }
+      return;
+    }
+
     let verifiedPushCount: number | undefined;
     const totalRaw = await redis.get(KEYS.pushCount(repoId));
     const total = totalRaw ? parseInt(totalRaw, 10) : NaN;
@@ -275,6 +359,11 @@ async function reconcileFromRecordedOutcome(record: ShipReportRecord): Promise<v
       kind: "counted",
       reason: entry.reason ?? "Push counted by verifier",
       ...(verifiedPushCount !== undefined ? { verifiedPushCount } : {}),
+      ...(evidence?.releaseTxHash ? { releaseTxHash: evidence.releaseTxHash } : {}),
+      ...(evidence?.milestone !== undefined ? { milestone: evidence.milestone } : {}),
+      ...(evidence?.rewardTxHash ? { rewardTxHash: evidence.rewardTxHash } : {}),
+      ...(evidence?.rewardRecipient ? { rewardRecipient: evidence.rewardRecipient } : {}),
+      ...(evidence?.rewardAmount ? { rewardAmount: evidence.rewardAmount } : {}),
     });
   } catch (err) {
     // Signal layer only — a reconciliation failure must not fail the
