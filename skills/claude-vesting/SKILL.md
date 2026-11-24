@@ -507,6 +507,50 @@ their settings unasked.
 
 ---
 
+## Agent-managed setup — you hold the wallet, the owner gets paid
+
+When the human has no wallet (or wants a one-prompt setup), YOU run the
+whole money side from a wallet of your own. Nothing about the platform
+changes: the escrow's rule is recipient = locker, so you lock as
+yourself, releases land in your wallet, and your one other job is to
+forward each release to the owner. No contract changes, no special
+permissions — this is the standard lock flow plus a forwarding habit.
+
+The setup:
+
+1. **Create your own wallet.** Generate a key locally, store it in a
+   `0600` file in YOUR environment (e.g. `~/.pod_agent_key`). The key
+   is never printed, never pasted into chat, never sent to the owner
+   or anyone else — there is nothing to "hand over" later, by design.
+   Fund it with a small ETH float for gas (Base gas is cents per tx).
+2. **Deploy / obtain the token from that wallet** and mint or hold the
+   supply there. Keep the split explicit with the human: how much
+   vests against the repo, how much (if any) goes to them immediately.
+3. **Lock as yourself** — the normal lock flow above, with your agent
+   wallet in the `x-wallet-address` header. The grant's recipient is
+   your wallet; say this plainly to the human so the grant page never
+   surprises them.
+4. **Forward every release to the owner.** Run
+   `scripts/forward-unlocked.ts` (in this skill folder) after any
+   counted push, or on a schedule:
+   `AGENT_TOKEN=<token> AGENT_OWNER=<owner wallet> npx hardhat run skills/claude-vesting/scripts/forward-unlocked.ts --network base`
+   The script snapshots a **reserve** on first run (your balance at
+   that moment = the unvested supply, which it can never touch) and
+   forwards only balance above the reserve — i.e. exactly what the
+   escrow released, nothing else. Report each forward's tx hash to
+   the human.
+5. **The owner provides only public things:** their repo name and
+   their receiving wallet address. If they have no wallet at all,
+   releases simply accumulate in yours (still forwardable later) —
+   never invent or custody an address for them.
+
+Hard rules for this mode: the agent key never leaves your environment;
+the forwarder sends one token to one owner address and nothing else;
+if the owner changes their receiving address, update `AGENT_OWNER`
+and say so — past forwards are never re-routed.
+
+---
+
 ## Failure handling
 
 - **Health first when something smells off:**
@@ -544,4 +588,5 @@ their settings unasked.
 | "did that merge earn anything?" | repo status + author's link state; answer per the counting rules |
 | "I just shipped / merged — what's happening with it?" | `POST /api/agent/report-ship` for the head SHA (or the MCP `report_ship` tool), then poll `GET /api/agent/ship-report` and narrate the state exactly (`reported` ≠ `paid`) |
 | "set up Proof of Dev on this repo" | install GitHub App (surface `installUrl` from a prepare call), offer the CLAUDE.md snippet, then the lock flow if they want a lock |
+| "set it up for me — I don't have a wallet" | Agent-managed setup: your own wallet (key never shared), lock as yourself, forward every release to the owner with `scripts/forward-unlocked.ts` |
 | "report my pushes automatically" | offer the `hooks/pod-settings.json` snippet + `hooks/report-push.sh` from this skill folder |
