@@ -1,10 +1,25 @@
 import { App } from "@octokit/app";
+import { Octokit as CoreOctokit } from "@octokit/core";
 import { env } from "../lib/env";
 
 let _app: App | null = null;
 
 export function getGithubApp(): App {
   if (!_app) {
+    // TEST-ONLY hook (env GITHUB_API_BASE_URL): when set to anything other
+    // than the default https://api.github.com, route every GitHub App REST
+    // call (installation lookup, access-token exchange, PR fetches) to that
+    // base URL — used by the local fixture API in tests/e2e/. Production
+    // leaves the env unset and gets the stock client, unchanged.
+    const baseUrl = env.GITHUB_API_BASE_URL.trim().replace(/\/$/, "");
+    const octokitOverride =
+      baseUrl && baseUrl !== "https://api.github.com"
+        ? {
+            Octokit: CoreOctokit.defaults({
+              baseUrl,
+            }) as unknown as typeof CoreOctokit,
+          }
+        : {};
     _app = new App({
       appId: env.GITHUB_APP_ID,
       privateKey: env.GITHUB_APP_PRIVATE_KEY,
@@ -13,6 +28,7 @@ export function getGithubApp(): App {
         clientId: env.GITHUB_CLIENT_ID,
         clientSecret: env.GITHUB_CLIENT_SECRET,
       },
+      ...octokitOverride,
     });
   }
   return _app;

@@ -2,7 +2,9 @@
  * TEST-ONLY webhook sender: builds a GitHub push payload, HMAC-SHA256
  * signs it with the test webhook secret, POSTs it to the local server.
  * Usage: node tests/e2e/send-webhook.mjs <case>
- *   case = plain | docs | squash
+ *   case = plain | docs | squash | prhuman | prbot
+ *   prhuman/prbot need the fixture GitHub API running (github-fixture.js)
+ *   and the server started with GITHUB_API_BASE_URL pointing at it.
  */
 import { createHmac } from "crypto";
 
@@ -29,6 +31,20 @@ const CASES = {
     after: "59aa550000000000000000000000000000000003",
     message: "feat: shiny thing (#42)",
     added: codeFiles("g", 11),
+    modified: [],
+  },
+  // Positive PR-credit cases: `after` MUST equal the fixture API's
+  // merge_commit_sha for the PR (tests/e2e/github-fixture.js).
+  prhuman: {
+    after: "c0ffee0000000000000000000000000000000042",
+    message: "feat: shiny thing (#42)",
+    added: codeFiles("p", 11),
+    modified: [],
+  },
+  prbot: {
+    after: "b070000000000000000000000000000000000043",
+    message: "chore: bump deps (#43)",
+    added: codeFiles("b", 11),
     modified: [],
   },
 };

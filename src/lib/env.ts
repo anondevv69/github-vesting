@@ -32,6 +32,13 @@ export const env = {
   GITHUB_CLIENT_ID: get("GITHUB_CLIENT_ID"),
   GITHUB_CLIENT_SECRET: get("GITHUB_CLIENT_SECRET"),
   GITHUB_BOT_USERNAME: get("GITHUB_BOT_USERNAME", "bankr-vesting[bot]"),
+  /**
+   * GitHub REST API base URL. TEST-ONLY override hook: defaults to the real
+   * https://api.github.com and should never be set in production. It exists
+   * so local tests can point the GitHub App client at a fixture API server
+   * (see tests/e2e/github-fixture.js).
+   */
+  GITHUB_API_BASE_URL: get("GITHUB_API_BASE_URL", "https://api.github.com"),
 
   // Oracle signer (hot wallet that calls GitEscrow.release)
   ORACLE_PRIVATE_KEY: get("ORACLE_PRIVATE_KEY"),

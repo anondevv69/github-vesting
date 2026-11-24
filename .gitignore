@@ -8,3 +8,6 @@ artifacts/
 cache/
 typechain-types/
 coverage/
+
+# E2E run logs (local evidence, regenerated per run)
+tests/e2e/pr-credit-output.log
