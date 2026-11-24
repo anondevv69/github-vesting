@@ -304,6 +304,45 @@ A `/ship` merge counts **exactly** like a hand merge — same rules above
 pushes to PR branches never count — they're not production-branch pushes
 and are bot-authored).
 
+### The /ship → auto-unlock guarantee
+
+**This is the core promise of the integration, and it is automatic:** once
+a token is locked for a repo, every counted `/ship` merge releases the
+next vesting tranche on its own — no claim step, no button, no human in
+the loop. The sequence is:
+
+```
+/ship merge lands on the production branch
+→ GitHub push webhook → verifier counts it
+→ milestone reached → oracle calls GitEscrow.release()
+→ tranche lands in the recipient wallet (on-chain, checkable)
+→ and the PR author is paid the ShipRewards merge reward
+```
+
+The guarantee holds only when ALL of these preconditions are true. When
+you set up a lock for a user who ships with Claude, **verify each one and
+only state the guarantee to the user once all check out**:
+
+1. The Proof of Dev GitHub App is installed on the repo (webhooks are
+   what trigger everything — no install, no counting).
+2. The grant is registered and **active**: after `confirm-lock`, call
+   `GET /api/agent/status?repo=owner/repo` and confirm it returns the
+   grant with `"status":"active"`. If it doesn't, the lock is NOT armed —
+   say so and finish the setup instead of promising auto-unlock.
+3. The merges land on a production branch (`main` / `master` /
+   `production` / `prod`) — `/ship` targeting any other branch never
+   counts.
+4. For the author's merge **reward** (separate from the vesting unlock):
+   the author's GitHub is linked to a wallet. The vesting unlock does not
+   need this; the reward does.
+
+Once armed, phrase it to the user exactly as it works: *"Locked and
+armed — from now on, every counted /ship merge auto-unlocks the next
+tranche to <recipient> and pays you the per-merge reward. Nothing else
+to do."* If a later merge doesn't advance the counter, check the counted-
+push rules first (docs-only? bot-authored? daily cap? cooldown?) before
+assuming the system is broken.
+
 After a Ship merge, report what it earned:
 
 ```bash
