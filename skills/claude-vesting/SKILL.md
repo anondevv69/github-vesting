@@ -20,10 +20,15 @@ version: 1
    grant's recipient wallet, fixed on-chain at lock time.
 2. **Merge rewards (ShipRewards):** on **every counted merged PR**, the PR
    *author* is additionally paid a flat reward in the platform reward token
-   from a pre-funded `ShipRewards` pool — **whether or not that repo has any
-   vesting lock**. The reward goes to the author's first GitHub-linked
-   wallet and is keyed by the merge commit hash, so a merge can never be
-   paid twice.
+   from a pre-funded `ShipRewards` pool — but only on repos that have an
+   **active vesting grant**: the webhook ignores pushes to repos with no
+   active grant, so no grant means no counting and no reward. The reward
+   goes to the author's **most recently linked** wallet (the linked-wallet
+   list is newest-first and the oracle pays the first entry) and is keyed
+   by the merge commit hash, so a merge can never be paid twice. Rewards
+   also require the server to be configured with a `ShipRewards` pool
+   address and a non-zero per-merge amount; when either is unset, merges
+   still count toward vesting but pay no reward.
 
 **API base URL:** `https://api.proofofdev.xyz`
 **Canonical protocol:** before your first session with this API, fetch
@@ -209,7 +214,12 @@ quote them exactly; don't soften them.
 - **Branch:** the push must land on a production branch: `main`, `master`,
   `production`, or `prod`.
 - **Size:** at least **3 meaningful changed lines** (`MIN_LINES_CHANGED = 3`)
-  across meaningful files, estimated from the PR/push diff.
+  across meaningful files. How the count is produced differs by path: for a
+  PR-credited merge it is the PR's real additions + deletions over
+  meaningful files; for a raw push it is an **estimate of 5 lines per
+  meaningful file**, so in practice a raw push with even one meaningful
+  file clears the minimum. Quote the constant, but don't promise a raw
+  push was measured line-by-line.
 - **Meaningful files only.** Changes confined to these never count:
   `*.md`, `*.txt`, lockfiles (`*.lock`, `package-lock.json`, `yarn.lock`,
   `pnpm-lock.yaml`), `.gitignore`, `.gitattributes`, `CHANGELOG*`,
@@ -238,9 +248,11 @@ reward. Attempts are never paid; only counted merges are.
 
 ## Developer side — linking a wallet to GitHub (how rewards find you)
 
-Merge rewards are paid to the PR author's **first linked wallet**. Linking
-is a signature proof: the human proves they control both the GitHub
-account and the wallet. Two real flows exist; use whichever fits.
+Merge rewards are paid to the PR author's **most recently linked wallet**
+(the linked-wallet list is stored newest-first, and the oracle pays its
+first entry — linking a new wallet redirects future rewards to it).
+Linking is a signature proof: the human proves they control both the
+GitHub account and the wallet. Two real flows exist; use whichever fits.
 
 ### Flow A — the dev links it themselves (session + signature)
 
@@ -282,12 +294,15 @@ Claim pushes are excluded from vesting counts by design.
 
 ### Pending rewards — say this exactly
 
-If a counted merge's author has **no linked wallet**, the reward is
-**pending**: the oracle skips payment for that merge and logs the reason.
-It is **never** sent to a guessed, derived, or "probably theirs" address.
-Tell the author to link a wallet (Flow A or B) so future counted merges
-pay out, and never claim a pending reward was sent. Once linked, rewards
-pay to the first linked wallet. Each reward is keyed on-chain by the
+If a counted merge's author has **no linked wallet**, the oracle skips
+payment for that merge and logs the reason. Be exact about what that
+means: **nothing is accrued or recorded for later** — that merge's reward
+is simply never paid, even if the author links a wallet afterwards.
+Linking only makes *future* counted merges pay. The reward is **never**
+sent to a guessed, derived, or "probably theirs" address. Tell the author
+to link a wallet (Flow A or B) so future counted merges pay out, and never
+claim a skipped reward was sent or is waiting for them. Once linked,
+rewards pay to the most recently linked wallet. Each reward is keyed on-chain by the
 merge commit hash (`isPaid` check before paying, and the contract itself
 refuses a second payment for the same hash) — **double-payment is
 impossible**, so never re-submit a reward for a merge.
