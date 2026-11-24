@@ -132,6 +132,17 @@ app.get("/agent.md", (_req, res) => {
   }
 });
 
+// Claude skill, served from this API so agents can install it from the
+// product domain — no GitHub (or any code host) involved in distribution.
+app.get("/claude-skill.md", (_req, res) => {
+  const skillPath = path.join(__dirname, "..", "skills", "claude-vesting", "SKILL.md");
+  try {
+    res.type("text/markdown").send(fs.readFileSync(skillPath, "utf8"));
+  } catch {
+    res.status(404).type("text/plain").send("claude skill not found");
+  }
+});
+
 // ─── GitHub webhook (receives push events from installed repos) ───────────────
 app.post("/api/webhook/github", (req, res) => void handleWebhook(req, res));
 app.post("/api/webhook/gitlawb", (req, res) => void handleGitlawbWebhook(req, res));
