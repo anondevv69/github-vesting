@@ -19,7 +19,8 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  *   4. Owner can set/rotate the oracle address.
  *
  * Anti-gaming is enforced off-chain by the bot; the contract only trusts
- * the oracle's signature of (repoId, totalVerifiedPushes).
+ * a release call from the oracle address (msg.sender == oracle)
+ * carrying (repoId, totalVerifiedPushes) — there is no signature scheme.
  */
 contract GitEscrow is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;

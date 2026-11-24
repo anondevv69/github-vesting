@@ -66,7 +66,7 @@ export function getVestingChainConfig(key: VestingChainKey): VestingChainConfig 
         chain: baseSepolia,
         chainId: baseSepolia.id,
         rpcUrl: env.BASE_SEPOLIA_RPC_URL,
-        escrowAddress: env.GIT_ESCROW_ADDRESS || undefined,
+        escrowAddress: env.GIT_ESCROW_SEPOLIA_ADDRESS || undefined,
         explorerBase: "https://sepolia.basescan.org",
         label: "Base Sepolia",
       };

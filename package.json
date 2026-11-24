@@ -2,7 +2,7 @@
   "name": "github-vesting",
   "version": "1.0.0",
   "private": true,
-  "description": "GitHub-activity-gated token vesting bot + escrow oracle for Bankr tokens",
+  "description": "GitHub-activity-gated token vesting: escrow oracle that releases any ERC-20 as verified pushes land",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

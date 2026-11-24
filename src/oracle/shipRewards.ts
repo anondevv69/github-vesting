@@ -57,15 +57,26 @@ export function mergeCommitHashBytes32(mergeCommitSha: string): `0x${string}` {
   return keccak256(toBytes(mergeCommitSha.toLowerCase()));
 }
 
+/**
+ * ShipRewards deployment for a chain (audit M9): each chain has its OWN
+ * pool contract. Robinhood resolves ONLY from
+ * SHIP_REWARDS_ROBINHOOD_ADDRESS — never fall back to the Base address,
+ * which does not exist on that chain.
+ */
+export function rewardsAddressForChain(chain: string): string {
+  if (chain === "robinhood") return (env.SHIP_REWARDS_ROBINHOOD_ADDRESS ?? "").trim();
+  return (env.SHIP_REWARDS_ADDRESS ?? "").trim();
+}
+
 export async function payRewardForMerge(args: {
   grant: GrantRecord;
   repoId: string;
   authorLogin: string;
   mergeCommitSha: string;
 }): Promise<RewardResult> {
-  const rewardsAddress = (env.SHIP_REWARDS_ADDRESS ?? "").trim();
+  const rewardsAddress = rewardsAddressForChain(args.grant.chain);
   if (!rewardsAddress) {
-    return { paid: false, reason: "SHIP_REWARDS_ADDRESS not configured — reward skipped" };
+    return { paid: false, reason: `ShipRewards not configured for chain "${args.grant.chain}" — reward skipped` };
   }
 
   const amount = configuredRewardPerMerge();

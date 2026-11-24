@@ -6,7 +6,7 @@
  *  - Must target the main/production branch (main, master, production, prod).
  *  - Must add or modify ≥ MIN_LINES_CHANGED lines across real code files.
  *  - Markdown-only, lock-file-only, and empty merge commits are rejected.
- *  - Force-pushes reset the daily cooldown but do NOT count as a milestone push.
+ *  - Force-pushes are rejected outright: they never count as a milestone push.
  *  - Maximum MAX_PUSHES_PER_DAY counted pushes per calendar day per repo.
  *  - Minimum MIN_MINUTES_BETWEEN_PUSHES minutes between counted pushes (from last accepted push).
  *  - Substantial changes (≥ COOLDOWN_BYPASS_MIN_LINES estimated lines) bypass the cooldown.

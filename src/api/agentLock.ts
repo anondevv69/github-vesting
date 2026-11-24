@@ -380,7 +380,7 @@ export async function handleAgentPrepareLock(req: Request, res: Response): Promi
       },
       statusUrl: lockUrl(normalizedRepo),
       bankrPrompt: buildBankrPrompt(prep, normalizedRepo, wallet),
-      bankrSubmitUrl: `${BANKR_API}/agent/submit`,
+      bankrSubmitUrl: `${BANKR_API}/wallet/submit`,
       confirmUrl: `${env.SERVER_URL}/api/agent/confirm-lock`,
       replyText,
       tweetReply: replyText,
@@ -563,7 +563,7 @@ export async function handleAgentLock(req: Request, res: Response): Promise<void
     ...prep,
     tweetReply,
     steps: [
-      `Submit each transaction in transactions[] via Bankr wallet (agent/submit on ${label})`,
+      `Submit each transaction in transactions[] via Bankr wallet (wallet/submit on ${label})`,
       "Wait for lock tx confirmation",
       `POST ${env.SERVER_URL}/api/agent/confirm-lock with lockTxHash`,
     ],
