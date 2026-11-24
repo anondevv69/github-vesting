@@ -67,7 +67,7 @@ install the github-vesting skill from https://github.com/BankrBot/skills/tree/ma
 | Term | Meaning |
 |------|--------|
 | **Push** | GitHub `push` event to `main` / `master` / `production` / `prod` |
-| **Verified push** | Push that passes anti-spam rules (code files, ~10+ lines, not force-push, rate limits) |
+| **Verified push** | Push that passes anti-spam rules (code files, 3+ lines — `MIN_LINES_CHANGED = 3` in the verifier, not force-push, rate limits) |
 | **Milestone** | Every **N** verified pushes → one on-chain token release |
 | **Streaming lock** | Bankr tokens (Space): stay in wallet; oracle pulls on milestone via allowance |
 | **Escrow lock** | Standard ERC-20: tokens held in GitEscrow contract |
