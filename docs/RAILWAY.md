@@ -1,5 +1,12 @@
 # Deploy to Railway
 
+> **Current redeploy runbook (2026-11-23):** the maintained, step-by-step
+> package for bringing the Proof of Dev backend back lives in
+> `~/workspace/claude-ship/railway-deploy/` (DEPLOY.md + APP-MANIFEST.md)
+> — direct tarball upload, fresh GitHub App via manifest, post-deploy
+> checks including the remote MCP smoke. This file remains the general
+> Railway reference.
+
 ## 1. Backend service
 
 1. Create a [Railway](https://railway.app) project → **New Project** → **Deploy from GitHub repo**
@@ -15,6 +22,9 @@
 | `GITHUB_*` | GitHub App credentials |
 | `ORACLE_PRIVATE_KEY` | oracle hot wallet |
 | `GIT_ESCROW_ROBINHOOD_ADDRESS` | Robinhood GitEscrow (4663) |
+| `GIT_ESCROW_SEPOLIA_ADDRESS` | Base Sepolia GitEscrow (testnet grants only; never reuse the mainnet address) |
+| `SHIP_REWARDS_ADDRESS` / `SHIP_REWARDS_ROBINHOOD_ADDRESS` | optional — per-chain ShipRewards pools for merge rewards |
+| `SHIP_REWARD_PER_MERGE` | optional — flat per-counted-merge reward (wei); unset/0 disables rewards |
 | `ADMIN_SECRET` | optional — `POST /api/admin/delete-grant` |
 | `BASE_RPC_URL` | Base RPC |
 | `SESSION_SECRET` | random string |

@@ -17,6 +17,25 @@ Lock your ERC-20 tokens in escrow on Base (Robinhood Chain also supported). Earn
    - 30-minute cooldown between counted pushes
 6. When a milestone is hit → oracle wallet calls `GitEscrow.release()` → tokens sent automatically
 
+**Merge rewards (no lock required):** every *counted* merged PR also pays its
+author a flat reward from a pre-funded `ShipRewards` pool — on **any** repo
+with the GitHub App installed, whether or not anything is locked (the same
+verifier and anti-gaming rules apply). The reward goes to the author's most
+recently linked wallet; if none is linked, it **accrues as pending** and pays
+out automatically when they link one. Rewards are inert when no pool is
+configured for the chain or the per-merge amount is 0.
+
+**Attestation (ship reports):** a developer-side agent can file a ship report
+for a commit it shipped (`POST /api/agent/report-ship`) and poll its state
+(`reported → confirmed / paid / rejected / expired`). A report is a signal
+only — it never moves money; settlement is always the push webhook →
+verifier → oracle.
+
+**Agents:** the same API is exposed as an MCP server (stdio locally, or
+remote at `https://api.proofofdev.xyz/mcp` once deployed) and as installable
+skills for Bankr and Claude — see `mcp/README.md`, `skills/`, and
+`docs/agent.md`. Testing: see `TESTING.md`.
+
 ---
 
 ## Project structure
@@ -37,14 +56,18 @@ src/
     githubApp.ts          GitHub App client (Octokit)
   oracle/
     releaseOracle.ts      Calls GitEscrow.release on milestone
-    shipRewards.ts        Calls ShipRewards.pay on every counted merged PR
+    shipRewards.ts        Calls ShipRewards.pay on every counted push/merge (grant or grant-less); settles pending accruals on wallet link
   api/
     register.ts           POST /api/vesting/register
     status.ts             GET  /api/vesting/status
     oauth.ts              GitHub OAuth flow
+    shipReport.ts         POST /api/agent/report-ship + GET ship-report(s) (attestation)
   lib/
     env.ts                Validated env vars
     redis.ts              Grant storage
+    pendingRewards.ts     Pending-reward accrual for unlinked authors
+    mcpTools.ts           Shared MCP tool definitions (stdio + remote transports)
+  mcpHttp.ts              Remote MCP endpoint (Streamable HTTP, mounted at /mcp)
   index.ts                Express server
 
 frontend/
@@ -56,6 +79,9 @@ frontend/
 skills/
   bankr-vesting/          @bankrbot agent skill (SKILL.md + agent API docs)
   claude-vesting/         Claude Code / Muse agent skill (also served by the backend at GET /claude-skill.md)
+
+mcp/
+  src/server.ts           MCP server, stdio transport (tools defined in src/lib/mcpTools.ts, shared with the remote /mcp endpoint)
 ```
 
 ---
@@ -68,7 +94,7 @@ Go to https://github.com/settings/apps/new and configure:
 
 - **Webhook URL**: `https://your-domain.com/api/webhook/github`
 - **Webhook secret**: generate a random string
-- **Permissions**: Contents (read), Metadata (read)
+- **Permissions**: Contents (read), Pull requests (read), Metadata (read)
 - **Subscribe to events**: Push
 
 Download the private key and note your App ID, Client ID, Client Secret.
@@ -123,8 +149,19 @@ npm run dev
 | `GET` | `/api/agent/grants?wallet=0x…` | Detailed grants for linked wallet |
 | `GET` | `/api/agent/status?repo=owner/repo` | Single-repo progress |
 | `GET` | `/api/agent/setup-link?wallet=0x…` | Setup wizard URL |
+| `GET` | `/api/agent/fee-tokens` | Wallet ERC-20 holdings on Base (any lockable token) |
+| `POST` | `/api/agent/lock` / `/api/agent/prepare-lock` | Prepare approve+lock transactions (unsigned) |
+| `POST` | `/api/agent/confirm-lock` | Register a grant after the on-chain lock |
+| `POST` | `/api/agent/link-github` | Create a one-time wallet↔GitHub magic link |
+| `POST` | `/api/agent/report-ship` | File a ship report (attestation signal only) |
+| `GET` | `/api/agent/ship-report` / `/api/agent/ship-reports` | Ship-report state(s) |
+| `GET` | `/api/dev/link-wallet/:login` | Linked wallets + `pendingRewards[]` / `pendingRewardsTotal` |
 
 Header: `x-wallet-address: 0x…` (optional alternative to query param).
+
+Also served by the backend: `GET /agent.md` (agent protocol doc),
+`GET /claude-skill.md` (Claude skill), and the MCP endpoint at `/mcp`
+(Streamable HTTP; see `mcp/README.md`).
 
 Skill package: [`skills/bankr-vesting/`](skills/bankr-vesting/SKILL.md)
 
