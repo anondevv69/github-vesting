@@ -29,8 +29,9 @@ Linked Bankr wallet → header `x-wallet-address: 0x…` on every call.
 2. If installUrl in response → send user to install GitHub App, retry step 1
 
 3. For each tx in transactions[] (approve then lock):
-   POST https://api.bankr.bot/agent/submit
-   { "to": "…", "data": "0x…", "value": "0x0", "chainId": 8453, "waitForConfirmation": true }
+   POST https://api.bankr.bot/wallet/submit
+   { "transaction": { "to": "…", "data": "0x…", "value": "0x0", "chainId": 8453 }, "waitForConfirmation": true }
+   (Legacy /agent/submit is removed — never use it.)
 
 4. POST {API}/api/agent/confirm-lock
    Body: { "repo": "owner/repo", "lockTxHash": "0x…" }

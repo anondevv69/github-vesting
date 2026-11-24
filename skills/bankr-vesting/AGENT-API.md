@@ -180,8 +180,10 @@ Parses the `Locked` event from the tx, verifies recipient matches wallet, regist
 For each transaction in `transactions[]`, in order:
 
 ```http
-POST https://api.bankr.bot/agent/submit
+POST https://api.bankr.bot/wallet/submit
 ```
+
+Legacy `/agent/submit` is **removed** (returns 403) — do not use it, even though the prepare-lock response's `bankrSubmitUrl` field still names it (known stale field in the API response; the route in this section is the current one).
 
 Use fields `to`, `data`, `value`, `chainId` from the prepare response. Set `waitForConfirmation: true` on the final lock tx.
 

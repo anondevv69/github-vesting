@@ -15,7 +15,7 @@ Public guide for bots and terminals integrating with GitHub vesting.
 | **Claude skill** | Claude Code, Muse agents | Install skill package (below) |
 | **Regular agent** | Custom bots, OpenClaw, scripts, any HTTP client | Call REST endpoints directly (below) |
 
-Both paths use the same Agent API. The Bankr skill adds intent routing, tweet formatting, and setup-link rules.
+All paths use the same Agent API. The Bankr skill adds intent routing, tweet formatting, and setup-link rules.
 
 ---
 
@@ -43,7 +43,7 @@ if message mentions github vesting / lock tokens / vesting progress / verified p
 ### Bankr-specific rules
 
 - Paste **`tweetReply`** from the API verbatim in X replies
-- **Lock via chat:** `POST /api/agent/lock` → Bankr `agent/submit` on Base → `POST /api/agent/confirm-lock`
+- **Lock via chat:** `POST /api/agent/lock` → Bankr `POST /wallet/submit` on Base (legacy `/agent/submit` is removed) → `POST /api/agent/confirm-lock`
 - Web fallback for locks: `{SITE}/create`
 - Status links: `{SITE}/lock/{owner}/{repo}`
 - Space token → streaming lock path (allowance, not escrow)
@@ -54,13 +54,13 @@ Full skill docs: `SKILL.md`, `AGENT-API.md`, `ONE-LINE-INTENTS.md` in the skill 
 
 ## Claude agents (Claude Code / Muse)
 
-Install the Claude skill — same Agent API, with Claude-specific signing routes (own wallet tooling, Bankr, or human hand-off; Claude has no built-in wallet):
+Install the Claude skill — same Agent API, with Claude-specific signing routes (own wallet tooling, Bankr, or human hand-off; Claude has no built-in wallet). The backend serves the skill itself, no code host required:
 
 ```text
-copy skills/claude-vesting/ from https://github.com/anondevv69/github-vesting/tree/ship/pr-credit-and-rewards/skills/claude-vesting into your skills directory (e.g. ~/.claude/skills/claude-vesting/)
+download https://api.proofofdev.xyz/claude-skill.md into your skills directory as claude-vesting/SKILL.md (e.g. ~/.claude/skills/claude-vesting/SKILL.md)
 ```
 
-**Skill folder:** [skills/claude-vesting/](https://github.com/anondevv69/github-vesting/tree/ship/pr-credit-and-rewards/skills/claude-vesting)
+**Skill source in repo:** `skills/claude-vesting/SKILL.md`
 
 ---
 
@@ -89,15 +89,17 @@ Optional: `x-client: agent`
 
 ### Endpoints
 
-| GET | Path | Use |
-|-----|------|-----|
-| `/api/agent/briefing` | `?wallet=0x…` | Summary of all locks for a wallet |
-| `/api/agent/grants` | `?wallet=0x…` | Detailed grant list |
-| `/api/agent/status` | `?repo=owner/repo` | Single repo progress |
+| Method | Path | Params | Use |
+|--------|------|--------|-----|
+| GET | `/api/agent/briefing` | `?wallet=0x…` | Summary of all locks for a wallet |
+| GET | `/api/agent/grants` | `?wallet=0x…` | Detailed grant list |
+| GET | `/api/agent/status` | `?repo=owner/repo` | Single repo progress |
 | GET | `/api/agent/setup-link` | `?wallet=0x…` | URL to start a new lock (web) |
 | GET | `/api/agent/fee-tokens` | `x-wallet-address` | Wallet ERC-20 holdings on Base (any lockable token) |
 | POST | `/api/agent/lock` | body + wallet header | Prepare approve+lock txs + instructions |
+| POST | `/api/agent/prepare-lock` | body + wallet header | Same as `/api/agent/lock` without the extra `steps` wrapper |
 | POST | `/api/agent/confirm-lock` | `repo`, `lockTxHash` | Register grant after on-chain lock |
+| POST | `/api/agent/link-github` | body (`githubLogin`) + wallet header | Create a one-time magic link binding the wallet to a GitHub dev profile |
 
 ### Example
 
@@ -126,8 +128,8 @@ curl -H "x-wallet-address: 0x…" \
 
 Bankr agents with wallet signing — **any ERC-20 on Base** (TMP, Space, USDC, or any `0x` address):
 
-1. `POST /api/agent/lock` with `repo`, `token`, `amount`, `totalPushes`
-2. Submit `transactions[]` via `https://api.bankr.bot/agent/submit` on Base
+1. `POST /api/agent/lock` with `repo`, `token`, `amount`, `totalPushes` (optional: `pushesPerMilestone`, `chain` — `base` default, `robinhood`, `base-sepolia`)
+2. Submit `transactions[]` via `https://api.bankr.bot/wallet/submit` on Base (legacy `/agent/submit` is removed and returns 403)
 3. `POST /api/agent/confirm-lock` with `lockTxHash`
 4. Reply with `tweetReply` from confirm-lock
 
@@ -146,7 +148,7 @@ https://www.proofofdev.xyz/create
 curl https://api.proofofdev.xyz/health
 ```
 
-Returns `{ "ok": true, "service": "github-vesting" }`.
+Returns `{ "ok": true, "service": "github-vesting", "configured": true, "ts": "…" }` — `configured: false` plus a `missingEnv` list when required env vars are unset.
 
 ---
 
