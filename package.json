@@ -15,6 +15,9 @@
     "deploy:robinhood": "hardhat run contracts/deploy/deployGitEscrow.ts --network robinhood",
     "deploy:base-sepolia": "hardhat run contracts/deploy/deployGitEscrow.ts --network baseSepolia",
     "deploy:mock-token": "hardhat run contracts/deploy/deployMockERC20.ts --network baseSepolia",
+    "deploy:ship-rewards": "hardhat run contracts/deploy/deployShipRewards.ts --network base",
+    "deploy:ship-rewards:base-sepolia": "hardhat run contracts/deploy/deployShipRewards.ts --network baseSepolia",
+    "deploy:ship-rewards:robinhood": "hardhat run contracts/deploy/deployShipRewards.ts --network robinhood",
     "oracle:recover": "tsx scripts/recover-stuck-tokens.ts",
     "register:from-lock": "tsx scripts/register-from-lock.ts"
   },
