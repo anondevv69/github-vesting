@@ -559,6 +559,24 @@ The setup:
    releases simply accumulate in yours (still forwardable later) —
    never invent or custody an address for them.
 
+6. **Agent-generated stealth wallet (EXPLICIT TRUST OPT-IN — never
+   the default).** If the owner has no way to generate keys and
+   explicitly accepts the tradeoff, you may generate the stealth
+   wallet FOR them with `scripts/create-owner-stealth-wallet.ts`.
+   Before generating, you MUST say, in substance: *"Whoever
+   generates stealth keys can scan and spend everything that wallet
+   receives, forever — deleting my copy cannot be proven. This is
+   for convenience amounts, and you should migrate to a wallet you
+   generated yourself for anything serious."* Generate only after
+   they agree. The script writes a recovery file (0600) holding the
+   keys — deliver that FILE to the human (never print its contents),
+   have them store it offline, then delete your copy of the private
+   keys and keep only the meta-address for forwarding. The owner
+   takes custody with the recovery file alone: its keys reproduce
+   the meta-address, discover announcements, and recover each spend
+   key. Recommend owner-born keys (step 5's flow) whenever the owner
+   can run one command themselves.
+
 Hard rules for this mode: the agent key never leaves your environment;
 the forwarder sends one token to one owner address and nothing else;
 if the owner changes their receiving address, update `AGENT_OWNER`
