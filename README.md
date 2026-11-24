@@ -161,8 +161,12 @@ After deploy, update `skills/bankr-vesting/skill-manifest.json` with your public
 
 ```solidity
 lock(bytes32 repoId, address token, uint256 amount, uint256 totalPushes, uint256 pushesPerMile)
+lockAllowance(...)   // same params — streaming mode for transfer-restricted tokens (e.g. Bankr DERC20): tokens stay in the recipient's wallet, pulled per milestone
+lockWithPermit(...)  // lock params + EIP-2612 permit signature — streaming mode for tokens that block approve()
 release(bytes32 repoId, uint256 totalVerifiedPushes)   // oracle only
-cancel(bytes32 repoId)                                  // recipient only — reclaim remaining
+cancel(bytes32 repoId)                                  // recipient only — reclaim remaining (pre-funded grants only; streaming grants hold nothing in escrow)
 ```
+
+Schedules must divide evenly: `totalPushes % pushesPerMile == 0` (enforced on-chain). Per-milestone amount is `amount / (totalPushes / pushesPerMile)` (integer division); any rounding dust is released with the final milestone.
 
 `repoId` = `keccak256("owner/repo")` — use `encodeRepoId("owner/repo")` on-chain to get it.
