@@ -498,3 +498,90 @@ FeeLockVault: no standalone deployment exists by design — vaults are per-proje
 3. **Production reward token + schedule** (owner step 5): name/ticker and amounts; the ShipRewards pool still holds the pilot's mBANKR configuration until then.
 4. **Round-5 Codex review** of `2925355f` / the deployed tree — Gregory's override deployed ahead of it; the review now audits a live system.
 5. The three active June-2026 grants on `0x76dd…` (recipient `0xbFF8c6C3…`) remain serviced by nobody; their oracle key (`0x252b…`) exists in the workspace, so manual servicing is possible if Gregory ever wants it — untouched by this deploy, as before it.
+
+## 20. POD TOKEN DECISION + BASE STOCK-PAIRING INVESTIGATION + LIVE-PROOF STATUS (2026-11-26)
+
+### 20.1 Decisions (Gregory, 2026-11-26 ~11:04–11:06 EST)
+
+- The platform/reward token is **Proof of Dev, ticker POD**.
+- An initial direction to launch POD paired with ANT on Robinhood Chain was **reversed by Gregory within the same conversation**: **POD must be on Base.** Nothing was broadcast on Robinhood Chain under the ANT direction — the session's RH work was reads only (wallet balance check, file reads). No RH simulation was even run. The RH route remains simulation-proven from 2026-11-24 but is not used for POD.
+- Gregory's second requirement: **Base launches should be able to pair with tokenized stocks**, the way the RH route pairs against ANT. Investigated below (§20.2–20.4); the POD broadcast initially waited on his pair confirmation, and his subsequent blanket go-ahead ("Fix whatever u need to do", ~11:09 EST) closed that wait — see §20.5 for the executed launch.
+
+### 20.2 The Bankr launch SDK is NOT ETH-only — any ERC-20 quote, proven by plan on pad 5
+
+Evidence from the installed `@bankr/launch-sdk` (the same package that launched PODX/PODT):
+
+- `LaunchInput.quote?: QuoteFor[C] | Address` — "A named major (`CHAINS[chain].quotes`) or any ERC-20's address… On a pad that allows it, a quote Bankr does not list launches too (any-quote pairing): set `startFdv`, and no auto-LP." Base's only *named* quote is WETH (`0x4200000000000000000000000000000000000006`); every other asset rides the unlisted path.
+- Unlisted quotes are priced by the launcher via `startFdv` (no USD bound, no oracle); a quote Bankr lists with SIGNED pricing would need Bankr's price attestation, which an SDK launch does not carry — the Coinbase B20 stocks are unlisted in the factory, so they take the launcher-priced path.
+- **Live plan probe on launchpad 5** (`sdk-spike/pod-plan.ts pair-probe`, plan-only, nothing broadcast): quote = METAc `0xb2000000000000000000008bC8786B856E61707C`, `startFdv` = 40 METAc (8-decimal base units), fee recipient treasury 100%, vesting `{bps: 0}`. First attempt refused `SPLIT_OUT_OF_BOUNDS` because the pad's default `autoLpBps` 3000 is out of bounds for an unlisted quote; with `autoLpBps: 0` the plan **succeeded**: quote METAc, `vestBps` 0, treasury sole recipient, start tick −446800. **Conclusion: stock pairing on Base works through the existing SDK + pad 5 today. No new contracts, no Bankr permission, no new launchpad registration.**
+
+Honest costs/caveats of the unlisted-quote path: (1) no auto-LP — the pool's liquidity is the launch curve itself; (2) the dev buy must be funded in the stock token (the launcher must hold and approve the ERC-20 — acquiring it means buying on Aerodrome, primary issuance is AP-only); (3) `startFdv` is launcher-priced with no oracle bound — mispricing risk is ours; (4) fees accrue in the stock token, and unlisted-currency fee claims settle in separate trailing withdraw transactions (SDK fee-claim design); (5) the stock's own anchor market is its USDC pool on Aerodrome — arbitrage ties the pair to it only as well as that pool's depth allows.
+
+### 20.3 Tokenized stocks that actually exist on Base (verified on-chain 2026-11-26)
+
+**Coinbase tokenized stocks (B20 standard, 1:1 share-backed, Alpaca custody)** — the only Base stock tokens with real markets. Addresses verified by on-chain `name()`/`symbol()` reads; liquidity/volume from DexScreener the same day:
+
+| Token | Address | Decimals | Supply | Top pool (Aerodrome vs USDC) |
+|---|---|---|---|---|
+| NVDAc (NVIDIA) | `0xb20000000000000000000078ee7ce2fE4908108C` | 8 | 70,911.95 | ~$2.16M liq, ~$39.5M vol/24h |
+| GOOGLc (Alphabet) | `0xb2000000000000000000002D0BA3164cc74f58B7` | 8 | — | ~$1.72M liq, ~$16.8M vol/24h |
+| METAc (Meta) | `0xb2000000000000000000008bC8786B856E61707C` | 8 | 9,250.44 | ~$797k liq, ~$12.1M vol/24h |
+| AAPLc (Apple) | `0xb200000000000000000000C2e324d24d7eEcd1fb` | 8 | — | ~$494k liq, ~$9.3M vol/24h |
+| TSLAc (Tesla) | `0xb2000000000000000000001e800a7f5189430cD0` | 8 | 6,449.42 | ~$451k liq, ~$8.4M vol/24h |
+
+More B20 tickers (AMZNc, MSFTc, MSTRc, SPCXc, SNDKc) are listed by third-party launch tooling; only the five above were independently verified here. Reg S / non-US-person restrictions apply at Coinbase's issuance/app layer (the token contracts carry no whitelist per Coinbase's own statements). Floats are small (METAc supply ≈ 9,250 shares) — depth comes from market makers in the USDC pools, not from float.
+
+**Dinari dShares on Base** — exist as ERC-20s (e.g. CME, TSN, SO, BTBT, XYZ, VOO) but are economically inert: typical records show **1 holder and dust balances** (38.65 tokens, 3.00 tokens, 0.12 tokens). No usable liquidity; not viable pair assets today.
+
+**Not on Base:** Backed xStocks (Solana / BNB Chain / Ethereum only), Ondo Global Markets (Ethereum / Solana / BNB only). **No tokenized Anthropic exists on Base** — ANT is a Robinhood-issued token on Robinhood Chain only; there is no Base ANT equivalent to pair against.
+
+### 20.4 What stock-pairing on Base takes to build
+
+Nothing at the contract layer. The work is product/config, in the existing prepare-launch path: (1) accept a `quote` parameter (validated against an allowlist — the verified B20 addresses above) and pass it through to the SDK launch input; (2) require an explicit `startFdv` for any non-WETH quote and `autoLpBps: 0`; (3) dev-buy handling in the quote asset (launcher holds/approves the stock token) or dev buy disabled for stock pairs; (4) fee accounting that expects fee income in the stock token (claims via the trailing-withdraw path). Estimate: a prepare-launch config change + tests, same shape as the existing WETH template — days, not a new system. POD itself does not need to wait for this product work: a single stock-paired launch can be run through the SDK directly, as the plan probe proves.
+
+### 20.5 POD Base launch — LAUNCHED, stock-paired (branch 1 landed)
+
+Gregory's follow-up authorization ("Fix whatever u need to do", 2026-11-26 ~11:09 EST) directed the end state to be made real. Branch determination: no tokenized Anthropic exists on Base, but Coinbase's B20 stocks are legitimate (§20.3), and the SDK/pad path for them was already plan-proven (§20.2) — so **branch 1 landed: POD launched paired against NVDAc**, the deepest legitimate Base stock market (∼$2.18M pool liquidity, ∼$39.5M/24h volume at launch time; spot $150.50). No fallback build was needed: nothing in our stack was missing — the "fix" was sizing the launch correctly for an unlisted quote (`autoLpBps: 0`, explicit `startFdv`) and executing it.
+
+**Launch record** (Bankr launch SDK, launchpad 5, launcher L5, Base; driver `sdk-spike/pod-launch.ts`):
+
+- **Token: `0x79DDaaB608d3CbAE9480DC4f569142522922003F`** — "Proof of Dev" (POD), supply 100,000,000,000 (Basescan-verified: token page reads Proof of Dev (POD), ERC-20, max total supply 100B).
+- **Launch tx: `0x20e316c1ed18c0a387bdb03f956a16032b11e062892696b8b3bdc3c98de1a9ab`.**
+- Pair: **POD/NVDAc**, poolId `0xe9b96c36ce6cc78a90d7f8300c9542403314741ca86b6d8925d492fcfa159c6d`; `startFdv` 166 NVDAc (≈ $24,983 at spot); schedule 1%/1% flat; no dev buy (an ERC-20-quote dev buy would have required NVDAc holdings + approval).
+- Plan discipline held: the launch script asserted the plan's quote == NVDAc, feeRecipients == [treasury 10000], vestBps == 0, autoLpBps == 0 **before** broadcasting; all four checks passed. One earlier attempt died on a Tenderly RPC 429 during the launch call — verified against L5's on-chain nonce history (latest mined nonce 14, all PODT-era) that **nothing broadcast** before the successful retry on a second RPC.
+- **Read back from chain after launch** (SDK `launchInfo` + `vesting.get`): quote = NVDAc `0xb200…108C`; feeRecipients = exactly [{treasury `0x9F1019…5291`, 10000 bps}]; vesting escrow null, schedules [] — **vesting empty, as templated**.
+
+**Trade proof on the real pool** (driver `sdk-spike/pod-trade.ts`, trader RB, dust, PodSettler `0xe9a8ce38…` for the curve legs; real minOut everywhere):
+
+| Leg | Tx | In | minOut (bound) | Received |
+|---|---|---|---|---|
+| Acquire NVDAc (Uniswap V3 WETH/NVDAc, SwapRouter02) | `0x064ab56122477a95d8588bf35f3976ea36b413efe438ba5bc3851e73a91d4a91` | 0.0002 ETH | 0.00202262 NVDAc | 0.00224061 NVDAc |
+| Buy POD (PodSettler) | `0xa57f13cd78a560c56ecf317ac456ddef57966628b0b73306621ce5a844b96103` | 0.00112030 NVDAc | 337,439.76 POD | **678,544.68 POD** |
+| Sell POD (PodSettler) | `0xb2c86e559bed990046b2712b32e3d5396f01c8dd1f0ff4e6801f07fb1c3dc787` | 339,272.34 POD | 0.00028159 NVDAc | **0.00054901 NVDAc** |
+
+Fee routing proven live on the stock pair: after these two dust trades the treasury's claimable quote balance reads **1,331 NVDAc base units** (SDK `fees.get`) — creator fees in the stock token accruing to the treasury exactly as configured.
+
+**ShipRewards note (honest):** POD on Base removes the cross-chain wrinkle the RH direction would have created — the production ShipRewards (`0x0Bea0333d57B2D5506fbCa3Eab36078df77AD82E`, Base) can hold and pay POD directly, and treasury fee claims on Base are claimable assets that can buy POD on Base. What does NOT exist yet: the reward schedule amounts (owner step 5's remaining half), the `SHIP_REWARDS_ADDRESS` config still points at the pilot setup, the ShipRewards pool is not funded with POD, and no treasury→ShipRewards recycle automation is written. Those are config + schedule decisions, not plumbing inventions.
+
+### 20.6 Controlled live proof — status, step by step
+
+Investigated against production (backend API + on-chain reads), 2026-11-26:
+
+| Step | Status |
+|---|---|
+| GitHub App installed on a real repo | **DONE — already was.** `GET /api/github/installation?repo=anondevv69/pod-live-test` resolves installationId **141219448** automatically; the grant record carries it. No install action is needed. |
+| Webhook → push counting pipeline live | **PROVEN in production.** Sibling grants pod-agent-test and pod-stealth-test are `complete` in the production backend with verified pushes by `anondevv69` (incl. a ~66-line push counted with cooldown bypassed as a substantial change). |
+| Target grant armed | **YES.** pod-live-test: active, 300 VDEMO (`0x47479b18634CB505aF91a35d2d277188Ff58F067`) locked in legacy escrow `0x3625…`, recipient fren's agent wallet `0xc34e42CeD60c4d092fcefd8e4Ad105CcaF4999b1`, 0/2 verified pushes, 150 VDEMO per push, backend and chain agree exactly. |
+| Counted real pushes (×2) | **GREGORY'S — the one remaining action.** The pushes must be the repo owner's genuine ships. An agent cannot make them: pushing with Gregory's stored credential would be his identity, not his ship; an App-token push would arrive as a bot sender and the verifier rejects bot senders by design. |
+| Supply release on counted pushes | Automatic once pushes land (oracle release against the legacy escrow via the §19.2 resolver; releases pay the agent wallet, which forwards to Gregory under the agent-managed mode already proven on the sibling grants). To be verified live when the pushes land. |
+| Production launch + v2 lock + fee release + author reward (the §19.5.1 leg) | **Partially advanced.** POD itself is now launched (§20.5). The remaining piece is a verified platform launch through prepare-launch, whose gate requires Gregory's own GitHub OAuth session (connect GitHub + link wallet at proofofdev.xyz), followed by the v2 lock + counted push on that project. Pre-wired as far as delegation allows: App installed, gate live and failing closed, prepare-launch live, pad 5 ready. |
+
+**Gregory's exact actions, in order:**
+1. **Push twice to `anondevv69/pod-live-test`, branch `main`.** Each push: a genuine code change, ≥3 meaningful lines in a code file (docs-only and lockfile-only changes do not count). Push 1 releases 150 VDEMO; push 2 completes the grant (300 total). Spacing: counted pushes sit under a 30-minute cooldown, **unless** a change is substantial (~50+ lines bypasses it — the sibling grant's record shows the bypass firing at ~66 lines), so two substantial pushes can land back-to-back; otherwise wait 30+ minutes between them. Max 3 counted pushes/day — 2 needed.
+2. ~~**Confirm POD's pair**~~ — **DONE by execution (§20.5):** Gregory's "fix whatever u need to do" go-ahead was exercised as branch 1 — POD launched against NVDAc. (If he wants a different stock or a WETH pair as well, that is a second launch decision, not a blocker on anything else.)
+3. **For the v2 launch leg:** sign in at proofofdev.xyz with GitHub and link the launcher wallet (one OAuth session — the gate's whole point is that this cannot be delegated), after which prepare-launch → launch → v2 lock can proceed with agent assistance.
+
+### 20.7 Banner
+
+**NOT flipped.** The /launch banner still reads as pre-beta, correctly: the live proof has not fully passed (Gregory's pushes and the v2 launch leg are outstanding). It flips when §20.6 closes, not before.
+
