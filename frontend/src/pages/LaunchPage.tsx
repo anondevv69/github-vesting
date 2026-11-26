@@ -141,7 +141,7 @@ export function LaunchPage() {
         <p>
           The Proof of Dev platform is deployed and live on Base: the no-cancel escrow, fee
           locking, and the verified launch pipeline are running in production, and the platform
-          token <strong>POD</strong> is launched, paired with tokenized NVIDIA (NVDAc). Verified
+          token <strong>POD</strong> is launched, paired with tokenized Anthropic (ANTc). Verified
           launches are opening in beta: launch from this site with the web wizard, or deploy
           with your agent.
         </p>
@@ -164,7 +164,7 @@ export function LaunchPage() {
         <dl className="launch-pod__facts">
           <div>
             <dt>Pair</dt>
-            <dd>POD / NVDAc (tokenized NVIDIA)</dd>
+            <dd>POD / ANTc (tokenized Anthropic)</dd>
           </div>
           <div>
             <dt>Chain</dt>
@@ -174,12 +174,12 @@ export function LaunchPage() {
             <dt>Contract</dt>
             <dd>
               <a
-                href="https://basescan.org/token/0x79DDaaB608d3CbAE9480DC4f569142522922003F"
+                href="https://basescan.org/token/0x56a92c2453578897C0682c2D46488DC217e57D4e"
                 target="_blank"
                 rel="noreferrer"
                 className="launch-pod__address"
               >
-                0x79DDaaB608d3CbAE9480DC4f569142522922003F
+                0x56a92c2453578897C0682c2D46488DC217e57D4e
               </a>
             </dd>
           </div>
