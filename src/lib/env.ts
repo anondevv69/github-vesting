@@ -46,6 +46,15 @@ export const env = {
   BASE_SEPOLIA_RPC_URL: get("BASE_SEPOLIA_RPC_URL", "https://sepolia.base.org"),
   ROBINHOOD_RPC_URL: get("ROBINHOOD_RPC_URL", "https://rpc.mainnet.chain.robinhood.com"),
   GIT_ESCROW_ADDRESS: get("GIT_ESCROW_ADDRESS"),
+  /** Legacy (pre-v2) GitEscrow on Base — the escrow all pre-cutover
+   *  production grants were created under. Grants record the escrow
+   *  they were created under at registration; grants WITHOUT a stored
+   *  escrow resolve to this address on Base so the v2 repoint never
+   *  orphans them (v1→v2 cutover, 2026-11-26). Production sets this
+   *  explicitly to the pre-cutover deployment
+   *  (0x3625F879C678306E92E2C27F61b9BcD8015E81A7). Unset → no legacy
+   *  resolution; unstored grants use the configured escrow. */
+  GIT_ESCROW_LEGACY_ADDRESS: get("GIT_ESCROW_LEGACY_ADDRESS"),
   /** FeeStreamEscrow (launcher fee-lock grants) on Base — see
    *  contracts/FeeStreamEscrow.sol. Unset disables fee-tranche releases. */
   FEE_STREAM_ESCROW_ADDRESS: get("FEE_STREAM_ESCROW_ADDRESS"),

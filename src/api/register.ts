@@ -9,6 +9,7 @@ import { createPublicClient, http, parseAbi, parseEventLogs, type Hash } from "v
 import { env } from "../lib/env";
 import {
   getVestingChainConfig,
+  knownEscrowAddresses,
   type VestingChainKey,
 } from "../lib/chains";
 import { saveGrant, getGrant, type GrantRecord } from "../lib/redis";
@@ -51,6 +52,10 @@ async function lockTxInfo(
    *  token — not merely some lock in the configured escrow. */
   eventRecipient: string | null;
   eventToken: string | null;
+  /** The escrow contract that emitted the matched Locked event —
+   *  recorded on the grant so the release path services the grant
+   *  through the escrow it was created under (v1→v2 cutover). */
+  eventEscrow: string | null;
 }> {
   const empty = {
     repoId: null,
@@ -58,6 +63,7 @@ async function lockTxInfo(
     lockedInWrongEscrow: false,
     eventRecipient: null,
     eventToken: null,
+    eventEscrow: null,
   };
   const cfg = getVestingChainConfig(chain);
   if (!cfg.escrowAddress) return empty;
@@ -65,14 +71,23 @@ async function lockTxInfo(
     const client = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
     const receipt = await client.getTransactionReceipt({ hash: txHash as Hash });
     const allLogs = parseEventLogs({ abi: ESCROW_ABI, logs: receipt.logs, eventName: "Locked" });
-    // The lock counts only when the Locked event was emitted BY the
-    // chain's configured escrow contract (address equality). A Locked
-    // event from any other contract — a different escrow, a lookalike
-    // — is not this platform's lock.
-    const logs = allLogs.filter(
+    // The lock counts only when the Locked event was emitted BY one
+    // of the platform's escrows on this chain (address equality): the
+    // configured escrow, or the chain's legacy (pre-cutover) escrow —
+    // a pre-cutover lock must still parse and register after the
+    // repoint, and the grant records WHICH escrow emitted it. A
+    // Locked event from any other contract — a different escrow, a
+    // lookalike — is not this platform's lock.
+    const known = knownEscrowAddresses(chain);
+    const logs = allLogs.filter((l) => known.includes(l.address.toLowerCase()));
+    // The verified-launch stamp keeps the stricter rule (Codex
+    // round-2): the lock must live in the CONFIGURED escrow. A lock
+    // in the legacy escrow registers as an ordinary grant but is
+    // "wrong escrow" for stamp purposes.
+    const inConfigured = logs.some(
       (l) => l.address.toLowerCase() === cfg.escrowAddress!.toLowerCase(),
     );
-    const lockedInWrongEscrow = logs.length === 0 && allLogs.length > 0;
+    const lockedInWrongEscrow = !inConfigured && allLogs.length > 0;
     const repoId = logs[0]?.args?.repoId;
     if (!repoId) return { ...empty, lockedInWrongEscrow };
     // Block timestamp of the lock tx — used by the launch gate's
@@ -90,6 +105,7 @@ async function lockTxInfo(
       lockedInWrongEscrow,
       eventRecipient: logs[0]?.args?.recipient?.toLowerCase() ?? null,
       eventToken: logs[0]?.args?.token?.toLowerCase() ?? null,
+      eventEscrow: logs[0]?.address?.toLowerCase() ?? null,
     };
   } catch (err) {
     console.warn("[register] Could not read Locked event from tx:", err);
@@ -486,6 +502,11 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     verifiedPushCount: 0,
     lastPaidMilestone: 0,
     onChainTxHash,
+    // Per-grant escrow (v1→v2 cutover): the escrow that emitted this
+    // grant's Locked event. The release path services the grant
+    // through this contract for its whole life, across any later
+    // repoint of the chain's configured escrow.
+    escrowAddress: lockInfo.eventEscrow ?? undefined,
     installationId: platform === "github" ? githubInstallId : Number(installationId ?? 0),
     launchVerified: launchVerifiedLogin ? true : undefined,
     launchVerifiedLogin,

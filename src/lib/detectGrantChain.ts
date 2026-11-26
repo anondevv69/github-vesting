@@ -3,7 +3,7 @@
  */
 
 import { createPublicClient, http, parseAbi, parseEventLogs, type Hash } from "viem";
-import { getVestingChainConfig, type VestingChainKey } from "./chains";
+import { getVestingChainConfig, knownEscrowAddresses, type VestingChainKey } from "./chains";
 
 const ESCROW_ABI = parseAbi([
   "event Locked(bytes32 indexed repoId, address indexed recipient, address indexed token, uint256 amount, uint256 totalPushesRequired, uint256 releasesPerMilestone, uint256 tokensPerMilestone)",
@@ -23,16 +23,18 @@ export async function detectChainFromLockTx(txHash: string): Promise<VestingChai
       const receipt = await client.getTransactionReceipt({ hash });
       if (!receipt || receipt.status !== "success") continue;
 
-      const fromEscrow = receipt.to?.toLowerCase() === cfg.escrowAddress.toLowerCase();
+      // Candidate escrows for this chain: the configured escrow plus
+      // the legacy (pre-cutover) escrow, so a lock made before the
+      // v2 repoint still detects after it (v1→v2 cutover).
+      const known = knownEscrowAddresses(key);
+      const fromEscrow = receipt.to ? known.includes(receipt.to.toLowerCase()) : false;
       const logs = parseEventLogs({ abi: ESCROW_ABI, logs: receipt.logs, eventName: "Locked" });
-      // The Locked event must have been emitted BY this chain's
-      // configured escrow — a Locked-shaped log from any other
+      // The Locked event must have been emitted BY one of this
+      // chain's platform escrows — a Locked-shaped log from any other
       // contract does not make this tx a lock on this chain (and, in
       // test environments where several chain configs share one RPC,
       // stops the first probed chain from claiming every local lock).
-      const emittedByEscrow = logs.some(
-        (l) => l.address.toLowerCase() === cfg.escrowAddress!.toLowerCase(),
-      );
+      const emittedByEscrow = logs.some((l) => known.includes(l.address.toLowerCase()));
       if (fromEscrow || emittedByEscrow) return key;
     } catch {
       /* tx not on this chain */

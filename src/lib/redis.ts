@@ -112,6 +112,14 @@ export type GrantRecord = {
   verifiedPushCount: number;
   lastPaidMilestone: number;
   onChainTxHash: string;
+  /** The escrow contract this grant was created under — the contract
+   *  that emitted the Locked event in `onChainTxHash`, recorded at
+   *  registration (v1→v2 cutover, 2026-11-26). The release path
+   *  services the grant through THIS escrow (see
+   *  resolveGrantEscrowAddress in src/lib/chains.ts). Unset on grants
+   *  registered before per-grant recording existed: those resolve to
+   *  the chain's legacy escrow. */
+  escrowAddress?: string;
   installationId: number;
   /** Launch gate: true when grant registration carried a valid GitHub App
    *  verification token (see src/lib/launchGate.ts). Grants registered
