@@ -16,6 +16,45 @@ function get(key: string, fallback = ""): string {
   return process.env[key] ?? fallback;
 }
 
+/**
+ * Canonical public origin of this backend in production. The GitHub
+ * OAuth app for this platform accepts exactly ONE Authorization
+ * callback URL (https://api.proofofdev.xyz/api/oauth/github/callback),
+ * so the OAuth redirect_uri — and every other public link derived from
+ * SERVER_URL (magic-link OAuth URL, agent confirm/claim URLs, GitLawb
+ * webhook URL) — must never point at a deployment origin
+ * (*.up.railway.app) or localhost in production.
+ *
+ * Incident 2026-11-26: production SERVER_URL was set to the raw
+ * Railway origin, so GitHub rejected every OAuth start with "The
+ * redirect_uri is not associated with this application." Guard: in
+ * production, an unset / localhost / *.up.railway.app SERVER_URL is
+ * rejected loudly and replaced with the canonical origin instead of
+ * silently breaking OAuth.
+ */
+const PRODUCTION_SERVER_URL = "https://api.proofofdev.xyz";
+
+function resolveServerUrl(): string {
+  const raw = get("SERVER_URL", "").trim().replace(/\/+$/, "");
+  if (get("NODE_ENV", "development") === "production") {
+    let host = "";
+    try {
+      host = new URL(raw).hostname;
+    } catch {
+      /* unparseable → treated as invalid below */
+    }
+    if (!raw || host === "localhost" || host === "127.0.0.1" || host.endsWith(".up.railway.app")) {
+      console.error(
+        `[env] SERVER_URL=${raw || "<unset>"} is not a public origin in production; ` +
+          `using ${PRODUCTION_SERVER_URL} instead. Set SERVER_URL=${PRODUCTION_SERVER_URL} to silence this.`,
+      );
+      return PRODUCTION_SERVER_URL;
+    }
+    return raw;
+  }
+  return raw || "http://localhost:3000";
+}
+
 export function getMissingEnvVars(): string[] {
   return REQUIRED_KEYS.filter((key) => !get(key).trim());
 }
@@ -123,7 +162,9 @@ export const env = {
   // Frontend / CORS
   FRONTEND_URL: get("FRONTEND_URL", "http://localhost:5173"),
   // Public-facing URL of this backend — used for OAuth callback redirect_uri.
-  SERVER_URL: get("SERVER_URL", "http://localhost:3000"),
+  // Resolved through resolveServerUrl() so production can never silently
+  // fall back to a deployment origin (see the incident note above).
+  SERVER_URL: resolveServerUrl(),
   SESSION_SECRET: get("SESSION_SECRET"),
 
   // GitLawb (optional — Base-native git for agents)
