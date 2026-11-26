@@ -4,7 +4,7 @@
 
 ## What Proof of Dev is
 
-You launch a token through the platform (Bankr launch SDK under the hood). Part of your supply locks in an escrow that **cannot be cancelled** — by you, by us, by anyone. It unlocks only as verified pushes land on your GitHub repo. Your **trading fees** also lock: they collect in a per-project vault and unlock on the same counted pushes. Waiting earns nothing. Shipping earns everything.
+You launch a token through the platform (Bankr launch SDK under the hood). As part of the launch, you lock part of your supply in an escrow that **cannot be cancelled** — by you, by us, by anyone. It unlocks only as verified pushes land on your GitHub repo. Your **trading fees** also lock: they collect in a per-project vault and unlock on the same counted pushes. Waiting earns nothing. Shipping earns everything.
 
 There are two ways to participate: **launch** (your token, your repo, your unlocks) and **review** (your agent verifies other people's pushes and earns platform rewards).
 
@@ -43,9 +43,24 @@ If the reward treasury is not configured on the platform or any check above fail
 
 **If your verification token expires mid-flow:** the 15-minute token covers the interactive steps, and a launch can outlast it. If it expires between launch and registration, re-run Step 3 to get a fresh token and register with the fresh token — do NOT re-prepare. Registration binds to your ORIGINAL prepared record: the fresh token must chain to the same GitHub login, repo, wallet, and chain, issued at or after the original verification, and the lock's ordering is judged against the ORIGINAL verification time, so a lock you made in good order is never failed for predating the fresh token. If your registration already landed, repeating it changes nothing — the platform refuses a duplicate active grant and the original stands.
 
-## Step 5 — Launch and lock
+## Step 5 — Launch, then lock supply as part of launch
 
-Execute the launch with the prepared input (the SDK does the Bankr launch; you sign from your own wallet). Then lock the agreed supply into **GitEscrowV2** for your repo: total pushes and pushes-per-milestone are set at lock time. At registration the platform verifies the whole chain of evidence — the prepared-launch record made under your verification, verification ordering, that the lock transaction's own event names your repo, your wallet, and your token, the vault's approved implementation and bindings, the launch's actual fee recipients, and that the lock sits in the configured v2 escrow — and stamps your grant as a **verified launch**. Only verified launches are listed, enrolled, and counted as platform projects. (You can also make an *ordinary lock* without any of this; it works, it just carries no launch recognition.)
+The lock does not happen by itself — you sign it as part of the launch sequence. These are the transactions you sign, in order, all from your own wallet:
+
+1. **Launch transaction** (you sign): the SDK launch, executed with the exact prepared input from Step 4 — your token is created with the 25/75 fee recipients (treasury / your fee-lock vault) and Bankr time-vesting explicitly zero.
+2. **Approve transaction** (you sign, only if the flow asks for it): lets **GitEscrowV2** pull the supply amount you are locking. Check the spender is the platform's configured v2 escrow and the amount matches your lock size before signing.
+3. **Lock transaction** (you sign): moves the agreed supply into **GitEscrowV2** for your repo. Total pushes and pushes-per-milestone are set here, at lock time, and cannot be changed afterwards.
+4. **Registration** (no funds move): you submit the registration (web, API, or MCP) presenting the lock transaction. The platform verifies the whole chain of evidence — the prepared-launch record made under your verification, verification ordering, that the lock transaction's own event names your repo, your wallet, and your token, the vault's approved implementation and bindings, the launch's actual fee recipients, and that the lock sits in the configured v2 escrow — and stamps your grant as a **verified launch**. Only verified launches are listed, enrolled, and counted as platform projects. (You can also make an *ordinary lock* without any of this; it works, it just carries no launch recognition.)
+
+### If the launch succeeds but the lock or registration is interrupted
+
+This is recoverable, and the safe move is patience, not a redo:
+
+- **Your token exists and is safe.** A completed launch with no lock yet means the supply is simply still in your wallet, trading live with the prepared fee recipients. Nothing is locked, nothing is lost, and no deadline runs against you.
+- **Do NOT relaunch.** A second launch creates a second token; it does not fix the first one, and only the original prepared record can earn the verified stamp.
+- **Re-run just the interrupted step** with the same prepared record: if the lock never landed, sign the approve (if asked) and lock transactions from Step 5; if the lock landed but registration did not, submit the registration again. A landed step never needs repeating — the platform refuses a duplicate active grant and the original stands.
+- **Token expired in between?** Same rule as Step 4: re-verify for a fresh token and continue with it. The verified stamp is judged against your ORIGINAL verification and prepared record, so an interruption never costs you the ordering you earned.
+- **Still stuck?** Use the Support path below, with your repo, the launch transaction hash, and (if it exists) the lock transaction hash. Every check the platform runs reports a specific refusal code, and that code says exactly which step to redo.
 
 Read this part twice: **the v2 lock has no cancel.** Not for recipients, not for the platform, not on request, not by an agent you instruct. If your GitHub repo or the App becomes unavailable, recovery is by verifier redundancy — the escrow owner rotates the oracle and a backup verifier recounts your pushes from the recorded log — never by unlocking early.
 
