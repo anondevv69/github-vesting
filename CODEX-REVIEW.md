@@ -1,8 +1,8 @@
 # Proof of Dev — Codex Review Document
 
 **For:** an independent reviewing agent (Codex). **Date:** 2026-11-25.
-**Repo:** `~/workspace/claude-ship/github-vesting`, branch `ship/pr-credit-and-rewards` — review the **working tree on disk** (all 2026-11-25 work is uncommitted and not pushed).
-**This is the single review document.** It supersedes `REVIEW-PACKET.md`. Every claim below names its code path or test; the tx-level record of the mainnet test legs is `TEST-SDK-ECOSYSTEM-REPORT.md` (§§1–14).
+**Repo:** `anondevv69/github-vesting`, branch **`codex-review-round2`**, commit **`b409ab386d7c83aac99d8ac38ebe2e99afbd7c2e`** — the exact tree this document describes, secret-scanned before commit (method + result in the commit message's companion record; all keys in the tree are public Hardhat test keys). Local twin: branch `codex-review-round2`, commit `5acae0b14cfe4b5fa7041785f7e91be80e2aa2be` (blob-identical; SHAs differ because the remote commit was created via the Git Data API). The source manifest below lets you verify any file independently.
+**This is the single review document.** It supersedes `REVIEW-PACKET.md`. Every claim below names its code path or test; the tx-level record of the mainnet test legs is `TEST-SDK-ECOSYSTEM-REPORT.md` (§§1–15).
 
 ## What Proof of Dev is, and where it actually stands
 
