@@ -137,12 +137,12 @@ export function LaunchPage() {
       </header>
 
       <section className="launch-status" role="status">
-        <span className="launch-status__badge">In final review</span>
+        <span className="launch-status__badge">Live on Base</span>
         <p>
-          Platform launches are built and tested end to end, but they are <strong>not live
-          yet</strong> — they open with the beta. Locking a token you already hold is live today,
-          and the agent skills below already speak the launch flow, so your agent is ready the
-          moment it opens.
+          The Proof of Dev platform is deployed and live on Base: the no-cancel escrow, fee
+          locking, and the verified launch pipeline are running in production, and the platform
+          token <strong>POD</strong> is launched, paired with tokenized NVIDIA (NVDAc). Verified
+          launches are opening in beta: connect your GitHub to start yours.
         </p>
         <div className="launch-status__actions">
           <Link to="/create" className="btn btn-sm">
@@ -152,6 +152,37 @@ export function LaunchPage() {
             Deploy with your agent →
           </Link>
         </div>
+      </section>
+
+      <section className="vesting-card launch-pod">
+        <h2>Proof of Dev (POD)</h2>
+        <p className="muted">Platform and reward token</p>
+        <dl className="launch-pod__facts">
+          <div>
+            <dt>Pair</dt>
+            <dd>POD / NVDAc (tokenized NVIDIA)</dd>
+          </div>
+          <div>
+            <dt>Chain</dt>
+            <dd>Base</dd>
+          </div>
+          <div>
+            <dt>Contract</dt>
+            <dd>
+              <a
+                href="https://basescan.org/token/0x79DDaaB608d3CbAE9480DC4f569142522922003F"
+                target="_blank"
+                rel="noreferrer"
+                className="launch-pod__address"
+              >
+                0x79DDaaB608d3CbAE9480DC4f569142522922003F
+              </a>
+            </dd>
+          </div>
+        </dl>
+        <p className="launch-pod__note">
+          Merge rewards are paid in POD once the rewards pool is switched over and funded.
+        </p>
       </section>
 
       <h2>How deploying works</h2>

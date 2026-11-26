@@ -171,8 +171,9 @@ export function AgentsPage() {
       <p className="search-hints muted">
         Once a skill is installed, you don&apos;t run the steps yourself — you ask. Paste one of
         these prompts to your own agent and it does the work end to end: verification, preparation,
-        signing, and confirmation. Platform launches open with the beta; locks, status, and rewards
-        work today.
+        signing, and confirmation. The platform is deployed and live on Base, and the platform
+        token POD is launched; verified launches are opening in beta, and locks, status, and
+        rewards work today.
       </p>
       <div className="asks-list">
         {ASKS.map((a) => (
