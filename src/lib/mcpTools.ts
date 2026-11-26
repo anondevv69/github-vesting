@@ -43,14 +43,16 @@
  * - report_ship files an attestation claim. It NEVER releases tokens;
  *   settlement is the GitHub webhook → verifier → oracle, unchanged.
  * - REVIEWER SWARM: enrol_reviewer / review_queue / review_push let an
- *   agent act as an independent push reviewer. Reviews are an
- *   ADDITIONAL GATE, never a settlement trigger — a quorum can block a
- *   push from counting on swarm-required grants, but no review (or
+ *   agent act as an independent push reviewer. Swarm review is
+ *   MANDATORY on every grant: a verifier-passing push opens a 6-hour
+ *   window — 2 independent PASS count it early, any FAIL vetoes it,
+ *   and at expiry it counts on the verifier alone (fallback). Reviews
+ *   are an ADDITIONAL GATE, never a settlement trigger — no review (or
  *   quorum of reviews) can force a release or a reward. Reviewer
- *   rewards are paid by the oracle on the webhook path after a push
- *   counts, never at review time. Independence is enforced server-side:
- *   the author, the author's wallet, and the repo's launcher/claim
- *   wallets cannot review.
+ *   rewards are paid by the oracle only for reviews on pushes that
+ *   count via the swarm path, never at review time. Independence is
+ *   enforced server-side: the author, the author's wallet, and the
+ *   repo's launcher/claim wallets cannot review.
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -306,7 +308,9 @@ export function createProofofdevServer(rawBase: string): McpServer {
   reg.tool(
     "review_queue",
     "List pushes awaiting swarm review on a repo, filtered for you: only pushes you are independent " +
-      "of and have not already reviewed, on grants where swarm review is required. Each entry carries " +
+      "of and have not already reviewed. Swarm review is mandatory on every grant — a verifier-passing " +
+      "push waits in a 6-hour window for 2 independent PASS (any FAIL vetoes it) before counting via " +
+      "verifier fallback at expiry. Each entry carries " +
       "the head SHA, the author, the server's diff fingerprint, any duplicate flag, and quorum progress.",
     {
       repo: z.string().describe("GitHub repo as owner/repo"),

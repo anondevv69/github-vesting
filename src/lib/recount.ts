@@ -42,11 +42,14 @@
  *
  * ROUND-2 EXTENSIONS (Codex round-2, finding 3):
  *   - SWARM REPLAY: entries recorded on swarm-gated grants carry the
- *     swarm verdict (fingerprint + quorum outcome). The replay applies
- *     it as a seventh rule: a push whose recorded swarm outcome is
- *     below quorum or FAIL-vetoed does NOT count in the recount even
- *     when the raw verifier rules pass it — the recount never counts
- *     a push the swarm blocked.
+ *     swarm verdict (fingerprint + gate outcome + count path). The
+ *     replay applies it as a seventh rule: a push whose recorded
+ *     swarm outcome is a veto (met=false) does NOT count in the
+ *     recount even when the raw verifier rules pass it — the recount
+ *     never counts a push the swarm vetoed. Since 2026-11-26 the
+ *     swarm is mandatory for every grant with a 6h review window:
+ *     counted entries carry met=true plus countPath ("swarm" for a
+ *     quorum PASS, "verifier-fallback" for an expired window).
  *   - CHECKPOINTS: after every counted push the webhook path persists
  *     a checkpoint (counted total, the seen-SHA set + its digest, the
  *     last counted timestamp, the counted-fingerprint registry + its
@@ -154,12 +157,18 @@ function replayInto(entries: PushLogEntry[], state: ReplayState): RecountDecisio
       reject(`Commit ${sha.slice(0, 7)} already counted — duplicate push ignored`);
       continue;
     }
-    // Rule 7 (round-2): the recorded swarm verdict, applied BEFORE
-    // the cap/cooldown rules: in the live path the swarm gate sits
-    // between verifier acceptance and the atomic claim, so a push the
-    // swarm blocked (below quorum, FAIL veto, duplicate-flagged)
-    // never reached the claim — it neither counts in the recount nor
-    // consumes daily-cap/cooldown state there.
+    // Rule 7 (round-2; window rule 2026-11-26): the recorded swarm
+    // verdict, applied BEFORE the cap/cooldown rules: in the live path
+    // the swarm gate sits between verifier acceptance and the atomic
+    // claim, so a push the swarm vetoed (FAIL or duplicate-flagged,
+    // recorded met=false) never reached the claim — it neither counts
+    // in the recount nor consumes daily-cap/cooldown state there. A
+    // counted entry's stamp records HOW it counted (met=true with
+    // countPath "swarm" for a quorum PASS inside the window, or
+    // "verifier-fallback" for a window that expired with no FAIL);
+    // the replay trusts the stamp for the gate exactly as it did
+    // under the opt-in rule — the window/quorum evidence itself lives
+    // in the swarm records the backup verifier re-checks.
     if (e.swarm?.required && !e.swarm.met) {
       reject(
         `Swarm review: recorded quorum not met (${e.swarm.passCount} PASS / ${e.swarm.failCount} FAIL${e.swarm.duplicateFlagged ? ", duplicate-flagged" : ""}) — not counted`,

@@ -179,8 +179,10 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
 
     // Attestation layer: resolve any matching ship report with the real
     // outcome. Pure bookkeeping — the response below is unchanged, and
-    // resolveShipReport can never throw into this flow.
-    if (!result.accepted) {
+    // resolveShipReport can never throw into this flow. A PENDING push
+    // (inside its swarm review window) resolves NOTHING yet: its
+    // report stays open until the counting path finalises it.
+    if (!result.accepted && !result.pending) {
       await resolveShipReport(repoFullName, pushHeadSha(payload), {
         kind: "rejected",
         reason: result.reason,
@@ -228,10 +230,15 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
     }
 
     if (!result.accepted) {
-      console.log(`[webhook] push rejected: ${result.reason}`);
+      console.log(
+        result.pending
+          ? `[webhook] push pending swarm review: ${result.reason}`
+          : `[webhook] push rejected: ${result.reason}`,
+      );
       res.json({
         ok: true,
         accepted: false,
+        ...(result.pending ? { pending: true } : {}),
         reason: result.reason,
         ...(result.swarm ? { swarm: result.swarm } : {}),
       });

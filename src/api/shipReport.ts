@@ -194,8 +194,10 @@ export type ShipReportOutcome =
   | { kind: "rejected"; reason: string };
 
 /**
- * Transition the ship report matching (repo, headSha) to the webhook's real
- * outcome. Called from the GitHub webhook handler only.
+ * Transition the ship report matching (repo, headSha) to the push's real
+ * outcome. Called from the GitHub webhook handler and from the swarm
+ * settlement path (a push that counted at window expiry / quorum via
+ * the settler resolves its report there, since no webhook sees it).
  *
  * NEVER throws: a failure here must not affect webhook processing, counting,
  * or payouts. It also never creates a record — a push nobody reported has

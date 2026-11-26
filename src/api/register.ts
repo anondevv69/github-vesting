@@ -123,10 +123,10 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
        *  agent confirm-lock path forwards the caller's token, so SDK/agent
        *  launches are always registered with a validated token. */
       launchVerificationToken?: string;
-      /** Reviewer swarm opt-in (see src/lib/swarmReview.ts): when true,
-       *  pushes on this grant count only after the independent-reviewer
-       *  quorum gate passes. Default OFF. */
-      swarmReviewRequired?: boolean;
+      /** Reviewer swarm is MANDATORY for every grant since 2026-11-26
+       *  (verifier → 6h review window → quorum or verifier fallback;
+       *  see src/lib/swarmReview.ts). There is no opt-in field: a
+       *  `swarmReviewRequired` key in the request body is ignored. */
       /** Fee-lock: the project's FeeLockVault address (the claim-capable
        *  fee recipient named on the launch). Recorded on the grant so
        *  counted pushes run the fee-tranche release step. */
@@ -511,7 +511,6 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     launchVerified: launchVerifiedLogin ? true : undefined,
     launchVerifiedLogin,
     launcherRewardEnrolled: launchVerifiedLogin ? true : undefined,
-    swarmReviewRequired: body.swarmReviewRequired === true ? true : undefined,
     feeLockVault:
       typeof body.feeLockVault === "string" && /^0x[0-9a-fA-F]{40}$/.test(body.feeLockVault)
         ? body.feeLockVault

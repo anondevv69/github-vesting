@@ -64,6 +64,8 @@ import {
   handleReviewQueue,
   handleGetPushReviews,
 } from "./api/swarmReview";
+import { settlePendingSwarmPushes } from "./github/processPush";
+import { swarmReviewWindowHours, SWARM_SETTLE_INTERVAL_MS, SWARM_QUORUM } from "./lib/swarmReview";
 
 const app = express();
 
@@ -132,6 +134,10 @@ app.get("/health", (_req, res) => {
     service: "github-vesting",
     configured: missing.length === 0,
     ...(missing.length ? { missingEnv: missing } : {}),
+    // Reviewer swarm (mandatory-window rule, 2026-11-26): every grant
+    // push opens a review window of this many hours; quorum PASS
+    // counts it early, expiry with no FAIL counts it via the verifier.
+    swarmReview: { mandatory: true, windowHours: swarmReviewWindowHours(), quorum: SWARM_QUORUM },
     ts: new Date().toISOString(),
   });
 });
@@ -265,5 +271,28 @@ app.listen(env.PORT, env.HOST, () => {
   console.log(`[github-vesting] GitLawb webhook: ${env.SERVER_URL}/api/webhook/gitlawb`);
   console.log(`[github-vesting] Agent API: ${env.SERVER_URL}/api/agent/briefing`);
 });
+
+// ─── Swarm settler ────────────────────────────────────────────────────────────
+// Finalises pushes inside their mandatory review window when the gate
+// resolves (quorum, FAIL veto, or window expiry → verifier fallback).
+// The sweep only ever runs the platform counting path; it cannot force
+// a count the gate did not return. Disable with SWARM_SETTLER_DISABLED=1.
+if (process.env.SWARM_SETTLER_DISABLED !== "1") {
+  const timer = setInterval(() => {
+    void settlePendingSwarmPushes()
+      .then((r) => {
+        if (r.settled > 0 || r.vetoed > 0) {
+          console.log(
+            `[swarmSettler] sweep: ${r.settled} counted, ${r.vetoed} vetoed, ${r.stillPending} still pending`,
+          );
+        }
+      })
+      .catch((err) => console.warn("[swarmSettler] sweep failed (will retry):", err));
+  }, SWARM_SETTLE_INTERVAL_MS);
+  timer.unref();
+  console.log(
+    `[github-vesting] Swarm settler running every ${SWARM_SETTLE_INTERVAL_MS}ms (review window ${swarmReviewWindowHours()}h)`,
+  );
+}
 
 export default app;

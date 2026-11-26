@@ -30,6 +30,9 @@
  *     PR #48 merged, human author (@testauthor) — swarm duplicate case:
  *       its file list is IDENTICAL to PR #47's, so its diff fingerprint
  *       exactly equals PR #47's counted fingerprint
+ *     PRs #49/#50/#51 merged, human author (@testauthor) — swarm
+ *       mandatory-window suite (run-swarm-window.sh): distinct diffs
+ *       for the quorum / FAIL-veto / 1-PASS-fallback cases
  *   testowner/nogrant — NO vesting grant (grant-less reward tests):
  *     PR #44 merged, human author (@testauthor, wallet linked)
  *     PR #45 merged, human author (@ghostdev, NO wallet linked)
@@ -44,6 +47,9 @@ const HUMAN_SHA = "c0ffee0000000000000000000000000000000042";
 const BOT_SHA = "b070000000000000000000000000000000000043";
 const SWARM_SHA = "47".repeat(20); // PR #47 merge commit (swarm happy path)
 const SWARM_DUP_SHA = "48".repeat(20); // PR #48 merge commit (duplicate diff)
+const SWARM_WINDOW_QUORUM_SHA = "49".repeat(20); // PR #49 (window suite: quorum)
+const SWARM_WINDOW_VETO_SHA = "50".repeat(20); // PR #50 (window suite: FAIL veto)
+const SWARM_WINDOW_FALLBACK_SHA = "51".repeat(20); // PR #51 (window suite: 1-PASS fallback)
 const GRANTLESS_LINKED_SHA = "44".repeat(20); // PR #44 merge commit
 const GRANTLESS_UNLINKED_SHA = "45".repeat(20); // PR #45 merge commit
 const INSTALLATION_ID = 777;
@@ -91,6 +97,30 @@ const REPOS = {
       user: { login: "testauthor", type: "User" },
       // IDENTICAL file list to PR #47 — same diff fingerprint.
       files: codeFiles("s"),
+    },
+    49: {
+      number: 49,
+      title: "feat: window quorum thing",
+      merged_at: "2026-11-26T12:00:00Z",
+      merge_commit_sha: SWARM_WINDOW_QUORUM_SHA,
+      user: { login: "testauthor", type: "User" },
+      files: codeFiles("w"),
+    },
+    50: {
+      number: 50,
+      title: "feat: window veto thing",
+      merged_at: "2026-11-26T12:05:00Z",
+      merge_commit_sha: SWARM_WINDOW_VETO_SHA,
+      user: { login: "testauthor", type: "User" },
+      files: codeFiles("x"),
+    },
+    51: {
+      number: 51,
+      title: "feat: window fallback thing",
+      merged_at: "2026-11-26T12:10:00Z",
+      merge_commit_sha: SWARM_WINDOW_FALLBACK_SHA,
+      user: { login: "testauthor", type: "User" },
+      files: codeFiles("y"),
     },
   },
   "testowner/nogrant": {

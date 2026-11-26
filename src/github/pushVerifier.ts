@@ -71,7 +71,10 @@ export type VerifyResult =
  * record a backup verifier re-checks.
  */
 export type SwarmLogInfo = {
-  /** The grant was swarm-gated at the time of this push. */
+  /** The push was swarm-gated. Since 2026-11-26 swarm review is
+   *  mandatory for every grant, so this is true on every grant push
+   *  evaluated under the window rule; older entries carry it only for
+   *  grants that had opted in. */
   required: boolean;
   /** Diff fingerprint the quorum agreed on (PR-credit path), when known. */
   fingerprint?: string;
@@ -79,8 +82,16 @@ export type SwarmLogInfo = {
   failCount: number;
   /** A reviewer/candidate flagged this diff as a duplicate. */
   duplicateFlagged: boolean;
-  /** Quorum met: >= required PASS and zero FAIL. */
+  /** The gate cleared the push to count: quorum PASS met, or the
+   *  review window expired with no FAIL (verifier fallback). */
   met: boolean;
+  /** How a COUNTED push counted (counted entries only): "swarm" =
+   *  quorum PASS inside the window; "verifier-fallback" = the window
+   *  expired with no FAIL and below-quorum PASS. */
+  countPath?: "swarm" | "verifier-fallback";
+  /** Review window (ms epoch) the gate applied to this push. */
+  windowOpenedAt?: number;
+  windowExpiresAt?: number;
 };
 
 function branchFromRef(ref: string): string {

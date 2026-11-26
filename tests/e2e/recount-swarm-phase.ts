@@ -3,21 +3,23 @@
  * driven through the REAL swarm gate + REAL record functions (the
  * same calls processPush makes), then recounted with the REAL
  * recount. History for testowner/swarmrecount:
- *   push A: 2 independent PASS reviews -> gate met -> COUNTED
- *           (recordVerifiedPush with the swarm verdict stamped on)
- *   push B: 1 FAIL review -> gate vetoed -> recorded as a rejection
+ *   push A: 2 independent PASS reviews -> gate returns count (swarm
+ *           path) -> COUNTED (recordVerifiedPush with the swarm
+ *           verdict + countPath stamped on)
+ *   push B: 1 FAIL review -> gate vetoes -> recorded as a rejection
  *           carrying the swarm verdict (met=false)
- *   push C: no reviews -> gate unmet -> recorded as a rejection
- *           carrying the swarm verdict (met=false)
+ *   push C: no reviews -> gate returns PENDING (window open) ->
+ *           production records NOTHING for a pending push, so this
+ *           phase records nothing either
  * The recount must equal the webhook total (1): replaying raw
- * verifier rules alone would count B and C too — the recorded swarm
- * decisions are what keep them out.
+ * verifier rules alone would count B too — the recorded swarm
+ * decisions are what keep it out.
  */
 import { addLinkedWallet } from "../../src/lib/devWallets";
 import {
   enrollReviewer,
   submitReview,
-  evaluateSwarmGate,
+  evaluateSwarmWindow,
   recordCountedFingerprint,
   computeDiffFingerprint,
 } from "../../src/lib/swarmReview";
@@ -75,16 +77,16 @@ async function main() {
   const shaB = "bb".repeat(20);
   const shaC = "cc".repeat(20);
 
-  // Push A — two independent PASS reviews, gate met, counted.
+  // Push A — two independent PASS reviews, gate counts it (swarm path).
   const fpA = fp("alpha");
   await submitReview({ repo: REPO, headSha: shaA, reviewerLogin: REV1, verdict: "pass", different: true, meaningful: true, checksPass: true, fingerprint: fpA });
   await submitReview({ repo: REPO, headSha: shaA, reviewerLogin: REV2, verdict: "pass", different: true, meaningful: true, checksPass: true, fingerprint: fpA });
-  const gateA = await evaluateSwarmGate({ repo: REPO, headSha: shaA, authorLogin: AUTHOR, fingerprint: fpA });
-  if (!gateA.ok) throw new Error(`gate A should pass: ${gateA.reason}`);
+  const gateA = await evaluateSwarmWindow({ repo: REPO, headSha: shaA, authorLogin: AUTHOR, fingerprint: fpA });
+  if (gateA.state !== "count" || gateA.countPath !== "swarm") throw new Error(`gate A should count via swarm: ${JSON.stringify(gateA)}`);
   const claimA = await recordVerifiedPush(repoId, payload(shaA), { accepted: true, reason: "swarm phase A", linesEstimate: 25 }, {
     bypassCooldown: true,
     bypassDailyCap: true,
-    swarm: { required: true, fingerprint: fpA, passCount: gateA.quorum.passCount, failCount: gateA.quorum.failCount, duplicateFlagged: gateA.quorum.duplicateFlagged, met: true },
+    swarm: { required: true, fingerprint: fpA, passCount: gateA.quorum.passCount, failCount: gateA.quorum.failCount, duplicateFlagged: gateA.quorum.duplicateFlagged, met: true, countPath: "swarm" },
   });
   if (!("total" in claimA)) throw new Error(`push A claim failed: ${JSON.stringify(claimA)}`);
   await recordCountedFingerprint(REPO, shaA, fpA);
@@ -93,19 +95,19 @@ async function main() {
   // Push B — one FAIL review vetoes it; recorded as a swarm rejection.
   const fpB = fp("bravo");
   await submitReview({ repo: REPO, headSha: shaB, reviewerLogin: REV1, verdict: "fail", different: false, meaningful: true, checksPass: true, fingerprint: fpB });
-  const gateB = await evaluateSwarmGate({ repo: REPO, headSha: shaB, authorLogin: AUTHOR, fingerprint: fpB });
-  if (gateB.ok) throw new Error("gate B should be vetoed by the FAIL");
+  const gateB = await evaluateSwarmWindow({ repo: REPO, headSha: shaB, authorLogin: AUTHOR, fingerprint: fpB });
+  if (gateB.state !== "veto") throw new Error("gate B should be vetoed by the FAIL");
   await recordRejectedPush(repoId, payload(shaB), { accepted: false, reason: gateB.reason, linesEstimate: 25 }, {
     swarm: { required: true, fingerprint: fpB, passCount: gateB.quorum.passCount, failCount: gateB.quorum.failCount, duplicateFlagged: gateB.quorum.duplicateFlagged, met: false },
   });
 
-  // Push C — no reviews; gate unmet; recorded as a swarm rejection.
+  // Push C — no reviews; the gate returns PENDING (its review window
+  // is open). Production records nothing for a pending push, and
+  // neither does this phase: the recount must still certify the
+  // recorded total (1) from A + B alone.
   const fpC = fp("charlie");
-  const gateC = await evaluateSwarmGate({ repo: REPO, headSha: shaC, authorLogin: AUTHOR, fingerprint: fpC });
-  if (gateC.ok) throw new Error("gate C should be unmet without reviews");
-  await recordRejectedPush(repoId, payload(shaC), { accepted: false, reason: gateC.reason, linesEstimate: 25 }, {
-    swarm: { required: true, fingerprint: fpC, passCount: gateC.quorum.passCount, failCount: gateC.quorum.failCount, duplicateFlagged: gateC.quorum.duplicateFlagged, met: false },
-  });
+  const gateC = await evaluateSwarmWindow({ repo: REPO, headSha: shaC, authorLogin: AUTHOR, fingerprint: fpC });
+  if (gateC.state !== "pending") throw new Error(`gate C should be pending without reviews: ${JSON.stringify(gateC)}`);
 
   const recount = await recountEligiblePushes(repoId);
   console.log(JSON.stringify({
