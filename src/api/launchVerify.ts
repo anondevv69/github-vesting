@@ -32,6 +32,7 @@ import {
   recordPreparedLaunch,
 } from "../lib/launchRecognition";
 import { issueCountAttestation } from "../lib/countAttestation";
+import { onboardProjectLaunch, LaunchOnboardError } from "../lib/launchOnboarding";
 
 /**
  * GET /api/launch/projects — the VERIFIED-LAUNCH listing (recognition
@@ -362,6 +363,108 @@ export async function handlePrepareLaunch(req: Request, res: Response): Promise<
       ? "PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."
       : "PREPARED ONLY — unsigned Bankr SDK launch input for the platform's own launch. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to Gregory's wallet (the platform share — the scoped raw-wallet exception; launcher launches always use a fee-lock vault). Bankr time-vesting explicitly off (vesting.bps = 0).",
   });
+}
+
+/**
+ * POST /api/launch/onboard — platform onboarding for a verified
+ * launcher (built 2026-11-26, closing the gap the web launch wizard
+ * found: prepare-launch required a platform-deployed fee-lock vault
+ * and a registrar-registered fee grant, but no endpoint existed to
+ * request, trigger, or look them up).
+ *
+ * Body: { repo, wallet?, chain?, verificationToken, feePushesPerTranche? }
+ *
+ * AUTH: the SAME launch-gate discipline as prepare-launch — a valid
+ * verification token for the exact repo + wallet + chain, validated
+ * before anything else. Repo, launcher, and chain are then taken from
+ * the VALIDATED CLAIMS, never from caller fields (the body fields are
+ * only the binding the token is validated against); escrow, WETH, and
+ * the Bankr claim ledger come from server chain config; the vault is
+ * deployed by the backend's operator signer from the pinned approved
+ * implementation; the fee grant is registered by that same signer in
+ * its registrar (escrow-owner) capacity.
+ *
+ * IDEMPOTENT + RESUMABLE: repeat calls for an onboarded (repo,
+ * launcher) return the existing vault and grant; a call after a
+ * failed grant registration registers against the recorded vault
+ * instead of deploying a second one. See src/lib/launchOnboarding.ts.
+ *
+ * Response (200): { ok, onboarded, alreadyOnboarded, repo, wallet,
+ * chain, githubLogin, feeLockVault, feeGrant: { registered, recipient,
+ * token, vault, pushesPerTranche }, deployTxHash?, registerTxHash?,
+ * status }
+ */
+export async function handleLaunchOnboard(req: Request, res: Response): Promise<void> {
+  const repo = String(req.body?.repo ?? req.body?.repoFullName ?? "").trim();
+  const wallet = String(
+    req.headers["x-wallet-address"] ?? req.body?.wallet ?? req.body?.recipient ?? "",
+  ).trim();
+  const chain = parseVestingChain(String(req.body?.chain ?? "base"));
+  const token = String(
+    req.body?.verificationToken ?? req.headers["x-launch-verification"] ?? "",
+  ).trim();
+
+  if (!repo.includes("/") || !wallet) {
+    res.status(400).json({ ok: false, error: "repo (owner/name) and wallet required", code: "LAUNCH_ONBOARD_BAD_INPUT" });
+    return;
+  }
+
+  const verdict = await validateLaunchToken({ token, repo, wallet, chain });
+  if (!verdict.ok) {
+    res.status(403).json({ ok: false, error: verdict.error, code: verdict.code });
+    return;
+  }
+
+  const pptRaw = req.body?.feePushesPerTranche;
+  const feePushesPerTranche =
+    pptRaw === undefined || pptRaw === null ? null : Number(pptRaw);
+
+  try {
+    const result = await onboardProjectLaunch({
+      claims: verdict.claims,
+      chain,
+      feePushesPerTranche,
+    });
+    res.json({
+      ok: true,
+      onboarded: true,
+      alreadyOnboarded: result.alreadyOnboarded,
+      repo: result.record.repo,
+      wallet: result.record.wallet,
+      chain,
+      githubLogin: verdict.claims.githubLogin,
+      feeLockVault: result.record.feeLockVault,
+      feeGrant: {
+        registered: result.feeGrant.registered,
+        recipient: result.feeGrant.recipient,
+        token: result.feeGrant.token,
+        vault: result.feeGrant.vault,
+        pushesPerTranche: result.feeGrant.pushesPerTranche,
+      },
+      ...(result.record.deployTxHash ? { deployTxHash: result.record.deployTxHash } : {}),
+      ...(result.record.registerTxHash ? { registerTxHash: result.record.registerTxHash } : {}),
+      status: result.record.status,
+      note: result.alreadyOnboarded
+        ? "Already onboarded — the existing fee-lock vault and registered fee grant for this repo + launcher were returned; nothing was deployed or registered again."
+        : "Onboarded — the platform deployed this project's FeeLockVault from the approved implementation and registered its fee grant in the FeeStreamEscrow. prepare-launch will now validate the vault's bindings and the grant.",
+    });
+  } catch (err) {
+    if (err instanceof LaunchOnboardError) {
+      res.status(err.status).json({
+        ok: false,
+        error: err.message,
+        code: err.code,
+        ...(err.feeLockVault ? { feeLockVault: err.feeLockVault } : {}),
+        ...(err.resumable !== undefined ? { resumable: err.resumable } : {}),
+      });
+      return;
+    }
+    res.status(503).json({
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+      code: "LAUNCH_ONBOARD_FAILED",
+    });
+  }
 }
 
 /**

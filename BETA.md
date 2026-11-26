@@ -29,7 +29,7 @@ Request a launch verification for the exact repo + wallet + chain. You receive a
 
 ## Step 4 — Prepare the launch
 
-Call prepare-launch (web or the MCP `prepare_launch` tool) with your verification token and your launch parameters. The onboarding order is fixed, and every step before yours is the platform's job:
+Call prepare-launch (web or the MCP `prepare_launch` tool) with your verification token and your launch parameters. The onboarding order is fixed, and every step before yours is the platform's job — and it is now an endpoint, not a manual operator errand: **`POST /api/launch/onboard`**, called with the same verification token (the web wizard calls it automatically at the Prepare step when your project has no vault yet; agents call it directly). Onboarding derives everything from your verification and the platform's own configuration — you supply no vault, escrow, token, or ledger addresses — and it is idempotent and resumable: calling it again returns the vault you already have, and if its grant registration ever fails after your vault deployed, a retry registers the grant against that same vault instead of deploying a second one.
 
 1. **The platform deploys your fee-lock vault** from the platform's one approved vault implementation, bound to your repo, your claim wallet, the platform's fee escrow, the chain's WETH, and the Bankr claim ledger. You never deploy the vault yourself.
 2. **The platform registrar registers your fee grant** on the fee escrow (recipient, vault, fee token, pushes-per-tranche). You never register the grant yourself.

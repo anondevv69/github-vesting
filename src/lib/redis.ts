@@ -64,6 +64,15 @@ export const KEYS = {
    *  time. Registration compares the actual launch against this. */
   preparedLaunch: (repoFullName: string, wallet: string) =>
     `vesting:prepared_launch:${repoFullName.toLowerCase()}:${wallet.toLowerCase()}`,
+  /** Launch onboarding (2026-11-26): the platform's record that a
+   *  project's FeeLockVault was deployed and its fee grant registered
+   *  (POST /api/launch/onboard). Keyed by repo + launcher wallet; the
+   *  record is what makes onboarding idempotent and resumable — a
+   *  retry after a failed grant registration finds the deployed vault
+   *  here and registers against it instead of deploying a second one.
+   *  No TTL: onboarding is a permanent platform fact for the project. */
+  launchOnboarding: (repoFullName: string, wallet: string) =>
+    `vesting:launch_onboarding:${repoFullName.toLowerCase()}:${wallet.toLowerCase()}`,
   /** Recount checkpoint (Codex round-2): the counted-state snapshot
    *  written after every counted push, so a recount can start from a
    *  proven prefix when the push log has been trimmed past it. */
@@ -95,6 +104,54 @@ export const KEYS = {
   swarmCountedFingerprints: (repoFullName: string) =>
     `vesting:swarm_counted_fps:${repoFullName.toLowerCase()}`,
 };
+
+export type LaunchOnboardingStatus =
+  | "deployment_started"
+  | "vault_deploying"
+  | "vault_deployed"
+  | "deployment_failed"
+  | "grant_registered";
+
+export type LaunchOnboardingRecord = {
+  repo: string;
+  wallet: string;
+  chain: string;
+  chainId: number;
+  repoId: string;
+  githubLogin: string;
+  feeLockVault: string;
+  feePushesPerTranche: number;
+  status: LaunchOnboardingStatus;
+  /** Operator nonce the vault's CREATE address was predicted from
+   *  (deployment_started records only) — lets a later retry tell a
+   *  never-broadcast deployment from an in-flight one. */
+  operatorNonce?: number;
+  deployTxHash?: string;
+  registerTxHash?: string;
+  lastError?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function getLaunchOnboarding(
+  repoFullName: string,
+  wallet: string,
+): Promise<LaunchOnboardingRecord | null> {
+  const raw = await getRedis().get(KEYS.launchOnboarding(repoFullName, wallet));
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as LaunchOnboardingRecord;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveLaunchOnboarding(record: LaunchOnboardingRecord): Promise<void> {
+  await getRedis().set(
+    KEYS.launchOnboarding(record.repo, record.wallet),
+    JSON.stringify({ ...record, updatedAt: new Date().toISOString() }),
+  );
+}
 
 import type { RepoPlatform } from "./repoId";
 
