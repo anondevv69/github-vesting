@@ -446,3 +446,55 @@ Gregory designated the platform reward treasury: a dedicated claim-capable walle
 ### 18.5 Full re-run (one at a time, this pass)
 
 launch-gate **87 PASS / 0** (was 77) · fee-lock **118 PASS / 0** (was 106) · launch-exclusions **14/14** · recount **18 / 0** · concurrency **11 / 0** · swarm **36/36** · rewards **28 / 0** · fee-config **10 checks** (was 9) · fee-baseline **ALL PASS, 30 checks** (was 20) · vault-impl **ALL PASS, 9** · fee-cursor **ALL PASS, 19 checks** (was 12) · stitched **64 PASS / 0 FAIL** · v2-nocancel **PASS** · attestation **0 failures** · pr-credit **exit-clean** · base e2e **exit-clean** · mcp-remote **ALL PASS**. No baseline shrank. The vault template constant was regenerated for the new vault bytecode (masked codehash `0x81f3375b…2c2b`, guarded by vault-impl). Skills and agent docs were aligned to the round-4 flow in the same pass (`skills/claude-vesting` v2, `skills/bankr-vesting` v4, `docs/agent.md`, BETA.md step 4).
+
+## 19. PRODUCTION DEPLOY — v2 cutover executed (2026-11-26)
+
+Gregory overrode the adopted plan's "no deployments before round 5 clears" gate in his own words ("Okay let's do it tho", 2026-11-26 ~00:10 EST). The deploy executed the full sequence: preflight → cutover code → contract deploys → backend redeploy → smoke tests. **The controlled live proof (owner step 4) has NOT run** — it needs Gregory to install the App on a real repo and make a real push. The frontend /launch banner has NOT been flipped.
+
+### 19.1 Preflight ground truth — the brief's production facts were wrong in three places
+
+Verified on-chain + through the production API before anything was deployed:
+
+1. **Production's configured Base escrow was NOT the v1 `0x76dd…` of the docs.** The live backend (Railway service `github-vesting`, project `8e1722bb`, production env `9bf8e584`, service `78ccdb14`, tracking branch `ship/pr-credit-and-rewards` @ `caacf0e`) ran `GIT_ESCROW_ADDRESS = 0x3625F879C678306E92E2C27F61b9BcD8015E81A7` — a fresh GitEscrow deployed 2026-11-24 at Gregory's word ("make a new one so we can have people test", memory 2026-11-24) precisely because the `0x76dd…` escrow's oracle key was lost.
+2. **Production's oracle is NOT `0x252b98b9…`.** It is **`0x6dfc5fc9fD6E87957AA060c64006cf52b6c034aB`** — a wallet generated 2026-11-24, key at `~/.pod_oracle_key` (sandbox, 0600) + Railway `ORACLE_PRIVATE_KEY`, funded by Gregory with 0.05 ETH. It is owner+oracle of `0x3625…` and of the production ShipRewards `0x0Bea0333d57B2D5506fbCa3Eab36078df77AD82E`. The `0x252b…` key controls only the `0x76dd…` escrow.
+3. **PODX is NOT a production-backend grant.** Its lock sits on `0x76dd…` (spike-driven); the production API returns "No vesting grant found" for its repo. Production's actual grants are the four 2026-11-24 pilot grants on `0x3625…` (pod-money-test, pod-agent-test, pod-stealth-test — all complete; **pod-live-test ACTIVE**, 300 tokens of `0x47479b18634CB505aF91a35d2d277188Ff58F067`, 0/2 pushes, repoId `0xd5cf1639…`). Three further grants on `0x76dd…` (recipient `0xbFF8c6C3…`, June-2026 era) remain active on-chain but belong to the retired original deployment; they were not serviced by the production backend before this deploy and are not after — no regression. Robinhood routing untouched, as instructed.
+
+Deploy consequence: the new contracts were deployed **from the production oracle wallet** (deployer = owner = oracle = `0x6dfc…`, the production pattern from the live-fire runbook), not from `0x252b…`. Had v2 been deployed with oracle `0x252b…`, the production backend (signer `0x6dfc…`) could never have released a v2 grant or signed a count attestation.
+
+### 19.2 The cutover, in code (commit `c8fe794` local / `2925355f` on codex-review-round2)
+
+The round-4 code resolved ONE escrow per chain from config — repointing it would have orphaned pod-live-test. Fixed with per-grant escrow resolution:
+
+- `GrantRecord.escrowAddress` (new optional field): registration records the contract that emitted the grant's `Locked` event. `lockTxInfo` accepts events from the configured OR the legacy escrow; the verified-launch stamp still requires the **configured** escrow (a legacy-escrow lock registers ordinary, unstamped).
+- `resolveGrantEscrowAddress(grant)`: stored escrow → chain legacy escrow (`GIT_ESCROW_LEGACY_ADDRESS`, set explicitly in production) → configured escrow. Robinhood/Sepolia behaviour unchanged.
+- Release path (`triggerReleaseIfMilestone`) uses the resolver, and now **refuses when the resolved escrow has no code** — a release call to a codeless address "succeeds" vacuously and would have marked a milestone paid for nothing.
+- Chain detection accepts legacy-escrow locks after the repoint.
+- **Design correction made mid-deploy:** the first cut had the production legacy address as a hardcoded chains.ts default. The fee-lock suite caught it: suite grants seeded directly via `saveGrant` (no stored escrow) resolved to the mainnet address on the local chain — releases confirmed on-chain, paid nothing, milestones marked. The legacy address is now env-only; unset means pre-cutover behaviour. This is exactly the failure the production code-check now also guards against.
+
+**Evidence:** new suite `tests/e2e/run-cutover.sh` — config repointed at v2, a pre-cutover grant (no stored escrow) releases 500/1000 from v1, a post-cutover grant releases from v2, RH resolution unchanged: **12/12 PASS**. Full inventory re-run on the final tree: fee-lock **exit 0** (118 PASS), launch-gate **exit 0** (87 PASS), stitched **exit 0** (64 PASS), v2-nocancel **exit 0**, fee-config **exit 0** (10 checks). Preflight on `d2072034` before changes: same suites green except the fee-lock failure the hardcoded default caused (7 fails, all supply-release, root-caused above).
+
+### 19.3 Contracts deployed (Base mainnet, 2026-11-26, from `0x6dfc…`)
+
+| Contract | Address | Deploy tx | Verified |
+|---|---|---|---|
+| GitEscrowV2 | `0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3` | `0x0e592e6af32f1496235709c56d36ca869711ca966cfb8aef257ebb412c29c895` | oracle = owner = `0x6dfc…`; 7,703 code bytes; raw `cancel()` probe reverts (no cancel) |
+| FeeStreamEscrow | `0xEbA3Bb863e9fBaF7a5d07331710929a201FB1292` | `0x0365007e71214a2739950f8fd7ef12b4068e66e36b67fe519246e646c12b073c` | oracle = owner (registrar) = `0x6dfc…`; `MAX_TRANCHES_PER_RELEASE` = 16 (round-4 code) |
+
+FeeLockVault: no standalone deployment exists by design — vaults are per-project, deployed by the platform at launch onboarding from the canonical implementation the backend pins (BETA.md step 4). Oracle balance after deploys + funding: 0.04294 ETH.
+
+**Treasury funded (AUDIT-SCOPE §5A rule):** 0.005 ETH from the oracle wallet → treasury `0x9F1019CC208eD1786a85d19C616A017cd1cB5291`, tx `0x43bedf25ee4b1a917ff130619cafcd16bde201ac5c72d7981318aa6dfe040375`; treasury balance after: 0.0050477 ETH (includes its PODT-claim remainder). First production claim now comes from a funded treasury.
+
+### 19.4 Backend redeploy + production configuration
+
+- Code: `ship/pr-credit-and-rewards` advanced `caacf0e` → **`b44688d90496ee9bbc5396958fc3d8d6d0724cab`** (tree `20fa6c60…`, identical to codex-review-round2's tree at `2925355f`; tree diff vs the old production tree verified a superset — 81 added, 35 modified, **0 deleted** files, so no production feature regressed: remote MCP, attestation layer, grant-less rewards, stealth forwarding all carried over). Railway deployment SUCCESS on `b44688d9`.
+- Env set (Railway `variableUpsert`): `GIT_ESCROW_ADDRESS` = v2 `0x894e36…`; `GIT_ESCROW_LEGACY_ADDRESS` = `0x3625F879…`; `FEE_STREAM_ESCROW_ADDRESS` = `0xEbA3Bb…`; `PLATFORM_REWARD_TREASURY_WALLET` = `0x9F1019…`; `BANKR_CLAIM_LEDGER_ADDRESS` = `0x7C836e937831Cd5931A1ACbB9117dF9714D7d1F7`. Already present and unchanged: GitHub App credentials (App 4087175), `SESSION_SECRET`, `ORACLE_PRIVATE_KEY`, `REDIS_URL`, `SHIP_REWARDS_ADDRESS` + `SHIP_REWARD_PER_MERGE` (pilot mBANKR config — the production reward token/schedule remains Gregory's open decision, owner step 5). `GIT_ESCROW_ROBINHOOD_ADDRESS` untouched (`0x706038b4…`).
+- Smoke tests (production, post-deploy): `/health` → `configured: true`. **Legacy servicing proof (read-only): `GET /api/vesting/status?repo=anondevv69/pod-live-test` returns the active pre-cutover grant correctly through the NEW backend** (300 locked, 0/2 pushes, status active); pod-money-test (complete) likewise. Resolver check with production values: existing grant → `0x3625…`, new grant → v2, RH → `0x7060…`. `/api/launch/projects` → live, 0 projects. `POST /api/launch/prepare-launch` with no token → **fails closed**, `LAUNCH_VERIFICATION_REQUIRED`. `POST /api/launch/verify-github` → live, structured refusal on bad input. `/agent.md` → 200. Remote MCP `initialize` → `proofofdev 0.1.0` (no regression).
+- Keeper/sweep: neither script has a dry-run mode; configuration verified read-only against the production addresses (FeeStreamEscrow, claim ledger, WETH all resolve as above). No production fee grants or vaults exist yet, so there was nothing to run them against and no release was forced. They remain operator-run scripts — scheduling them is an ops follow-up once the first fee grant exists.
+
+### 19.5 What remains
+
+1. **Controlled live proof (needs Gregory):** install the `bankr-vesting` App on a real repo, run a production platform launch (25/75 template, vault + registrar fee grant via prepare-launch), lock into v2, make a real push, and watch supply release + fee tranche + author reward land. This is the one leg that has still never run end-to-end live.
+2. **Frontend /launch banner flip** — only after the live proof passes.
+3. **Production reward token + schedule** (owner step 5): name/ticker and amounts; the ShipRewards pool still holds the pilot's mBANKR configuration until then.
+4. **Round-5 Codex review** of `2925355f` / the deployed tree — Gregory's override deployed ahead of it; the review now audits a live system.
+5. The three active June-2026 grants on `0x76dd…` (recipient `0xbFF8c6C3…`) remain serviced by nobody; their oracle key (`0x252b…`) exists in the workspace, so manual servicing is possible if Gregory ever wants it — untouched by this deploy, as before it.
