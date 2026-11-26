@@ -10,10 +10,12 @@
  *
  * A review is an ATTESTATION, like a ship report: it never moves money,
  * never counts a push, never releases tokens. Settlement remains
- * exactly one path — GitHub push webhook → pushVerifier (+ the swarm
- * gate as a blocking pre-condition) → oracle. Every response carries
- * `settlement: "github-webhook"` and `reviewMovesMoney: false` so no
- * client can mistake a review for a payment.
+ * exactly one path — the platform counting path (GitHub push webhook →
+ * pushVerifier → swarm gate → atomic record → oracle), which a review
+ * submission may ASK the platform to re-evaluate (the response reports
+ * the outcome) but never performs itself. Every response carries
+ * `settlement: "platform-counting-path"` and `reviewMovesMoney: false`
+ * so no client can mistake a review for a payment.
  */
 
 import type { Request, Response } from "express";
@@ -24,10 +26,12 @@ import {
   submitReview,
   listReviews,
   loadCandidate,
+  loadPendingPush,
   evaluateQuorum,
   checkReviewerIndependence,
   getReviewerEnrollment,
 } from "../lib/swarmReview";
+import { trySettlePendingPush } from "../github/processPush";
 
 const REPO_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 const SHA_RE = /^[0-9a-fA-F]{40}$/;
@@ -35,7 +39,7 @@ const LOGIN_RE = /^[A-Za-z0-9-]{1,39}$/;
 const FINGERPRINT_RE = /^[0-9a-fA-F]{64}$/;
 
 function trustFields() {
-  return { settlement: "github-webhook" as const, reviewMovesMoney: false as const };
+  return { settlement: "platform-counting-path" as const, reviewMovesMoney: false as const };
 }
 
 export async function handleEnrolReviewer(req: Request, res: Response): Promise<void> {
@@ -116,11 +120,34 @@ export async function handleReviewPush(req: Request, res: Response): Promise<voi
     res.status(403).json({ ok: false, error: result.error, code: result.code });
     return;
   }
+
+  // The attestation may have resolved the gate (quorum reached, or a
+  // FAIL veto). Ask the platform counting path to re-evaluate the
+  // pending push NOW — settlement itself still happens only inside
+  // that path (atomic record → oracle), never in this handler; a
+  // settlement failure leaves the push pending for the settler sweep
+  // and never fails the review submission.
+  let settlementOutcome: unknown;
+  try {
+    const settled = await trySettlePendingPush(repo, headSha);
+    if (settled) {
+      settlementOutcome = {
+        counted: settled.accepted,
+        ...(settled.pending ? { pending: true } : {}),
+        ...(settled.swarm?.countPath ? { countPath: settled.swarm.countPath } : {}),
+        reason: settled.reason,
+      };
+    }
+  } catch (err) {
+    console.warn("[swarmReview] settlement re-evaluation failed (push left pending):", err);
+  }
+
   res.json({
     ok: true,
     ...(result.alreadySubmitted ? { alreadySubmitted: true } : {}),
     review: result.review,
     quorum: result.quorum,
+    ...(settlementOutcome ? { settlementOutcome } : {}),
     ...trustFields(),
   });
 }
@@ -128,7 +155,9 @@ export async function handleReviewPush(req: Request, res: Response): Promise<voi
 /**
  * Pushes awaiting review for one repo, filtered for one reviewer:
  * candidates the reviewer is independent of and has not already
- * reviewed, on grants where swarm review is required.
+ * reviewed. Swarm review is mandatory for every grant (2026-11-26),
+ * so any repo WITH a grant has a live queue; grant-less repos have
+ * no swarm gate and no queue.
  */
 export async function handleReviewQueue(req: Request, res: Response): Promise<void> {
   const repo = String(req.query["repo"] ?? "").trim();
@@ -154,7 +183,7 @@ export async function handleReviewQueue(req: Request, res: Response): Promise<vo
   }
 
   const grant = await getGrantByRepoFullName(repo);
-  if (!grant || grant.swarmReviewRequired !== true) {
+  if (!grant) {
     res.json({ ok: true, repo, swarmRequired: false, queue: [], ...trustFields() });
     return;
   }
@@ -165,12 +194,13 @@ export async function handleReviewQueue(req: Request, res: Response): Promise<vo
   for (const sha of shas) {
     const candidate = await loadCandidate(repo, sha);
     if (!candidate) continue;
+    if (candidate.countPath) continue; // already counted — nothing to review
     const reviews = await listReviews(repo, sha);
     if (reviews.some((r) => r.reviewerLogin.toLowerCase() === reviewerLogin.toLowerCase())) {
       continue; // already reviewed by this reviewer
     }
     const quorum = await evaluateQuorum(repo, sha, candidate.fingerprint);
-    if (quorum.met) continue; // already gate-clear; counting is the webhook's job
+    if (quorum.met) continue; // already gate-clear; counting is the platform's job
     const independence = await checkReviewerIndependence({
       repo,
       headSha: sha,
@@ -179,6 +209,7 @@ export async function handleReviewQueue(req: Request, res: Response): Promise<vo
       grant,
     });
     if (!independence.ok) continue; // reviewer must never see own pushes in queue
+    const pending = await loadPendingPush(repo, sha);
     queue.push({
       repo,
       headSha: sha,
@@ -186,6 +217,11 @@ export async function handleReviewQueue(req: Request, res: Response): Promise<vo
       fingerprint: candidate.fingerprint,
       duplicateFlagged: Boolean(candidate.duplicateFlagged),
       quorum,
+      ...(pending
+        ? { windowOpenedAt: pending.windowOpenedAt, windowExpiresAt: pending.windowExpiresAt }
+        : candidate.windowExpiresAt !== undefined
+          ? { windowOpenedAt: candidate.windowOpenedAt, windowExpiresAt: candidate.windowExpiresAt }
+          : {}),
     });
   }
 
@@ -208,6 +244,7 @@ export async function handleGetPushReviews(req: Request, res: Response): Promise
   const candidate = await loadCandidate(repo, sha);
   const reviews = await listReviews(repo, sha);
   const quorum = await evaluateQuorum(repo, sha, candidate?.fingerprint);
+  const pending = await loadPendingPush(repo, sha);
   res.json({
     ok: true,
     repo,
@@ -215,6 +252,27 @@ export async function handleGetPushReviews(req: Request, res: Response): Promise
     candidate,
     reviews,
     quorum,
+    // Window transparency: whether the push is inside its review
+    // window, when the window closes, and how it counted once settled.
+    window: pending
+      ? {
+          state: "open" as const,
+          openedAt: pending.windowOpenedAt,
+          expiresAt: pending.windowExpiresAt,
+        }
+      : candidate?.countPath
+        ? {
+            state: "counted" as const,
+            countPath: candidate.countPath,
+            ...(candidate.countedAt ? { countedAt: candidate.countedAt } : {}),
+            ...(candidate.windowOpenedAt !== undefined
+              ? { openedAt: candidate.windowOpenedAt }
+              : {}),
+            ...(candidate.windowExpiresAt !== undefined
+              ? { expiresAt: candidate.windowExpiresAt }
+              : {}),
+          }
+        : { state: "none" as const },
     ...trustFields(),
   });
 }

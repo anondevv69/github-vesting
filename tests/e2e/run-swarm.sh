@@ -1,19 +1,26 @@
 #!/usr/bin/env bash
-# TEST-ONLY driver for the REVIEWER SWARM (Gregory, 2026-11-25).
-# Same local stack as run-rewards.sh (fake redis + Hardhat node chainId
-# 8453 + fixture GitHub API + vesting server). The grant on
-# testowner/testrepo is seeded with swarmReviewRequired: true.
+# TEST-ONLY driver for the REVIEWER SWARM (Gregory, 2026-11-25;
+# mandatory-window rule adopted 2026-11-26). Same local stack as
+# run-rewards.sh (fake redis + Hardhat node chainId 8453 + fixture
+# GitHub API + vesting server). The grant on testowner/testrepo is
+# seeded with the legacy swarmReviewRequired flag (ignored since
+# 2026-11-26 — the gate is mandatory for every grant). The window
+# keeps its production default (6h), so a pending push never expires
+# inside this suite; expiry/fallback behaviour is covered by
+# run-swarm-window.sh with a compressed window.
 # Reviewer reward is left UNSET in env, proving the labelled default:
 # 10% of the 10 RWD base per-merge reward = 1 RWD per PASS reviewer.
 # Proves:
 #   - enrolment refuses a wallet not linked to the login
-#   - push with swarm ON, no reviews -> NOT counted (swarm reason logged)
+#   - push with no reviews -> PENDING in its review window (not
+#     counted, nothing released, no rejection logged)
 #   - the push appears in an independent reviewer's queue
 #   - the AUTHOR reviewing their own push -> SWARM_REVIEW_NOT_INDEPENDENT
-#   - 1 PASS (below quorum of 2) -> still NOT counted
-#   - 2nd independent PASS -> webhook counts it: milestone release
-#     (500 PTK) + author reward (10 RWD) + BOTH reviewers paid 1 RWD
-#   - webhook replay -> rejected (duplicate SHA), nobody double-paid
+#   - 1 PASS (below quorum of 2) -> still pending, still NOT counted
+#   - 2nd independent PASS -> the counting path settles it at once:
+#     milestone release (500 PTK) + author reward (10 RWD) + BOTH
+#     reviewers paid 1 RWD; a webhook redelivery is then a
+#     duplicate-SHA rejection and nobody is double-paid
 #   - duplicate diff: PR #48's fingerprint exactly equals PR #47's
 #     counted fingerprint -> auto-flagged; a FAIL citing duplicate +
 #     one PASS -> webhook does NOT count it (duplicate/veto rule)
@@ -151,11 +158,12 @@ check "author enrolled (may review others' pushes)" "$OUT" '"enrolled":true'
 echo "=== 9. balances before ==="
 npx tsx tests/e2e/balances-swarm.ts before
 
-echo "=== 10. push #47 with NO reviews -> NOT counted (swarm gate) ==="
+echo "=== 10. push #47 with NO reviews -> PENDING in its review window ==="
 OUT="$(report_post "$SHA47" 47 testauthor "$REPO")"; echo "$OUT"
 WH="$(timeout 180 node tests/e2e/send-webhook.mjs swarm47)"; echo "$WH"
-check "no-review push rejected" "$WH" '"accepted":false'
-check "rejection reason is the swarm gate" "$WH" 'Swarm review: awaiting independent reviews (0/2 PASS)'
+check "no-review push not counted" "$WH" '"accepted":false'
+check "no-review push is pending, not rejected" "$WH" '"pending":true'
+check "pending reason names the open window" "$WH" 'review window open (0/2 PASS)'
 BAL="$(npx tsx tests/e2e/balances-swarm.ts after-noreview)"; echo "$BAL"
 check "nothing released without quorum" "$BAL" 'recipient PTK=0'
 check "author not rewarded without quorum" "$BAL" 'author RWD=0 |'
@@ -174,22 +182,22 @@ check "revone PASS recorded" "$OUT" '"effectiveVerdict":"pass"'
 check "quorum not yet met (1/2)" "$OUT" '"passCount":1'
 WH="$(timeout 180 node tests/e2e/send-webhook.mjs swarm47)"; echo "$WH"
 check "1-PASS push still not counted" "$WH" '"accepted":false'
-check "reason shows 1/2 progress" "$WH" 'Swarm review: awaiting independent reviews (1/2 PASS)'
+check "1-PASS push still pending" "$WH" '"pending":true'
+check "reason shows 1/2 progress in the window" "$WH" 'review window open (1/2 PASS)'
 
-echo "=== 14. second independent PASS -> quorum; webhook counts + settles ==="
+echo "=== 14. second independent PASS -> quorum; the counting path settles it ==="
 OUT="$(npx tsx tests/e2e/swarm-review.ts review revtwo "$SHA47" 47 pass)"; echo "$OUT"
 check "revtwo PASS recorded" "$OUT" '"effectiveVerdict":"pass"'
 check "quorum met at submission" "$OUT" '"met":true'
-WH="$(timeout 180 node tests/e2e/send-webhook.mjs swarm47)"; echo "$WH"
-check "quorum push accepted" "$WH" '"accepted":true'
-check "milestone release triggered" "$WH" '"triggered":true'
-check "author reward paid" "$WH" '"paid":true'
-check "swarm block present in response" "$WH" '"reviewerRewards"'
+check "settlement outcome reports the swarm count" "$OUT" '"countPath":"swarm"'
 BAL="$(npx tsx tests/e2e/balances-swarm.ts after-counted)"; echo "$BAL"
 check "author RWD = 10" "$BAL" 'author RWD=10 |'
 check "revone RWD = 1 (10% reviewer share)" "$BAL" 'revone RWD=1 |'
 check "revtwo RWD = 1 (10% reviewer share)" "$BAL" 'revtwo RWD=1 |'
 check "recipient PTK = 500 (milestone release)" "$BAL" 'recipient PTK=500'
+WH="$(timeout 180 node tests/e2e/send-webhook.mjs swarm47)"; echo "$WH"
+check "post-settlement webhook is a duplicate" "$WH" '"accepted":false'
+check "duplicate reason after settlement" "$WH" 'already counted'
 
 echo "=== 15. webhook replay -> duplicate SHA, no double-pay ==="
 WH="$(timeout 180 node tests/e2e/send-webhook.mjs swarm47)"; echo "$WH"

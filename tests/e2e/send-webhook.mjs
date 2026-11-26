@@ -114,6 +114,25 @@ const CASES = {
     added: codeFiles("s", 11),
     modified: [],
   },
+  // Mandatory-window suite cases: PRs #49/#50/#51 (distinct diffs).
+  swarm49: {
+    after: "49".repeat(20),
+    message: "feat: window quorum thing (#49)",
+    added: codeFiles("w", 11),
+    modified: [],
+  },
+  swarm50: {
+    after: "50".repeat(20),
+    message: "feat: window veto thing (#50)",
+    added: codeFiles("x", 11),
+    modified: [],
+  },
+  swarm51: {
+    after: "51".repeat(20),
+    message: "feat: window fallback thing (#51)",
+    added: codeFiles("y", 11),
+    modified: [],
+  },
 };
 
 const c = CASES[process.argv[2]];

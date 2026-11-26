@@ -103,6 +103,14 @@ export const KEYS = {
    *  head SHA that counted it, per repo. No TTL: uniqueness is forever. */
   swarmCountedFingerprints: (repoFullName: string) =>
     `vesting:swarm_counted_fps:${repoFullName.toLowerCase()}`,
+  /** Reviewer swarm (mandatory-window rule, 2026-11-26): a push that
+   *  passed the verifier and is inside its 6h review window, stored
+   *  with everything the settlement path needs to count it later
+   *  (quorum or window expiry) without a webhook redelivery. */
+  swarmPendingPush: (repoFullName: string, headSha: string) =>
+    `vesting:swarm_pending:${repoFullName.toLowerCase()}:${headSha.toLowerCase()}`,
+  /** Index of pending swarm pushes ("repo|sha" members) for the settler. */
+  swarmPendingIndex: () => `vesting:swarm_pending_index`,
 };
 
 export type LaunchOnboardingStatus =
@@ -189,10 +197,12 @@ export type GrantRecord = {
    *  launcher enrolled for ShipRewards per-counted-merge payments on
    *  this repo, on top of the grant's own milestone unlocks. */
   launcherRewardEnrolled?: boolean;
-  /** Reviewer swarm: when true, pushes on this grant count only after
-   *  the independent-reviewer quorum gate passes (see
-   *  src/lib/swarmReview.ts). Opt-in per grant; default OFF (unset) so
-   *  existing grants keep the pre-swarm behaviour exactly. */
+  /** Reviewer swarm: LEGACY opt-in flag — IGNORED since 2026-11-26.
+   *  Gregory's adopted rule makes swarm review mandatory for every
+   *  grant (verifier first, then a 6h review window with a verifier
+   *  fallback — see src/lib/swarmReview.ts). Retained on the record
+   *  only so grants stored before the rule change still parse; the
+   *  counting path never reads it. */
   swarmReviewRequired?: boolean;
   /** Fee-lock (Gregory's decided launcher rule, 2026-11-25): the
    *  project's FeeLockVault address — the claim-capable fee recipient

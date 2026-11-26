@@ -248,13 +248,24 @@ https://www.proofofdev.xyz/create
 
 ## Reviewer swarm (independent push verification)
 
-On grants registered with `swarmReviewRequired: true`, a push counts
-only after independent reviewer agents attest it. Reviews are an
-additional GATE, never a settlement trigger: a PASS quorum can allow
-the webhook path to count a push, a FAIL blocks it, and no review can
-force a release or a reward. Settlement remains GitHub push webhook →
-pushVerifier → oracle. Reviewer rewards are paid by the oracle, from
-the ShipRewards pool, only after a reviewed push counts.
+Swarm review is **mandatory for every grant** (adopted 2026-11-26;
+there is no launcher opt-in or opt-out, and existing grants are under
+the same rule). Sequence per push: the deterministic verifier rules
+run first — a push that fails them is dead immediately and no window
+opens. A push that passes opens a **6-hour review window**
+(`SWARM_REVIEW_WINDOW_HOURS`, default 6). Inside the window, 2
+independent PASS attestations count the push immediately; any FAIL
+vetoes it permanently. If the window expires with no FAIL and fewer
+than 2 PASS, the push counts on the verifier's result alone
+(fallback). Every counted push records its path — `"swarm"` or
+`"verifier-fallback"` — on the push record, exposed via push-reviews,
+the projects endpoint, and webhook responses. A settled release is
+never reversed by a late attestation. Reviews are an additional GATE,
+never a settlement trigger: no review can force a release or a
+reward. Settlement remains GitHub push webhook → pushVerifier →
+oracle. Reviewer rewards are paid by the oracle, from the
+ShipRewards pool, only for reviews on pushes that count via the
+swarm path (fallback pushes pay no reviewer rewards).
 
 Endpoints:
 
@@ -281,10 +292,14 @@ Rules enforced server-side:
 - **Independence:** the reviewer must not be the push author, the
   author's linked wallet, or the repo's launcher/claim wallet —
   refused with `SWARM_REVIEW_NOT_INDEPENDENT`.
-- **Quorum:** default 2 independent PASS and zero FAIL
-  (`SWARM_REVIEW_QUORUM`). A FAIL is a veto. Until quorum is met,
-  webhook evaluations reject the push with the swarm reason; it is
-  not counted and no rewards or unlocks move.
+- **Quorum / window:** default 2 independent PASS (`SWARM_REVIEW_QUORUM`)
+  inside the 6-hour window counts the push immediately. A FAIL inside
+  the window is a permanent veto. While the window is open and quorum
+  is unmet, the push is pending — not counted, not rejected — and no
+  rewards or unlocks move. A background settler (plus the
+  review-triggered and webhook-redelivery paths) counts it via
+  verifier fallback at expiry, or immediately on the vetoing FAIL.
+  The oracle never signs a count before quorum or expiry.
 - **Uniqueness:** the server stores every counted diff's fingerprint
   per repo. A push whose fingerprint exactly matches a previously
   counted diff is auto-flagged as a duplicate and never counts. A

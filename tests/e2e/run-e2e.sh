@@ -37,6 +37,11 @@ set_test_env() {
   export BASE_RPC_URL="http://127.0.0.1:8545"
   export FRONTEND_URL="http://localhost:5173"
   export SERVER_URL="http://127.0.0.1:3210"
+  # Swarm window pinned to 0 (mandatory-window rule, 2026-11-26): this suite
+  # predates the swarm and exercises pushes synchronously — a 0-length
+  # window settles by immediate verifier fallback. Swarm paths are
+  # covered by run-swarm.sh and run-swarm-window.sh.
+  export SWARM_REVIEW_WINDOW_SECONDS=0
 }
 
 wait_http() { # url, tries

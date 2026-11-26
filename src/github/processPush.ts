@@ -1,11 +1,12 @@
 import type { GrantRecord } from "../lib/redis";
-import { updateGrant, getRedis, KEYS } from "../lib/redis";
+import { updateGrant, getRedis, getGrantByRepoFullName, KEYS } from "../lib/redis";
 import {
   verifyPush,
   recordVerifiedPush,
   recordRejectedPush,
   type PushPayload,
   type SwarmLogInfo,
+  type VerifyResult,
 } from "./pushVerifier";
 import { writePushCheckpoint } from "../lib/recount";
 import { resolveMergedPrCredit, type MergedPrCredit } from "./prCredit";
@@ -18,16 +19,31 @@ import {
   type ReviewerRewardOutcome,
 } from "../oracle/shipRewards";
 import {
-  evaluateSwarmGate,
+  evaluateSwarmWindow,
+  loadPendingPush,
+  savePendingPush,
+  deletePendingPush,
+  listPendingPushRefs,
+  noteSwarmWindow,
+  noteSwarmCounted,
   quorumReviewers,
   recordCountedFingerprint,
   type QuorumStatus,
+  type SwarmCountPath,
+  type SwarmPendingPush,
 } from "../lib/swarmReview";
+import { resolveShipReport, recordPushSettlement } from "../api/shipReport";
 import { repoIdFromFullName } from "../lib/repoId";
 
 export type PushProcessResult = {
   accepted: boolean;
   reason: string;
+  /**
+   * True when the push passed the verifier and is held inside its
+   * mandatory swarm review window (not counted yet, not rejected):
+   * it counts on quorum PASS or at window expiry (verifier fallback).
+   */
+  pending?: boolean;
   verifiedPushCount?: number;
   release?: Awaited<ReturnType<typeof triggerReleaseIfMilestone>>;
   /** Fee-lock tranche release (only for grants with a fee-lock vault). */
@@ -36,9 +52,13 @@ export type PushProcessResult = {
   prCredit?: { prNumber: number; authorLogin: string };
   /** Per-merge Ship reward outcome (spec §8B) — only for PR-credited pushes. */
   reward?: RewardResult;
-  /** Reviewer-swarm outcome — only for pushes on swarm-required grants. */
+  /** Reviewer-swarm outcome — every grant push is swarm-gated. */
   swarm?: {
     quorum: QuorumStatus;
+    /** How the push counted ("swarm" | "verifier-fallback"), when counted. */
+    countPath?: SwarmCountPath;
+    /** Review-window expiry (ms epoch), while the push is pending. */
+    windowExpiresAt?: number;
     reviewerRewards?: ReviewerRewardOutcome[];
   };
 };
@@ -46,10 +66,32 @@ export type PushProcessResult = {
 type EvaluatedPush =
   | { accepted: false; reason: string }
   | {
+      accepted: false;
+      pending: true;
+      reason: string;
+      pendingPush: SwarmPendingPush;
+      quorum: QuorumStatus;
+    }
+  | {
       accepted: true;
       reason: string;
       verifiedPushCount: number;
       prCredit: MergedPrCredit | null;
+      /** Swarm path the push counted through (grant path only). */
+      countPath?: SwarmCountPath;
+      quorum?: QuorumStatus;
+    };
+
+/** The swarm gate's three outcomes for a verifier-accepted push. */
+type SwarmGateOutcome =
+  | { action: "count"; countPath: SwarmCountPath; swarm: SwarmLogInfo; quorum: QuorumStatus }
+  | { action: "veto"; reason: string; swarm: SwarmLogInfo; quorum: QuorumStatus }
+  | {
+      action: "pending";
+      reason: string;
+      swarm: SwarmLogInfo;
+      quorum: QuorumStatus;
+      pendingPush: SwarmPendingPush;
     };
 
 /**
@@ -76,19 +118,21 @@ async function evaluateAndRecordPush(args: {
   bypassCooldown?: boolean;
   bypassDailyCap?: boolean;
   /**
-   * Reviewer-swarm gate (opt-in per grant): consulted AFTER the
-   * verifier accepts and BEFORE the push is recorded as counted.
-   * Returning not-ok rejects the push with the swarm reason, logged
-   * exactly like a verifier rejection. The gate can only block —
-   * counting still happens here, on the webhook path, or nowhere.
+   * Reviewer-swarm gate (mandatory for grants, 2026-11-26): consulted
+   * AFTER the verifier accepts and BEFORE the push is recorded as
+   * counted. "count" records the push now; "veto" records a rejection
+   * with the swarm verdict stamped on, exactly like a verifier
+   * rejection; "pending" records NOTHING — the push waits inside its
+   * review window (the caller has stored the pending record) and
+   * finalises when the gate later returns count/veto. The gate can
+   * only block or delay — counting still happens here, on the
+   * platform counting path, or nowhere.
    */
   swarmGate?: (ctx: {
     prCredit: MergedPrCredit | null;
     effectivePayload: PushPayload;
-  }) => Promise<
-    | { ok: true; swarm: SwarmLogInfo }
-    | { ok: false; reason: string; swarm?: SwarmLogInfo }
-  >;
+    verifyResult: Extract<VerifyResult, { accepted: true }>;
+  }) => Promise<SwarmGateOutcome>;
 }): Promise<EvaluatedPush> {
   const { repoId, payload } = args;
 
@@ -118,19 +162,26 @@ async function evaluateAndRecordPush(args: {
     return { accepted: false, reason: verifyResult.reason };
   }
 
-  // Reviewer swarm: an additional gate between verifier acceptance and
-  // counting. A not-ok verdict is recorded as a rejection (same push
-  // log, same semantics as a verifier rejection) and the push is NOT
-  // counted — no recordVerifiedPush, no seen-SHA mark, so a later
-  // webhook (re)delivery re-evaluates once reviews arrive. The swarm
-  // verdict is stamped onto whichever log entry this push produces,
-  // counted or rejected, so the recount can replay swarm decisions
-  // (Codex round-2).
+  // Reviewer swarm: the mandatory gate between verifier acceptance
+  // and counting. A "veto" verdict is recorded as a rejection (same
+  // push log, same semantics as a verifier rejection). A "pending"
+  // verdict records NOTHING — the push sits in its review window and
+  // the stored pending record finalises it later, so the recount
+  // never sees a half-state. The swarm verdict is stamped onto
+  // whichever log entry a counted/vetoed push produces, so the
+  // recount can replay swarm decisions (Codex round-2).
   let swarmInfo: SwarmLogInfo | undefined;
+  let swarmCountPath: SwarmCountPath | undefined;
+  let swarmQuorum: QuorumStatus | undefined;
   if (args.swarmGate) {
-    const gate = await args.swarmGate({ prCredit, effectivePayload });
+    const gate = await args.swarmGate({
+      prCredit,
+      effectivePayload,
+      verifyResult: verifyResult as Extract<VerifyResult, { accepted: true }>,
+    });
     swarmInfo = gate.swarm;
-    if (!gate.ok) {
+    swarmQuorum = gate.quorum;
+    if (gate.action === "veto") {
       await recordRejectedPush(
         repoId,
         effectivePayload,
@@ -143,6 +194,16 @@ async function evaluateAndRecordPush(args: {
       );
       return { accepted: false, reason: gate.reason };
     }
+    if (gate.action === "pending") {
+      return {
+        accepted: false,
+        pending: true,
+        reason: gate.reason,
+        pendingPush: gate.pendingPush,
+        quorum: gate.quorum,
+      };
+    }
+    swarmCountPath = gate.countPath;
   }
 
   const claim = await recordVerifiedPush(repoId, effectivePayload, verifyResult, {
@@ -176,6 +237,8 @@ async function evaluateAndRecordPush(args: {
     reason: verifyResult.reason,
     verifiedPushCount: claim.total,
     prCredit,
+    ...(swarmCountPath ? { countPath: swarmCountPath } : {}),
+    ...(swarmQuorum ? { quorum: swarmQuorum } : {}),
   };
 }
 
@@ -223,6 +286,349 @@ function prCreditSummary(prCredit: MergedPrCredit | null): Pick<PushProcessResul
     : {};
 }
 
+/**
+ * Everything that happens once a push is COUNTED, shared by the
+ * webhook path and the swarm settler: grant counter, milestone +
+ * fee-tranche releases, author reward, the counted fingerprint in
+ * the uniqueness ledger, reviewer rewards (swarm path only), the
+ * candidate's count-path stamp, and the recount checkpoint.
+ */
+async function afterCountedPush(
+  grant: GrantRecord,
+  args: {
+    /** The verifier's acceptance reason (what the push log records). */
+    reason: string;
+    verifiedPushCount: number;
+    prCredit: MergedPrCredit | null;
+    /** Payload whose head SHA identifies the push (PR-normalised when credited). */
+    effectivePayload: PushPayload;
+    countPath: SwarmCountPath;
+    quorum?: QuorumStatus;
+  },
+): Promise<PushProcessResult> {
+  const repoId = grant.repoId;
+  const headSha = effectiveHeadSha(args.effectivePayload);
+  const fingerprint = args.prCredit?.fingerprint;
+
+  await updateGrant(repoId, { verifiedPushCount: args.verifiedPushCount });
+  const release = await triggerReleaseIfMilestone(repoId, grant, args.verifiedPushCount);
+  // Fee-lock: the launcher's locked trading-fee tranches vest on the
+  // same counted pushes, through the same oracle — independently of
+  // supply milestones (their own pushesPerTranche schedule on-chain).
+  const feeRelease = await triggerFeeReleaseIfDue(repoId, grant, args.verifiedPushCount);
+  const reward = await rewardForCountedPush({
+    chain: grant.chain,
+    repoId,
+    repoFullName: grant.repoFullName,
+    prCredit: args.prCredit,
+  });
+
+  // Reviewer swarm, post-count (still the platform counting path —
+  // reviews alone never reach this code): record the counted diff's
+  // fingerprint in the repo's uniqueness ledger, stamp how the push
+  // counted onto its candidate record, and — ONLY when the push
+  // counted through the swarm — pay each PASS reviewer in the quorum
+  // from the same ShipRewards pool as the author's reward. A push
+  // that counted via the verifier fallback pays no reviewer rewards.
+  if (fingerprint) {
+    await recordCountedFingerprint(grant.repoFullName, headSha, fingerprint);
+  }
+  let reviewerRewards: ReviewerRewardOutcome[] | undefined;
+  if (args.countPath === "swarm" && args.prCredit) {
+    const reviewers = await quorumReviewers(grant.repoFullName, headSha);
+    // If the PR path gave no server fingerprint, the fingerprint the
+    // quorum agreed on still enters the uniqueness ledger.
+    if (!fingerprint && reviewers.length > 0) {
+      await recordCountedFingerprint(grant.repoFullName, headSha, reviewers[0]!.fingerprint);
+    }
+    reviewerRewards = await payReviewerRewardsForMerge({
+      chain: grant.chain,
+      repoId,
+      repoFullName: grant.repoFullName,
+      mergeCommitSha: args.prCredit.mergeCommitSha,
+      reviewers: reviewers.map((r) => ({ reviewerLogin: r.reviewerLogin })),
+    });
+  }
+  await noteSwarmCounted(grant.repoFullName, headSha, args.countPath);
+
+  // Checkpoint AFTER the counted fingerprint entered the registry, so
+  // the snapshot's registry digest covers this push too.
+  await checkpointQuietly(repoId, grant.repoFullName, args.verifiedPushCount);
+
+  return {
+    accepted: true,
+    reason: args.reason,
+    verifiedPushCount: args.verifiedPushCount,
+    release,
+    feeRelease,
+    ...prCreditSummary(args.prCredit),
+    ...(reward ? { reward } : {}),
+    swarm: {
+      quorum: args.quorum ?? {
+        required: 0,
+        passCount: 0,
+        failCount: 0,
+        duplicateFlagged: false,
+        met: true,
+        blocked: false,
+      },
+      countPath: args.countPath,
+      ...(reviewerRewards ? { reviewerRewards } : {}),
+    },
+  };
+}
+
+/** Build the push-log swarm stamp for a gate verdict on a grant push. */
+function swarmLogInfo(args: {
+  fingerprint?: string;
+  quorum: QuorumStatus;
+  met: boolean;
+  countPath?: SwarmCountPath;
+  windowOpenedAt?: number;
+  windowExpiresAt?: number;
+}): SwarmLogInfo {
+  return {
+    required: true,
+    ...(args.fingerprint ? { fingerprint: args.fingerprint } : {}),
+    passCount: args.quorum.passCount,
+    failCount: args.quorum.failCount,
+    duplicateFlagged: args.quorum.duplicateFlagged,
+    met: args.met,
+    ...(args.countPath ? { countPath: args.countPath } : {}),
+    ...(args.windowOpenedAt !== undefined ? { windowOpenedAt: args.windowOpenedAt } : {}),
+    ...(args.windowExpiresAt !== undefined ? { windowExpiresAt: args.windowExpiresAt } : {}),
+  };
+}
+
+/**
+ * Re-evaluate ONE pending (in-window) push against the current gate
+ * state and finalise it when the gate resolves: count it (quorum or
+ * expired window), veto it (FAIL / duplicate), or leave it pending.
+ * Invoked from webhook redeliveries, review submissions, and the
+ * platform settler — all three run this same counting code, and the
+ * atomic claim in recordVerifiedPush arbitrates any race between
+ * them, so a push can never count (or pay) twice.
+ */
+export async function resolvePendingPush(
+  grant: GrantRecord,
+  pending: SwarmPendingPush,
+): Promise<PushProcessResult> {
+  const repoId = grant.repoId;
+  const headSha = pending.headSha;
+  const payload = pending.payload;
+  const prCredit: MergedPrCredit | null = pending.prCredit
+    ? ({ ...pending.prCredit, payload } as unknown as MergedPrCredit)
+    : null;
+
+  const verdict = await evaluateSwarmWindow({
+    repo: grant.repoFullName,
+    headSha,
+    authorLogin: prCredit?.authorLogin,
+    fingerprint: prCredit?.fingerprint,
+    pending,
+  });
+
+  if (verdict.state === "pending") {
+    return {
+      accepted: false,
+      pending: true,
+      reason: verdict.reason,
+      swarm: { quorum: verdict.quorum, windowExpiresAt: verdict.windowExpiresAt },
+    };
+  }
+
+  if (verdict.state === "veto") {
+    await recordRejectedPush(
+      repoId,
+      payload,
+      { accepted: false, reason: verdict.reason, linesEstimate: pending.linesEstimate },
+      {
+        swarm: swarmLogInfo({
+          fingerprint: prCredit?.fingerprint,
+          quorum: verdict.quorum,
+          met: false,
+        }),
+      },
+    );
+    await deletePendingPush(grant.repoFullName, headSha);
+    // Attestation layer bookkeeping, mirroring the webhook path.
+    await resolveShipReport(grant.repoFullName, headSha, {
+      kind: "rejected",
+      reason: verdict.reason,
+    });
+    return {
+      accepted: false,
+      reason: verdict.reason,
+      swarm: { quorum: verdict.quorum },
+    };
+  }
+
+  // verdict.state === "count": record through the same atomic claim
+  // the webhook path uses, stamping the path the push counted by.
+  const claim = await recordVerifiedPush(
+    repoId,
+    payload,
+    { accepted: true, reason: pending.verifyReason, linesEstimate: pending.linesEstimate },
+    {
+      ...(pending.bypassCooldown ? { bypassCooldown: true } : {}),
+      ...(pending.bypassDailyCap ? { bypassDailyCap: true } : {}),
+      swarm: swarmLogInfo({
+        fingerprint: prCredit?.fingerprint,
+        quorum: verdict.quorum,
+        met: true,
+        countPath: verdict.countPath,
+        windowOpenedAt: verdict.windowOpenedAt,
+        windowExpiresAt: verdict.windowExpiresAt,
+      }),
+    },
+  );
+  await deletePendingPush(grant.repoFullName, headSha);
+  if ("conflict" in claim) {
+    if (claim.conflict === "duplicate") {
+      // A concurrent evaluation already counted this push and ran the
+      // settlement tail there. Nothing more to do — and nothing to
+      // log: the counted entry already exists.
+      return {
+        accepted: false,
+        reason: "Duplicate push — already counted by a concurrent settlement",
+        swarm: { quorum: verdict.quorum, countPath: verdict.countPath },
+      };
+    }
+    // A different push won the last daily-cap slot / the cooldown
+    // window while this push waited out its review window. The claim
+    // is the authoritative guard, so the push does not count; the
+    // rejection is logged like any other (the recount replays the
+    // cap/cooldown rules from the record, as with webhook races).
+    const reason =
+      claim.conflict === "daily-cap"
+        ? "Daily cap reached by a concurrent push (atomic claim at swarm settlement)"
+        : "Cooldown window claimed by a concurrent push (atomic claim at swarm settlement)";
+    await recordRejectedPush(
+      repoId,
+      payload,
+      { accepted: false, reason, linesEstimate: pending.linesEstimate },
+      {
+        swarm: swarmLogInfo({
+          fingerprint: prCredit?.fingerprint,
+          quorum: verdict.quorum,
+          met: true,
+          countPath: verdict.countPath,
+          windowOpenedAt: verdict.windowOpenedAt,
+          windowExpiresAt: verdict.windowExpiresAt,
+        }),
+      },
+    );
+    return { accepted: false, reason, swarm: { quorum: verdict.quorum } };
+  }
+
+  const counted = await afterCountedPush(grant, {
+    reason: pending.verifyReason,
+    verifiedPushCount: claim.total,
+    prCredit,
+    effectivePayload: payload,
+    countPath: verdict.countPath,
+    quorum: verdict.quorum,
+  });
+
+  // Attestation layer bookkeeping, mirroring the webhook path: the
+  // push counted HERE (settler / review trigger / redelivery), so the
+  // settlement evidence and the report resolution are recorded here.
+  const releaseTxHash =
+    counted.release && counted.release.triggered ? counted.release.txHash : undefined;
+  const reward = counted.reward;
+  if (releaseTxHash || reward?.paid) {
+    await recordPushSettlement(grant.repoFullName, headSha, {
+      ...(releaseTxHash ? { releaseTxHash } : {}),
+      ...(counted.release && counted.release.triggered && counted.release.milestone !== undefined
+        ? { milestone: counted.release.milestone }
+        : {}),
+      ...(reward?.paid
+        ? {
+            rewardTxHash: reward.txHash,
+            rewardRecipient: reward.recipient,
+            rewardAmount: reward.amount,
+          }
+        : {}),
+    });
+  }
+  await resolveShipReport(grant.repoFullName, headSha, {
+    kind: "counted",
+    reason: counted.reason,
+    ...(counted.verifiedPushCount !== undefined
+      ? { verifiedPushCount: counted.verifiedPushCount }
+      : {}),
+    ...(releaseTxHash ? { releaseTxHash } : {}),
+    ...(counted.release && counted.release.triggered && counted.release.milestone !== undefined
+      ? { milestone: counted.release.milestone }
+      : {}),
+    ...(reward?.paid
+      ? {
+          rewardTxHash: reward.txHash,
+          rewardRecipient: reward.recipient,
+          rewardAmount: reward.amount,
+        }
+      : {}),
+  });
+
+  return counted;
+}
+
+/**
+ * Best-effort settlement attempt for one push (review submissions and
+ * other triggers): resolves the push iff it is pending on an active
+ * grant. Returns null when there is nothing to settle.
+ */
+export async function trySettlePendingPush(
+  repoFullName: string,
+  headSha: string,
+): Promise<PushProcessResult | null> {
+  const pending = await loadPendingPush(repoFullName, headSha);
+  if (!pending) return null;
+  const grant = await getGrantByRepoFullName(repoFullName);
+  if (!grant || grant.status !== "active") return null;
+  return resolvePendingPush(grant, pending);
+}
+
+/**
+ * The platform settler sweep: finalise every pending swarm push whose
+ * gate has resolved (quorum met, FAIL veto, or window expired). Runs
+ * on an interval from the server bootstrap; a failed push is logged
+ * and left pending for the next sweep — the sweep never forces a
+ * count the gate did not return.
+ */
+export async function settlePendingSwarmPushes(): Promise<{
+  settled: number;
+  vetoed: number;
+  stillPending: number;
+}> {
+  const refs = await listPendingPushRefs();
+  let settled = 0;
+  let vetoed = 0;
+  let stillPending = 0;
+  for (const ref of refs) {
+    try {
+      const pending = await loadPendingPush(ref.repo, ref.headSha);
+      if (!pending) {
+        // Stale index member (record expired): prune it.
+        await deletePendingPush(ref.repo, ref.headSha);
+        continue;
+      }
+      const grant = await getGrantByRepoFullName(pending.repo);
+      if (!grant || grant.status !== "active") continue;
+      const result = await resolvePendingPush(grant, pending);
+      if (result.accepted) settled++;
+      else if (result.pending) stillPending++;
+      else vetoed++;
+    } catch (err) {
+      console.warn(
+        `[swarmSettler] could not resolve pending push ${ref.repo}@${ref.headSha.slice(0, 7)} — left pending:`,
+        err,
+      );
+    }
+  }
+  return { settled, vetoed, stillPending };
+}
+
 /** Shared push → verify → count → optional release flow (webhook + dev simulate). */
 export async function processPushForGrant(
   grant: GrantRecord,
@@ -231,7 +637,18 @@ export async function processPushForGrant(
 ): Promise<PushProcessResult> {
   const repoId = grant.repoId;
   const platform = options?.platform ?? grant.platform ?? "github";
-  const swarmRequired = grant.swarmReviewRequired === true;
+
+  // A push already inside its review window re-evaluates ONLY the
+  // swarm gate: the verifier passed when the window opened, and
+  // re-running it now could spuriously reject (the daily cap or
+  // cooldown moved in the meantime) a push that is legitimately
+  // pending. Redelivery is one of the gate's settlement triggers.
+  const rawHeadSha = effectiveHeadSha(payload);
+  if (rawHeadSha) {
+    const pending = await loadPendingPush(grant.repoFullName, rawHeadSha);
+    if (pending) return resolvePendingPush(grant, pending);
+  }
+
   let swarmQuorum: QuorumStatus | undefined;
 
   const evaluated = await evaluateAndRecordPush({
@@ -242,111 +659,118 @@ export async function processPushForGrant(
     platform,
     bypassCooldown: options?.bypassCooldown,
     bypassDailyCap: options?.bypassDailyCap,
-    ...(swarmRequired
-      ? {
-          swarmGate: async ({ prCredit, effectivePayload }) => {
-            const verdict = await evaluateSwarmGate({
-              repo: grant.repoFullName,
-              headSha: effectiveHeadSha(effectivePayload),
-              authorLogin: prCredit?.authorLogin,
-              fingerprint: prCredit?.fingerprint,
-            });
-            swarmQuorum = verdict.quorum;
-            const swarm: SwarmLogInfo = {
-              required: true,
-              ...(prCredit?.fingerprint ? { fingerprint: prCredit.fingerprint } : {}),
-              passCount: verdict.quorum.passCount,
-              failCount: verdict.quorum.failCount,
-              duplicateFlagged: verdict.quorum.duplicateFlagged,
-              met: verdict.ok,
-            };
-            return verdict.ok
-              ? { ok: true as const, swarm }
-              : { ok: false as const, reason: verdict.reason, swarm };
-          },
-        }
-      : {}),
+    // Swarm review is MANDATORY for every grant (Gregory, 2026-11-26):
+    // there is no launcher opt-in/opt-out. The gate runs after the
+    // verifier and before counting, on every grant push.
+    swarmGate: async ({ prCredit, effectivePayload, verifyResult }) => {
+      const headSha = effectiveHeadSha(effectivePayload);
+      const verdict = await evaluateSwarmWindow({
+        repo: grant.repoFullName,
+        headSha,
+        authorLogin: prCredit?.authorLogin,
+        fingerprint: prCredit?.fingerprint,
+      });
+      swarmQuorum = verdict.quorum;
+      if (verdict.state === "veto") {
+        return {
+          action: "veto" as const,
+          reason: verdict.reason,
+          quorum: verdict.quorum,
+          swarm: swarmLogInfo({
+            fingerprint: prCredit?.fingerprint,
+            quorum: verdict.quorum,
+            met: false,
+          }),
+        };
+      }
+      if (verdict.state === "count") {
+        return {
+          action: "count" as const,
+          countPath: verdict.countPath,
+          quorum: verdict.quorum,
+          swarm: swarmLogInfo({
+            fingerprint: prCredit?.fingerprint,
+            quorum: verdict.quorum,
+            met: true,
+            countPath: verdict.countPath,
+            windowOpenedAt: verdict.windowOpenedAt,
+            windowExpiresAt: verdict.windowExpiresAt,
+          }),
+        };
+      }
+      // Pending: the review window opens at THIS verifier pass. Store
+      // everything settlement needs so the push can finalise without
+      // a webhook redelivery (settler / review-triggered resolution).
+      const pendingPush: SwarmPendingPush = {
+        repo: grant.repoFullName,
+        repoId,
+        headSha,
+        payload: effectivePayload,
+        prCredit: prCredit
+          ? (({ payload: _payload, ...rest }) => rest)(prCredit)
+          : null,
+        verifyReason: verifyResult.reason,
+        linesEstimate: verifyResult.linesEstimate,
+        platform,
+        ...(options?.bypassCooldown ? { bypassCooldown: true } : {}),
+        ...(options?.bypassDailyCap ? { bypassDailyCap: true } : {}),
+        windowOpenedAt: verdict.windowOpenedAt,
+        windowExpiresAt: verdict.windowExpiresAt,
+        storedAt: new Date().toISOString(),
+      };
+      await savePendingPush(pendingPush);
+      await noteSwarmWindow(
+        grant.repoFullName,
+        headSha,
+        verdict.windowOpenedAt,
+        verdict.windowExpiresAt,
+      );
+      return {
+        action: "pending" as const,
+        reason: verdict.reason,
+        quorum: verdict.quorum,
+        pendingPush,
+        swarm: swarmLogInfo({
+          fingerprint: prCredit?.fingerprint,
+          quorum: verdict.quorum,
+          met: false,
+          windowOpenedAt: verdict.windowOpenedAt,
+          windowExpiresAt: verdict.windowExpiresAt,
+        }),
+      };
+    },
   });
 
   if (!evaluated.accepted) {
+    if ("pending" in evaluated && evaluated.pending) {
+      return {
+        accepted: false,
+        pending: true,
+        reason: evaluated.reason,
+        swarm: {
+          quorum: evaluated.quorum,
+          windowExpiresAt: evaluated.pendingPush.windowExpiresAt,
+        },
+      };
+    }
     return {
       accepted: false,
       reason: evaluated.reason,
-      ...(swarmRequired && swarmQuorum ? { swarm: { quorum: swarmQuorum } } : {}),
+      ...(swarmQuorum ? { swarm: { quorum: swarmQuorum } } : {}),
     };
   }
 
-  await updateGrant(repoId, { verifiedPushCount: evaluated.verifiedPushCount });
-  const release = await triggerReleaseIfMilestone(repoId, grant, evaluated.verifiedPushCount);
-  // Fee-lock: the launcher's locked trading-fee tranches vest on the
-  // same counted pushes, through the same oracle — independently of
-  // supply milestones (their own pushesPerTranche schedule on-chain).
-  const feeRelease = await triggerFeeReleaseIfDue(repoId, grant, evaluated.verifiedPushCount);
-  const reward = await rewardForCountedPush({
-    chain: grant.chain,
-    repoId,
-    repoFullName: grant.repoFullName,
-    prCredit: evaluated.prCredit,
-  });
-
-  // Reviewer swarm, post-count (still the webhook path — reviews alone
-  // never reach this code): record the counted diff's fingerprint in
-  // the repo's uniqueness ledger, and pay each PASS reviewer in the
-  // quorum from the same ShipRewards pool as the author's reward.
-  let swarm: PushProcessResult["swarm"];
-  if (swarmRequired) {
-    const headSha = effectiveHeadSha(evaluated.prCredit?.payload ?? payload);
-    const fingerprint = evaluated.prCredit?.fingerprint;
-    if (fingerprint) {
-      await recordCountedFingerprint(grant.repoFullName, headSha, fingerprint);
-    }
-    let reviewerRewards: ReviewerRewardOutcome[] | undefined;
-    if (evaluated.prCredit) {
-      const reviewers = await quorumReviewers(grant.repoFullName, headSha);
-      // If the PR path gave no server fingerprint, the fingerprint the
-      // quorum agreed on still enters the uniqueness ledger.
-      if (!fingerprint && reviewers.length > 0) {
-        await recordCountedFingerprint(
-          grant.repoFullName,
-          headSha,
-          reviewers[0]!.fingerprint,
-        );
-      }
-      reviewerRewards = await payReviewerRewardsForMerge({
-        chain: grant.chain,
-        repoId,
-        repoFullName: grant.repoFullName,
-        mergeCommitSha: evaluated.prCredit.mergeCommitSha,
-        reviewers: reviewers.map((r) => ({ reviewerLogin: r.reviewerLogin })),
-      });
-    }
-    swarm = {
-      quorum: swarmQuorum ?? {
-        required: 0,
-        passCount: 0,
-        failCount: 0,
-        duplicateFlagged: false,
-        met: true,
-        blocked: false,
-      },
-      ...(reviewerRewards ? { reviewerRewards } : {}),
-    };
-  }
-
-  // Checkpoint AFTER the counted fingerprint entered the registry, so
-  // the snapshot's registry digest covers this push too.
-  await checkpointQuietly(repoId, grant.repoFullName, evaluated.verifiedPushCount);
-
-  return {
-    accepted: true,
+  return afterCountedPush(grant, {
     reason: evaluated.reason,
     verifiedPushCount: evaluated.verifiedPushCount,
-    release,
-    feeRelease,
-    ...prCreditSummary(evaluated.prCredit),
-    ...(reward ? { reward } : {}),
-    ...(swarm ? { swarm } : {}),
-  };
+    prCredit: evaluated.prCredit,
+    effectivePayload: evaluated.prCredit?.payload ?? payload,
+    // The inline path can only count through the swarm (a fallback
+    // count requires a stored window, which resolvePendingPush owns);
+    // evaluateAndRecordPush reports the gate's path explicitly.
+    countPath: evaluated.countPath ?? "swarm",
+    quorum: evaluated.quorum ?? swarmQuorum,
+  });
 }
 
 /**

@@ -74,6 +74,11 @@ set_test_env() {
   export FRONTEND_URL="http://localhost:5173"
   export SERVER_URL="http://127.0.0.1:3210"
   export GITHUB_API_BASE_URL="http://127.0.0.1:8977"
+  # Swarm window pinned to 0 (mandatory-window rule, 2026-11-26): this suite
+  # predates the swarm and exercises pushes synchronously — a 0-length
+  # window settles by immediate verifier fallback. Swarm paths are
+  # covered by run-swarm.sh and run-swarm-window.sh.
+  export SWARM_REVIEW_WINDOW_SECONDS=0
 }
 
 wait_http() {
@@ -169,7 +174,10 @@ check "recount-backed release paid exactly the unpaid milestone (900 total)" "$O
 check "escrow fully drained by the schedule (0 left)" "$OUT" "escrow PTK=0"
 
 echo "=== 14. swarm-gated history: recount replays swarm decisions (round-2) ==="
-OUT="$(npx tsx tests/e2e/recount-swarm-phase.ts)"; echo "$OUT"
+# The phase drives the gate directly with production-like window
+# semantics (a no-review push must read as PENDING there), so it gets
+# a 1h window override — the suite server keeps the 0-length window.
+OUT="$(SWARM_REVIEW_WINDOW_SECONDS=3600 npx tsx tests/e2e/recount-swarm-phase.ts)"; echo "$OUT"
 check "swarm history: webhook total is 1" "$OUT" '"recordedCount":1'
 check "swarm history: recount equals webhook total WITH swarm gating" "$OUT" '"recountedCount":1'
 check "swarm history: recount certified" "$OUT" '"status":"certified"'
