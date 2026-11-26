@@ -22,6 +22,12 @@ function grantSummary(grant: GrantRecord) {
     repoFullName: grant.repoFullName,
     githubOwner: owner,
     platform: grant.platform ?? "github",
+    /** Launch recognition (gate): true ONLY for grants registered with
+     *  a validated GitHub App verification token. Ordinary vesting
+     *  grants list here as locks with launchVerified:false — they are
+     *  never presented as verified launches (see /api/launch/projects
+     *  for the verified-launch-only listing). */
+    launchVerified: grant.launchVerified === true,
     recipient: grant.recipient,
     token: grant.token,
     chain: grant.chain,

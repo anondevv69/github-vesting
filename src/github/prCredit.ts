@@ -27,6 +27,7 @@
 
 import { getGithubApp, resolveInstallationForRepo } from "./githubApp";
 import { isMeaningfulFile, type PushPayload } from "./pushVerifier";
+import { computeDiffFingerprint } from "../lib/swarmReview";
 
 export type MergedPrCredit = {
   prNumber: number;
@@ -38,6 +39,10 @@ export type MergedPrCredit = {
   mergeCommitSha: string;
   /** Real added+deleted lines across meaningful (non-ignored) files. */
   linesChanged: number;
+  /** Swarm uniqueness fingerprint of the PR's meaningful diff (see
+   *  lib/swarmReview.ts) — the server's reference fingerprint that
+   *  reviewer-submitted fingerprints are checked against. */
+  fingerprint: string;
   meaningfulFiles: Array<{ filename: string; status: string }>;
   /** Single-commit payload normalised for verifyPush / recordVerifiedPush. */
   payload: PushPayload;
@@ -76,6 +81,8 @@ type PrFileApiShape = {
   status: string;
   additions: number;
   deletions: number;
+  /** Unified-diff patch for the file (GitHub omits it for huge files). */
+  patch?: string;
 };
 
 /**
@@ -181,6 +188,7 @@ export async function resolveMergedPrCredit(
       authorIsBot,
       mergeCommitSha: headSha,
       linesChanged,
+      fingerprint: computeDiffFingerprint(meaningful),
       meaningfulFiles: meaningful.map((f) => ({ filename: f.filename, status: f.status })),
       payload: normalized,
     };

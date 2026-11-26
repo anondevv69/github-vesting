@@ -1,9 +1,28 @@
 import type { GrantRecord } from "../lib/redis";
 import { updateGrant, getRedis, KEYS } from "../lib/redis";
-import { verifyPush, recordVerifiedPush, recordRejectedPush, type PushPayload } from "./pushVerifier";
+import {
+  verifyPush,
+  recordVerifiedPush,
+  recordRejectedPush,
+  type PushPayload,
+  type SwarmLogInfo,
+} from "./pushVerifier";
+import { writePushCheckpoint } from "../lib/recount";
 import { resolveMergedPrCredit, type MergedPrCredit } from "./prCredit";
 import { triggerReleaseIfMilestone } from "../oracle/releaseOracle";
-import { payRewardForMerge, type RewardResult } from "../oracle/shipRewards";
+import { triggerFeeReleaseIfDue, type FeeReleaseResult } from "../oracle/feeLock";
+import {
+  payRewardForMerge,
+  payReviewerRewardsForMerge,
+  type RewardResult,
+  type ReviewerRewardOutcome,
+} from "../oracle/shipRewards";
+import {
+  evaluateSwarmGate,
+  quorumReviewers,
+  recordCountedFingerprint,
+  type QuorumStatus,
+} from "../lib/swarmReview";
 import { repoIdFromFullName } from "../lib/repoId";
 
 export type PushProcessResult = {
@@ -11,10 +30,17 @@ export type PushProcessResult = {
   reason: string;
   verifiedPushCount?: number;
   release?: Awaited<ReturnType<typeof triggerReleaseIfMilestone>>;
+  /** Fee-lock tranche release (only for grants with a fee-lock vault). */
+  feeRelease?: FeeReleaseResult;
   /** Set when the counted push was credited to a merged PR (Ship spec §8). */
   prCredit?: { prNumber: number; authorLogin: string };
   /** Per-merge Ship reward outcome (spec §8B) — only for PR-credited pushes. */
   reward?: RewardResult;
+  /** Reviewer-swarm outcome — only for pushes on swarm-required grants. */
+  swarm?: {
+    quorum: QuorumStatus;
+    reviewerRewards?: ReviewerRewardOutcome[];
+  };
 };
 
 type EvaluatedPush =
@@ -34,6 +60,13 @@ type EvaluatedPush =
  * repo's standard repoId either way, so a repo that later gets a grant
  * keeps one continuous counter history.
  */
+/** Head SHA of the effective (possibly PR-normalised) payload. */
+function effectiveHeadSha(payload: PushPayload): string {
+  if (payload.after) return payload.after.toLowerCase();
+  const last = payload.commits[payload.commits.length - 1];
+  return (last?.id ?? "").toLowerCase();
+}
+
 async function evaluateAndRecordPush(args: {
   repoId: string;
   repoFullName: string;
@@ -42,6 +75,20 @@ async function evaluateAndRecordPush(args: {
   platform: "github" | "gitlawb";
   bypassCooldown?: boolean;
   bypassDailyCap?: boolean;
+  /**
+   * Reviewer-swarm gate (opt-in per grant): consulted AFTER the
+   * verifier accepts and BEFORE the push is recorded as counted.
+   * Returning not-ok rejects the push with the swarm reason, logged
+   * exactly like a verifier rejection. The gate can only block —
+   * counting still happens here, on the webhook path, or nowhere.
+   */
+  swarmGate?: (ctx: {
+    prCredit: MergedPrCredit | null;
+    effectivePayload: PushPayload;
+  }) => Promise<
+    | { ok: true; swarm: SwarmLogInfo }
+    | { ok: false; reason: string; swarm?: SwarmLogInfo }
+  >;
 }): Promise<EvaluatedPush> {
   const { repoId, payload } = args;
 
@@ -71,11 +118,63 @@ async function evaluateAndRecordPush(args: {
     return { accepted: false, reason: verifyResult.reason };
   }
 
-  const newPushCount = await recordVerifiedPush(repoId, effectivePayload, verifyResult);
+  // Reviewer swarm: an additional gate between verifier acceptance and
+  // counting. A not-ok verdict is recorded as a rejection (same push
+  // log, same semantics as a verifier rejection) and the push is NOT
+  // counted — no recordVerifiedPush, no seen-SHA mark, so a later
+  // webhook (re)delivery re-evaluates once reviews arrive. The swarm
+  // verdict is stamped onto whichever log entry this push produces,
+  // counted or rejected, so the recount can replay swarm decisions
+  // (Codex round-2).
+  let swarmInfo: SwarmLogInfo | undefined;
+  if (args.swarmGate) {
+    const gate = await args.swarmGate({ prCredit, effectivePayload });
+    swarmInfo = gate.swarm;
+    if (!gate.ok) {
+      await recordRejectedPush(
+        repoId,
+        effectivePayload,
+        {
+          accepted: false,
+          reason: gate.reason,
+          linesEstimate: verifyResult.linesEstimate,
+        },
+        swarmInfo ? { swarm: swarmInfo } : undefined,
+      );
+      return { accepted: false, reason: gate.reason };
+    }
+  }
+
+  const claim = await recordVerifiedPush(repoId, effectivePayload, verifyResult, {
+    ...(args.bypassCooldown ? { bypassCooldown: true } : {}),
+    ...(args.bypassDailyCap ? { bypassDailyCap: true } : {}),
+    ...(swarmInfo ? { swarm: swarmInfo } : {}),
+  });
+  if ("conflict" in claim) {
+    // Lost the atomic claim. "duplicate": a concurrent delivery of
+    // this same push already counted it. "daily-cap" / "cooldown"
+    // (Codex round-2): a DIFFERENT push won the race for the last
+    // cap slot / inside the cooldown window — the verifier's
+    // pre-checks passed against state that changed before the claim.
+    // All three are rejections (logged like any other) so no
+    // release/reward path runs twice for one push.
+    const reason =
+      claim.conflict === "duplicate"
+        ? "Duplicate push — already counted by a concurrent delivery"
+        : claim.conflict === "daily-cap"
+          ? "Daily cap reached by a concurrent push (atomic claim)"
+          : "Cooldown window claimed by a concurrent push (atomic claim)";
+    await recordRejectedPush(repoId, effectivePayload, {
+      accepted: false,
+      reason,
+      linesEstimate: verifyResult.linesEstimate,
+    });
+    return { accepted: false, reason };
+  }
   return {
     accepted: true,
     reason: verifyResult.reason,
-    verifiedPushCount: newPushCount,
+    verifiedPushCount: claim.total,
     prCredit,
   };
 }
@@ -103,6 +202,21 @@ async function rewardForCountedPush(args: {
   });
 }
 
+/**
+ * Persist the recount checkpoint after a counted push (Codex
+ * round-2): the snapshot a future recount starts from when the push
+ * log has been trimmed past this point. Bookkeeping only — a failed
+ * checkpoint write never fails push processing (the recount then
+ * falls back to genesis replay / refusal, never a wrong total).
+ */
+async function checkpointQuietly(repoId: string, repoFullName: string, total: number): Promise<void> {
+  try {
+    await writePushCheckpoint(repoId, repoFullName, total);
+  } catch (err) {
+    console.warn("[processPush] recount checkpoint write failed (ignored):", err);
+  }
+}
+
 function prCreditSummary(prCredit: MergedPrCredit | null): Pick<PushProcessResult, "prCredit"> {
   return prCredit
     ? { prCredit: { prNumber: prCredit.prNumber, authorLogin: prCredit.authorLogin } }
@@ -117,6 +231,8 @@ export async function processPushForGrant(
 ): Promise<PushProcessResult> {
   const repoId = grant.repoId;
   const platform = options?.platform ?? grant.platform ?? "github";
+  const swarmRequired = grant.swarmReviewRequired === true;
+  let swarmQuorum: QuorumStatus | undefined;
 
   const evaluated = await evaluateAndRecordPush({
     repoId,
@@ -126,14 +242,46 @@ export async function processPushForGrant(
     platform,
     bypassCooldown: options?.bypassCooldown,
     bypassDailyCap: options?.bypassDailyCap,
+    ...(swarmRequired
+      ? {
+          swarmGate: async ({ prCredit, effectivePayload }) => {
+            const verdict = await evaluateSwarmGate({
+              repo: grant.repoFullName,
+              headSha: effectiveHeadSha(effectivePayload),
+              authorLogin: prCredit?.authorLogin,
+              fingerprint: prCredit?.fingerprint,
+            });
+            swarmQuorum = verdict.quorum;
+            const swarm: SwarmLogInfo = {
+              required: true,
+              ...(prCredit?.fingerprint ? { fingerprint: prCredit.fingerprint } : {}),
+              passCount: verdict.quorum.passCount,
+              failCount: verdict.quorum.failCount,
+              duplicateFlagged: verdict.quorum.duplicateFlagged,
+              met: verdict.ok,
+            };
+            return verdict.ok
+              ? { ok: true as const, swarm }
+              : { ok: false as const, reason: verdict.reason, swarm };
+          },
+        }
+      : {}),
   });
 
   if (!evaluated.accepted) {
-    return { accepted: false, reason: evaluated.reason };
+    return {
+      accepted: false,
+      reason: evaluated.reason,
+      ...(swarmRequired && swarmQuorum ? { swarm: { quorum: swarmQuorum } } : {}),
+    };
   }
 
   await updateGrant(repoId, { verifiedPushCount: evaluated.verifiedPushCount });
   const release = await triggerReleaseIfMilestone(repoId, grant, evaluated.verifiedPushCount);
+  // Fee-lock: the launcher's locked trading-fee tranches vest on the
+  // same counted pushes, through the same oracle — independently of
+  // supply milestones (their own pushesPerTranche schedule on-chain).
+  const feeRelease = await triggerFeeReleaseIfDue(repoId, grant, evaluated.verifiedPushCount);
   const reward = await rewardForCountedPush({
     chain: grant.chain,
     repoId,
@@ -141,13 +289,63 @@ export async function processPushForGrant(
     prCredit: evaluated.prCredit,
   });
 
+  // Reviewer swarm, post-count (still the webhook path — reviews alone
+  // never reach this code): record the counted diff's fingerprint in
+  // the repo's uniqueness ledger, and pay each PASS reviewer in the
+  // quorum from the same ShipRewards pool as the author's reward.
+  let swarm: PushProcessResult["swarm"];
+  if (swarmRequired) {
+    const headSha = effectiveHeadSha(evaluated.prCredit?.payload ?? payload);
+    const fingerprint = evaluated.prCredit?.fingerprint;
+    if (fingerprint) {
+      await recordCountedFingerprint(grant.repoFullName, headSha, fingerprint);
+    }
+    let reviewerRewards: ReviewerRewardOutcome[] | undefined;
+    if (evaluated.prCredit) {
+      const reviewers = await quorumReviewers(grant.repoFullName, headSha);
+      // If the PR path gave no server fingerprint, the fingerprint the
+      // quorum agreed on still enters the uniqueness ledger.
+      if (!fingerprint && reviewers.length > 0) {
+        await recordCountedFingerprint(
+          grant.repoFullName,
+          headSha,
+          reviewers[0]!.fingerprint,
+        );
+      }
+      reviewerRewards = await payReviewerRewardsForMerge({
+        chain: grant.chain,
+        repoId,
+        repoFullName: grant.repoFullName,
+        mergeCommitSha: evaluated.prCredit.mergeCommitSha,
+        reviewers: reviewers.map((r) => ({ reviewerLogin: r.reviewerLogin })),
+      });
+    }
+    swarm = {
+      quorum: swarmQuorum ?? {
+        required: 0,
+        passCount: 0,
+        failCount: 0,
+        duplicateFlagged: false,
+        met: true,
+        blocked: false,
+      },
+      ...(reviewerRewards ? { reviewerRewards } : {}),
+    };
+  }
+
+  // Checkpoint AFTER the counted fingerprint entered the registry, so
+  // the snapshot's registry digest covers this push too.
+  await checkpointQuietly(repoId, grant.repoFullName, evaluated.verifiedPushCount);
+
   return {
     accepted: true,
     reason: evaluated.reason,
     verifiedPushCount: evaluated.verifiedPushCount,
     release,
+    feeRelease,
     ...prCreditSummary(evaluated.prCredit),
     ...(reward ? { reward } : {}),
+    ...(swarm ? { swarm } : {}),
   };
 }
 
@@ -190,6 +388,8 @@ export async function processPushGrantless(
     repoFullName,
     prCredit: evaluated.prCredit,
   });
+
+  await checkpointQuietly(repoId, repoFullName, evaluated.verifiedPushCount);
 
   return {
     accepted: true,

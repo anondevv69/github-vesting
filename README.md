@@ -132,6 +132,8 @@ npm run dev
 
 | Method | Path | Description |
 |--------|------|-------------|
+| `POST` | `/api/launch/verify-github` | **Launch gate (Step 0)** — server-side GitHub App verification; issues the bound verification token launch-prep requires (see `LAUNCH-GATE.md`) |
+| `GET`  | `/api/launch/enrollment` | Verified-launcher ShipRewards enrolment for a repo+wallet |
 | `POST` | `/api/vesting/register` | Register a new vesting grant |
 | `GET`  | `/api/vesting/grants?recipient=0x…` | Grants for a wallet |
 | `GET`  | `/api/vesting/status?repo=owner/repo` | Get grant progress |

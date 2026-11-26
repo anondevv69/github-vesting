@@ -1,0 +1,837 @@
+=== 1. fake redis ===
+[fake-redis] listening on 127.0.0.1:6399
+=== 2. hardhat node (chainId 8453) ===
+Started HTTP and WebSocket JSON-RPC server at http://127.0.0.1:8545/
+
+Accounts
+========
+
+WARNING: These accounts, and their private keys, are publicly known.
+Any funds sent to them on Mainnet or any other live network WILL BE LOST.
+
+Account #0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 (10000 ETH)
+Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+Account #1: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 (10000 ETH)
+Private Key: 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+
+Account #2: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC (10000 ETH)
+Private Key: 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a
+
+Account #3: 0x90F79bf6EB2c4f870365E785982E1f101E93b906 (10000 ETH)
+Private Key: 0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6
+
+Account #4: 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 (10000 ETH)
+Private Key: 0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a
+
+Account #5: 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc (10000 ETH)
+Private Key: 0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba
+
+Account #6: 0x976EA74026E726554dB657fA54763abd0C3a0aa9 (10000 ETH)
+Private Key: 0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e
+
+Account #7: 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955 (10000 ETH)
+Private Key: 0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356
+
+Account #8: 0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f (10000 ETH)
+Private Key: 0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97
+
+Account #9: 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720 (10000 ETH)
+Private Key: 0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6
+
+Account #10: 0xBcd4042DE499D14e55001CcbB24a551F3b954096 (10000 ETH)
+Private Key: 0xf214f2b2cd398c806f84e317254e0f0b801d0643303237d97a22a48e01628897
+
+Account #11: 0x71bE63f3384f5fb98995898A86B02Fb2426c5788 (10000 ETH)
+Private Key: 0x701b615bbdfb9de65240bc28bd21bbc0d996645a3dd57e7b12bc2bdf6f192c82
+
+Account #12: 0xFABB0ac9d68B0B445fB7357272Ff202C5651694a (10000 ETH)
+Private Key: 0xa267530f49f8280200edf313ee7af6b827f2a8bce2897751d06a843f644967b1
+
+Account #13: 0x1CBd3b2770909D4e10f157cABC84C7264073C9Ec (10000 ETH)
+Private Key: 0x47c99abed3324a2707c28affff1267e45918ec8c3f20b8aa892e8b065d2942dd
+
+Account #14: 0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097 (10000 ETH)
+Private Key: 0xc526ee95bf44d8fc405a158bb884d9d1238d99f0612e9f33d006bb0789009aaa
+
+Account #15: 0xcd3B766CCDd6AE721141F452C550Ca635964ce71 (10000 ETH)
+Private Key: 0x8166f546bab6da521a8369cab06c5d2b9e46670292d85c875ee9ec20e84ffb61
+
+Account #16: 0x2546BcD3c84621e976D8185a91A922aE77ECEc30 (10000 ETH)
+Private Key: 0xea6c44ac03bff858b476bba40716402b03e41b8e97e276d1baec7c37d42484a0
+
+Account #17: 0xbDA5747bFD65F08deb54cb465eB87D40e51B197E (10000 ETH)
+Private Key: 0x689af8efa8c651a91ad287602527f3af2fe9f6501a7ac4b061667b5a93e037fd
+
+Account #18: 0xdD2FD4581271e230360230F9337D5c0430Bf44C0 (10000 ETH)
+Private Key: 0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0
+
+Account #19: 0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199 (10000 ETH)
+Private Key: 0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e
+
+WARNING: These accounts, and their private keys, are publicly known.
+Any funds sent to them on Mainnet or any other live network WILL BE LOST.
+
+[32meth_chainId[0m
+node up
+=== 3. deploy + lock + fund ===
+[32meth_chainId (2)[0m
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_chainId[0m
+chainId: 8453
+deployer: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+oracle: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+recipient: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+author: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_blockNumber[0m
+[32meth_getBlockByNumber[0m
+[32meth_feeHistory[0m
+[32meth_maxPriorityFeePerGas[0m
+[32meth_sendTransaction[0m
+  Contract deployment: MockERC20
+  Contract address:    0x5fbdb2315678afecb367f032d93f642f64180aa3
+  Transaction:         0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            551594 of 16777216
+  Block #1:            0xd850f3754f76a2261e9b6d41cd83b3060a19356e3a70f687383971b3d40b7586
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+PTK: 0x5FbDB2315678afecb367f032d93F642f64180aa3 deployTx: 0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: MockERC20
+  Contract address:    0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
+  Transaction:         0x5b7587e8cafecb4cb87592b2c40d7dda7e457b3552e18938c51e286fd8ae05bc
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            551570 of 16777216
+  Block #2:            0x599ea716f6eafd17ce5d7251fdd4319216580345cc82a40dafba54c91eab2ba0
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+RWD: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 deployTx: 0x5b7587e8cafecb4cb87592b2c40d7dda7e457b3552e18938c51e286fd8ae05bc
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: GitEscrow
+  Contract address:    0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+  Transaction:         0x970c5e6d3b0825234989620092773b281a3d20691eb786c22278d74daa441053
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            1869326 of 16777216
+  Block #3:            0x304d792141ff5930b6f9cf2ed0c25ec060ca7e533685616b0010fb1f25b9df81
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+GitEscrow: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 deployTx: 0x970c5e6d3b0825234989620092773b281a3d20691eb786c22278d74daa441053
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: ShipRewards
+  Contract address:    0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
+  Transaction:         0xf9bda7b950d80df29172ea2213159f1576e6b3ba0495a2ae9690bb8473fd06cf
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            793530 of 16777216
+  Block #4:            0x4048e78b9bc42bd79f8eacb1649ecf17e1472cb86a0e2333ac1e09ff2466de60
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+ShipRewards: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9 deployTx: 0xf9bda7b950d80df29172ea2213159f1576e6b3ba0495a2ae9690bb8473fd06cf
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockERC20#mint
+  Transaction:         0xee6c2808b4002778359d77436ae2d40bdd47bebc0aaf03ad12e2867ab5d0b640
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+  Value:               0 ETH
+  Gas used:            68421 of 16777216
+  Block #5:            0xbb656f9366f13e7b32d0fdeea227e4b758509c578a6e3a60fec94f9aca50fba8
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+mint PTK→recipient tx: 0xee6c2808b4002778359d77436ae2d40bdd47bebc0aaf03ad12e2867ab5d0b640
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockERC20#mint
+  Transaction:         0x3238494693347908eab78fa254f5ba3aefa5472dc49d337d4e1d1bc76465a171
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
+  Value:               0 ETH
+  Gas used:            68445 of 16777216
+  Block #6:            0x1b8f03e6967755acd030e222408b91f08f33db8d5b886dfe6ddc3f956189d080
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+mint RWD→deployer tx: 0x3238494693347908eab78fa254f5ba3aefa5472dc49d337d4e1d1bc76465a171
+repoId: 0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockERC20#approve
+  Transaction:         0xf6b889b8b1e548e9c34d69b02d4f882bbd1d0ebdfc622d4e28e35c7e030eab43
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+  Value:               0 ETH
+  Gas used:            46383 of 16777216
+  Block #7:            0x0b5e864b6989d3a22e189c1f46dd2fc2c3cca1785988a58e4a2c94e360d6a3b9
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+approve tx: 0xf6b889b8b1e548e9c34d69b02d4f882bbd1d0ebdfc622d4e28e35c7e030eab43
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       GitEscrow#lock
+  Transaction:         0xfe263c957fd15909e0547b0e6d4bae81a0c859072c77640d307c37064f4e5291
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+  Value:               0 ETH
+  Gas used:            263864 of 16777216
+  Block #8:            0xd143e5f69d116239fdb01843f8fcb3e1cc142044f957cd4e9c5fe0ff25d2b988
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+lock tx: 0xfe263c957fd15909e0547b0e6d4bae81a0c859072c77640d307c37064f4e5291
+[32meth_call[0m
+  Contract call:       GitEscrow#grants
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+on-chain grant: recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC totalLocked=1000000000000000000000 tokensPerMilestone=500000000000000000000 active=true
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockERC20#transfer
+  Transaction:         0x594d3e5bf2fc224984bfc52ff25be012359a0637fb4d59b715348d7e672aa432
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
+  Value:               0 ETH
+  Gas used:            46844 of 16777216
+  Block #9:            0xff1a4e9d31a16791c690761422168075613f9db5a6c4412423d9ff7d6632aa5e
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+fund ShipRewards tx: 0x594d3e5bf2fc224984bfc52ff25be012359a0637fb4d59b715348d7e672aa432
+[32meth_call[0m
+  Contract call:       MockERC20#balanceOf
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
+
+ShipRewards RWD balance: 10000000000000000000000
+state written to /home/hatch/workspace/claude-ship/github-vesting/tests/e2e/state.json
+recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC author=0x90F79bf6EB2c4f870365E785982E1f101E93b906 ptk=0x5FbDB2315678afecb367f032d93F642f64180aa3
+=== 3b. PRE-verification lock for testauthor/orderrepo (ordering fixture) ===
+[32meth_chainId[0m
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_blockNumber[0m
+[32meth_getBlockByNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockERC20#mint
+  Transaction:         0x698f3c4d1a81eae188ba2729e8b60e61143da2ce50a157a058fb9e6684a13ceb
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+  Value:               0 ETH
+  Gas used:            51309 of 16777216
+  Block #10:           0xadb0cf580f1fc698a2953dace5aa6fa587c2ae31d40a7b391e340a47ebb7bcb3
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockERC20#approve
+  Transaction:         0x1840900ac8a7d5268fbe3019771f113c2a3f123dfe6e8b37f57621300bef5515
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+  Value:               0 ETH
+  Gas used:            46371 of 16777216
+  Block #11:           0x3ef104aa8cbe220db3ebb92b9ac410fe595f044fcf2a999c67eb6a6eadc32d75
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       GitEscrow#lock
+  Transaction:         0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f896323600fa15
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+  Value:               0 ETH
+  Gas used:            229652 of 16777216
+  Block #12:           0xd6269152cad9dd6751819a76ef44d203e6cdfcf675d2259fa50f75656d9b516f
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_getBlockByNumber[0m
+repo: testauthor/orderrepo repoId: 0x0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f blockTimestamp: 1795658692
+LOCK_TX=0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f896323600fa15
+pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f896323600fa15
+=== 4. fixture GitHub API ===
+[fixture] GitHub API fixture listening on http://127.0.0.1:8977
+=== 5. vesting server (GITHUB_API_BASE_URL -> fixture) ===
+[github-vesting] Server running on 127.0.0.1:3210
+[github-vesting] Webhook URL: http://127.0.0.1:3210/api/webhook/github
+[github-vesting] GitLawb webhook: http://127.0.0.1:3210/api/webhook/gitlawb
+[github-vesting] Agent API: http://127.0.0.1:3210/api/agent/briefing
+server up
+=== 6. seed: grant + @testauthor links (author, recipient) + PTK mint ===
+server-side repoId (no 0x): 533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
+on-chain repoId matches: true
+grant saved for testowner/testrepo
+linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T02:04:48.579Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","linkedAt":"2026-11-26T02:04:50.042Z","source":"signed"},{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T02:04:48.579Z","source":"signed"}]
+linked wallets for @gregory: [{"wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","linkedAt":"2026-11-26T02:04:50.062Z","source":"signed"}]
+[31meth_fillTransaction - Method not supported[0m
+[32meth_getTransactionCount[0m
+[32meth_getBlockByNumber[0m
+[32meth_maxPriorityFeePerGas[0m
+[32meth_estimateGas[0m
+[32meth_sendRawTransaction[0m
+  Contract call:       MockERC20#mint
+  Transaction:         0x1be72af0d441a0be50d648e3276f1afd189194e7fd83962514a71a8b289ad444
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+  Value:               0 ETH
+  Gas used:            51321 of 51321
+  Block #13:           0x34e4f90d9d68a00d94d60667ded91b366c52a5b7529b7014149fe3e821c5ad38
+
+minted 100 PTK -> recipient, tx: 0x1be72af0d441a0be50d648e3276f1afd189194e7fd83962514a71a8b289ad444
+=== 7. verify: app NOT installed -> refused, no token ===
+[fixture] GET /repos/testauthor/notinstalled/installation -> 404
+{"ok":false,"error":"GitHub App is not installed on testauthor/notinstalled — install the Proof of Dev GitHub App and select this repository, then verify again","code":"LAUNCH_APP_NOT_INSTALLED","recognition":"No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment."}
+PASS: not-installed refused
+PASS: not-installed issued no token
+=== 8. verify: login not owner/admin -> refused ===
+[fixture] GET /repos/otherowner/theirrepo/installation -> 200
+[fixture] POST /app/installations/777/access_tokens -> 201
+[fixture] GET /repos/otherowner/theirrepo -> 200
+[fixture] GET /repos/otherowner/theirrepo -> 200
+[fixture] GET /repos/otherowner/theirrepo/collaborators/testauthor/permission -> 200
+{"ok":false,"error":"GitHub login @testauthor does not own otherowner/theirrepo and is not an admin on it — verification requires the repo owner or an admin","code":"LAUNCH_NOT_OWNER_OR_ADMIN","recognition":"No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment."}
+PASS: not-owner refused
+PASS: not-owner issued no token
+=== 9. verify: wallet not linked to login -> refused ===
+[fixture] GET /repos/testauthor/launchrepo/installation -> 200
+[fixture] GET /repos/testauthor/launchrepo -> 200
+[fixture] GET /repos/testauthor/launchrepo -> 200
+{"ok":false,"error":"Wallet 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 is not linked to GitHub login @testauthor — link the wallet first (POST /api/dev/link-wallet/* or the agent magic-link flow), then verify again","code":"LAUNCH_WALLET_NOT_LINKED","recognition":"No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment."}
+PASS: unlinked wallet refused
+PASS: unlinked issued no token
+=== 10. verify: happy path -> token issued ===
+[fixture] GET /repos/testauthor/launchrepo/installation -> 200
+[fixture] GET /repos/testauthor/launchrepo -> 200
+[fixture] GET /repos/testauthor/launchrepo -> 200
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9sYXVuY2hyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NjU4NjkwLCJleHAiOjE3OTU2NTk1OTAsIm5vbmNlIjoiYThhMGIwYjM1ZjJmNzY0YzNhMzg5NjRmMDk4MTM2YzMifQ.2aeBf40LOwfSQDGIgtLOctGgUhmwwj4SlgBD7N9W3BY","expiresAt":"2026-11-26T02:19:50.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+PASS: happy verify ok
+PASS: happy verify has token
+token captured (354 chars)
+=== 10b. POST-verification lock for launchrepo (ordering happy fixture) ===
+[32meth_chainId[0m
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_blockNumber[0m
+[32meth_getBlockByNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockERC20#mint
+  Transaction:         0xbb22f1ca16a68182ecbfa12eb0aa071e87b111f72c8ecea156c39aa742973509
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+  Value:               0 ETH
+  Gas used:            34209 of 16777216
+  Block #14:           0x33c8367a210d912f3fa76d480ed8ce2b95eacbd02639bf16aab5d494639e524e
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockERC20#approve
+  Transaction:         0xc45af9ea0d9916e6e3051abcfe6fbc1ba22269a746198373508b8b3cf311277f
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+  Value:               0 ETH
+  Gas used:            46371 of 16777216
+  Block #15:           0x45598a15117b0c05eac702c99a6d727d46c42aa3d4109fa5c45facfa925dff4e
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       GitEscrow#lock
+  Transaction:         0x91099a008baa3440ac8e8fe377ed03a9c454c21dc344c87fe1bc0b929400c661
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+  Value:               0 ETH
+  Gas used:            234452 of 16777216
+  Block #16:           0xee9ad2072a57ea28e21796ec11a7a5bd7a217387667bb0239cf54e76054507b7
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_getBlockByNumber[0m
+repo: testauthor/launchrepo repoId: 0xcff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba blockTimestamp: 1795658704
+LOCK_TX=0x91099a008baa3440ac8e8fe377ed03a9c454c21dc344c87fe1bc0b929400c661
+post-verification lock tx: 0x91099a008baa3440ac8e8fe377ed03a9c454c21dc344c87fe1bc0b929400c661
+=== 11. prepare-lock: NO token -> refused ===
+{"ok":false,"error":"Launch verification required — no verification token presented. Verify first: POST /api/launch/verify-github (or the MCP verify_github tool). An agent's assertion that the GitHub App is installed is not verification.","code":"LAUNCH_VERIFICATION_REQUIRED","verifyFirst":"POST /api/launch/verify-github { githubLogin, repo, wallet, chain }","recognition":"No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment."}
+PASS: no-token prepare refused
+PASS: no-token prepare returned no txs
+=== 12. prepare-lock: token for repo A used on repo B -> refused ===
+{"ok":false,"error":"Launch verification token was issued for testauthor/launchrepo, not testauthor/otherrepo — tokens are bound to one repo; verify again for this repo","code":"LAUNCH_TOKEN_REPO_MISMATCH","verifyFirst":"POST /api/launch/verify-github { githubLogin, repo, wallet, chain }","recognition":"No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment."}
+PASS: repo mismatch refused
+=== 13. prepare-lock: token wallet X presented as wallet Y -> refused ===
+{"ok":false,"error":"Launch verification token was issued for wallet 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc, not 0x90f79bf6eb2c4f870365e785982e1f101e93b906 — tokens are bound to one wallet; verify again for this wallet","code":"LAUNCH_TOKEN_WALLET_MISMATCH","verifyFirst":"POST /api/launch/verify-github { githubLogin, repo, wallet, chain }","recognition":"No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment."}
+PASS: wallet mismatch refused
+=== 14. prepare-lock: expired token -> refused ===
+{"ok":false,"error":"Launch verification token expired — re-run POST /api/launch/verify-github","code":"LAUNCH_TOKEN_EXPIRED","verifyFirst":"POST /api/launch/verify-github { githubLogin, repo, wallet, chain }","recognition":"No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment."}
+PASS: expired token refused
+=== 15. prepare-lock: happy token -> prepare succeeds ===
+[fixture] GET /repos/testauthor/launchrepo/installation -> 200
+[fixture] GET /repos/testauthor/launchrepo -> 200
+[fixture] GET /repos/testauthor/launchrepo/installation -> 200
+[fixture] GET /repos/testauthor/launchrepo -> 200
+[32meth_accounts[0m
+[32meth_accounts (2)[0m
+[32meth_accounts (3)[0m
+[32meth_call[0m
+  Contract call:       MockERC20#decimals
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+[32meth_call[0m
+  Contract call:       MockERC20#symbol
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+[32meth_call[0m
+  Contract call:       MockERC20#balanceOf
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+[31meth_call[0m
+  Contract call:       MockERC20#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: Transaction reverted without a reason
+
+[31meth_call[0m
+  Contract call:       MockERC20#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: Transaction reverted without a reason
+
+[31meth_call[0m
+  Contract call:       MockERC20#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: Transaction reverted without a reason
+
+[31meth_call[0m
+  Contract call:       MockERC20#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: Transaction reverted without a reason
+
+[32meth_call[0m
+  Contract call:       MockERC20#allowance
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+[32meth_call[0m
+  Contract call:       MockERC20#transfer
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+[32meth_call[0m
+  Contract call:       MockERC20#allowance
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+{"ok":true,"apiBase":"http://127.0.0.1:3210","webFallback":"http://localhost:5173/create","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","repo":"testauthor/launchrepo","installationId":777,"chain":"base","tokenSymbol":"PTK","tokenDecimals":18,"amountWei":"10000000000000000000","amountFormatted":"10","streaming":false,"lockFunction":"lock","totalPushes":10,"pushesPerMilestone":10,"tokensPerMilestone":"10000000000000000000","transactions":[{"step":"approve","description":"Approve 10 PTK for GitEscrow","to":"0x5FbDB2315678afecb367f032d93F642f64180aa3","data":"0x095ea7b30000000000000000000000009fe46736679d2d9a65f0992f2272de9f3c7fa6e00000000000000000000000000000000000000000000000008ac7230489e80000","value":"0x0","chainId":8453},{"step":"lock","description":"Lock 10 PTK for testauthor/launchrepo","to":"0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0","data":"0xc9c2dca6cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa30000000000000000000000000000000000000000000000008ac7230489e80000000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000a","value":"0x0","chainId":8453}],"needsApprove":true,"repoClaim":{"verified":false,"status":"none","claimUrl":"http://127.0.0.1:3210/api/repo-claims/challenge","verifyHint":"Optional: POST /api/repo-claims/challenge then push .proofofdev/claim.json before locking"},"statusUrl":"http://localhost:5173/lock/testauthor/launchrepo","bankrPrompt":"Execute GitHub vesting lock on Base for wallet 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc:\nRepo: testauthor/launchrepo\nToken: PTK (10)\nSchedule: 10 verified pushes, release every 10\n\nSubmit these 2 transaction(s) in order on Base (chainId 8453):\n1. Approve 10 PTK for GitEscrow → to 0x5FbDB2315678afecb367f032d93F642f64180aa3\n2. Lock 10 PTK for testauthor/launchrepo → to 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0\n\nAfter the lock transaction confirms, call:\nPOST http://127.0.0.1:3210/api/agent/confirm-lock\nbody: { \"repo\": \"testauthor/launchrepo\", \"lockTxHash\": \"<lock tx hash>\" }\nheader: x-wallet-address: 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","bankrSubmitUrl":"https://api.bankr.bot/wallet/submit","confirmUrl":"http://127.0.0.1:3210/api/agent/confirm-lock","replyText":"Ready to lock 10 PTK on testauthor/launchrepo.\n2 Base tx(s): approve + lock.\nSchedule: all tokens after 10 verified pushes.\n\nBankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.\n\nIf Bankr blocks approve (untrusted_address), use web UI: http://localhost:5173/create","tweetReply":"Ready to lock 10 PTK on testauthor/launchrepo.\n2 Base tx(s): approve + lock.\nSchedule: all tokens after 10 verified pushes.\n\nBankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.\n\nIf Bankr blocks approve (untrusted_address), use web UI: http://localhost:5173/create"}
+PASS: happy prepare ok
+PASS: happy prepare has transactions
+=== 16. confirm-lock: NO token -> refused ===
+{"ok":false,"error":"Launch verification required — no verification token presented. Verify first: POST /api/launch/verify-github (or the MCP verify_github tool). An agent's assertion that the GitHub App is installed is not verification.","code":"LAUNCH_VERIFICATION_REQUIRED","verifyFirst":"POST /api/launch/verify-github { githubLogin, repo, wallet, chain }","recognition":"No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment."}
+PASS: no-token confirm refused
+=== 17. register: garbage verification token -> refused, no grant ===
+{"ok":false,"error":"Malformed launch verification token","code":"LAUNCH_TOKEN_MALFORMED"}
+PASS: garbage token register refused
+=== 18. register: valid token -> grant stamped + launcher enrolled ===
+[32meth_getTransactionReceipt[0m
+[32meth_getTransactionReceipt (2)[0m
+[32meth_getTransactionReceipt (3)[0m
+[32meth_getBlockByNumber[0m
+[fixture] GET /repos/testauthor/launchrepo/installation -> 200
+[fixture] GET /repos/testauthor/launchrepo -> 200
+[register] New github vesting grant for testauthor/launchrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+[register] Verified launcher @testauthor enrolled for ShipRewards on testauthor/launchrepo
+{"ok":true,"repoId":"cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba","grant":{"repoId":"cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba","repoFullName":"testauthor/launchrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x91099a008baa3440ac8e8fe377ed03a9c454c21dc344c87fe1bc0b929400c661","installationId":777,"launchVerified":true,"launchVerifiedLogin":"testauthor","launcherRewardEnrolled":true,"status":"active","streaming":false,"createdAt":"2026-11-26T02:04:54.728Z","updatedAt":"2026-11-26T02:04:54.728Z"},"lockPath":"/lock/testauthor/launchrepo","lockUrl":"http://localhost:5173/lock/testauthor/launchrepo"}
+PASS: verified register ok
+PASS: grant stamped launchVerified
+PASS: grant stamped launcherRewardEnrolled
+{"ok":true,"repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":true,"enrollment":{"repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","githubLogin":"testauthor","verificationNonce":"a8a0b0b35f2f764c3a38964f098136c3","chainId":8453,"enrolledAt":"2026-11-26T02:04:54.730Z"}}
+PASS: enrolment record present
+PASS: enrolment ties the login
+PASS: enrolment ties the token id (nonce)
+=== 19. register: NO token (unverified launch) -> registers, NO enrolment ===
+[32meth_getTransactionReceipt[0m
+[32meth_getTransactionReceipt (2)[0m
+[32meth_getTransactionReceipt (3)[0m
+[fixture] GET /repos/testauthor/otherrepo/installation -> 200
+[fixture] GET /repos/testauthor/otherrepo -> 200
+[register] New github vesting grant for testauthor/otherrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+{"ok":true,"repoId":"18f9441b9c2c234baaaf3859b2ca5eec3d28b9b7b9b8f378868b67bcd6d9ce8d","grant":{"repoId":"18f9441b9c2c234baaaf3859b2ca5eec3d28b9b7b9b8f378868b67bcd6d9ce8d","repoFullName":"testauthor/otherrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T02:04:54.805Z","updatedAt":"2026-11-26T02:04:54.805Z"},"lockPath":"/lock/testauthor/otherrepo","lockUrl":"http://localhost:5173/lock/testauthor/otherrepo"}
+PASS: unverified register ok (legacy path)
+PASS: unverified grant NOT stamped enrolled
+{"ok":true,"repo":"testauthor/otherrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":false,"enrollment":null}
+PASS: unverified launch has no enrolment
+=== 20. prepare-lock: token for Base presented for Robinhood Chain -> refused (wrong chain) ===
+{"ok":false,"error":"Launch verification token was issued for chainId 8453, not 4663 — verify again for this chain","code":"LAUNCH_TOKEN_CHAIN_MISMATCH","verifyFirst":"POST /api/launch/verify-github { githubLogin, repo, wallet, chain }","recognition":"No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment."}
+PASS: wrong-chain token refused
+=== 21. prepare-lock: correctly-signed token with NO issuance record -> refused ===
+{"ok":false,"error":"Launch verification token has no server issuance record (unknown or already-lapsed nonce) — verify again via POST /api/launch/verify-github","code":"LAUNCH_TOKEN_UNKNOWN_NONCE","verifyFirst":"POST /api/launch/verify-github { githubLogin, repo, wallet, chain }","recognition":"No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment."}
+PASS: no-issuance-record token refused
+=== 22. token reuse within TTL is INTENTIONAL: same token prepares again -> succeeds ===
+[fixture] GET /repos/testauthor/launchrepo/installation -> 200
+[fixture] GET /repos/testauthor/launchrepo -> 200
+[fixture] GET /repos/testauthor/launchrepo/installation -> 200
+[fixture] GET /repos/testauthor/launchrepo -> 200
+[32meth_call[0m
+  Contract call:       MockERC20#decimals
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+[32meth_call[0m
+  Contract call:       MockERC20#symbol
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+[32meth_call[0m
+  Contract call:       MockERC20#balanceOf
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+[31meth_call[0m
+  Contract call:       MockERC20#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: Transaction reverted without a reason
+
+[31meth_call[0m
+  Contract call:       MockERC20#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: Transaction reverted without a reason
+
+[31meth_call[0m
+  Contract call:       MockERC20#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: Transaction reverted without a reason
+
+[31meth_call[0m
+  Contract call:       MockERC20#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: Transaction reverted without a reason
+
+[32meth_call[0m
+  Contract call:       MockERC20#allowance
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+[32meth_call[0m
+  Contract call:       MockERC20#transfer
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+[32meth_call[0m
+  Contract call:       MockERC20#allowance
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+{"ok":true,"apiBase":"http://127.0.0.1:3210","webFallback":"http://localhost:5173/create","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","repo":"testauthor/launchrepo","installationId":777,"chain":"base","tokenSymbol":"PTK","tokenDecimals":18,"amountWei":"10000000000000000000","amountFormatted":"10","streaming":false,"lockFunction":"lock","totalPushes":10,"pushesPerMilestone":10,"tokensPerMilestone":"10000000000000000000","transactions":[{"step":"approve","description":"Approve 10 PTK for GitEscrow","to":"0x5FbDB2315678afecb367f032d93F642f64180aa3","data":"0x095ea7b30000000000000000000000009fe46736679d2d9a65f0992f2272de9f3c7fa6e00000000000000000000000000000000000000000000000008ac7230489e80000","value":"0x0","chainId":8453},{"step":"lock","description":"Lock 10 PTK for testauthor/launchrepo","to":"0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0","data":"0xc9c2dca6cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa30000000000000000000000000000000000000000000000008ac7230489e80000000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000a","value":"0x0","chainId":8453}],"needsApprove":true,"repoClaim":{"verified":false,"status":"none","claimUrl":"http://127.0.0.1:3210/api/repo-claims/challenge","verifyHint":"Optional: POST /api/repo-claims/challenge then push .proofofdev/claim.json before locking"},"statusUrl":"http://localhost:5173/lock/testauthor/launchrepo","bankrPrompt":"Execute GitHub vesting lock on Base for wallet 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc:\nRepo: testauthor/launchrepo\nToken: PTK (10)\nSchedule: 10 verified pushes, release every 10\n\nSubmit these 2 transaction(s) in order on Base (chainId 8453):\n1. Approve 10 PTK for GitEscrow → to 0x5FbDB2315678afecb367f032d93F642f64180aa3\n2. Lock 10 PTK for testauthor/launchrepo → to 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0\n\nAfter the lock transaction confirms, call:\nPOST http://127.0.0.1:3210/api/agent/confirm-lock\nbody: { \"repo\": \"testauthor/launchrepo\", \"lockTxHash\": \"<lock tx hash>\" }\nheader: x-wallet-address: 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","bankrSubmitUrl":"https://api.bankr.bot/wallet/submit","confirmUrl":"http://127.0.0.1:3210/api/agent/confirm-lock","replyText":"Ready to lock 10 PTK on testauthor/launchrepo.\n2 Base tx(s): approve + lock.\nSchedule: all tokens after 10 verified pushes.\n\nBankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.\n\nIf Bankr blocks approve (untrusted_address), use web UI: http://localhost:5173/create","tweetReply":"Ready to lock 10 PTK on testauthor/launchrepo.\n2 Base tx(s): approve + lock.\nSchedule: all tokens after 10 verified pushes.\n\nBankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.\n\nIf Bankr blocks approve (untrusted_address), use web UI: http://localhost:5173/create"}
+PASS: token reuse across calls within TTL ok
+=== 23. ordering: lock tx PREDATES the verification token -> registers UNSTAMPED, no enrolment ===
+[fixture] GET /repos/testauthor/orderrepo/installation -> 200
+[fixture] GET /repos/testauthor/orderrepo -> 200
+[fixture] GET /repos/testauthor/orderrepo -> 200
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/orderrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9vcmRlcnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NTg2OTksImV4cCI6MTc5NTY1OTU5OSwibm9uY2UiOiJkZmU2OWZhYTA2NDc4MmE5MDRkYzM3NjM5YjdkNzMwNyJ9.JVSewWeNz9-R99KqJU7D8xzsfrvRXqx6ui-5Sdf-YTc","expiresAt":"2026-11-26T02:19:59.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+PASS: orderrepo verify ok
+[32meth_getTransactionReceipt[0m
+[32meth_getTransactionReceipt (2)[0m
+[32meth_getTransactionReceipt (3)[0m
+[32meth_getBlockByNumber[0m
+[register] Launch stamp withheld for testauthor/orderrepo: LAUNCH_ORDERING_PREDATES_VERIFICATION — Lock transaction predates the verification token — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Verify first, then lock, then register.
+[fixture] GET /repos/testauthor/orderrepo/installation -> 200
+[fixture] GET /repos/testauthor/orderrepo -> 200
+[register] New github vesting grant for testauthor/orderrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+{"ok":true,"repoId":"0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f","grant":{"repoId":"0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f","repoFullName":"testauthor/orderrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f896323600fa15","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T02:04:59.162Z","updatedAt":"2026-11-26T02:04:59.162Z"},"lockPath":"/lock/testauthor/orderrepo","lockUrl":"http://localhost:5173/lock/testauthor/orderrepo","launchVerification":{"stamped":false,"code":"LAUNCH_ORDERING_PREDATES_VERIFICATION","note":"Lock transaction predates the verification token — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Verify first, then lock, then register."}}
+PASS: predated-lock register ok (ordinary grant)
+PASS: predated-lock register reports unstamped
+PASS: predated-lock grant NOT launchVerified
+PASS: predated-lock grant NOT enrolled
+{"ok":true,"repo":"testauthor/orderrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":false,"enrollment":null}
+PASS: predated-lock launch has no enrolment
+=== 24. ordering FAIL-CLOSED: valid token + registration tx with NO Locked event -> UNSTAMPED ===
+[fixture] GET /repos/testauthor/nolockrepo/installation -> 200
+[fixture] GET /repos/testauthor/nolockrepo -> 200
+[fixture] GET /repos/testauthor/nolockrepo -> 200
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/nolockrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ub2xvY2tyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NjU4Njk5LCJleHAiOjE3OTU2NTk1OTksIm5vbmNlIjoiZGNjMmI3ZmZlODdhNmM2OWI4M2M2YmViMzAyNDJlZWMifQ.MQQccUGns96UhDNqNUQd-ygAu25ZmHsVRYZOq9LCoUk","expiresAt":"2026-11-26T02:19:59.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+PASS: nolockrepo verify ok
+[32meth_getTransactionReceipt[0m
+[32meth_getTransactionReceipt (2)[0m
+[32meth_getTransactionReceipt (3)[0m
+[register] Launch stamp withheld for testauthor/nolockrepo: LAUNCH_ORDERING_UNPROVABLE — Registration transaction carries no provable lock timestamp (no Locked event) — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Register with the lock transaction itself so ordering (verify → lock) can be proven.
+[fixture] GET /repos/testauthor/nolockrepo/installation -> 200
+[fixture] GET /repos/testauthor/nolockrepo -> 200
+[register] New github vesting grant for testauthor/nolockrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+{"ok":true,"repoId":"aa8677a880a938ed55dcdc446537b9b32290a7cf96a6d16887bd5bfd61a71278","grant":{"repoId":"aa8677a880a938ed55dcdc446537b9b32290a7cf96a6d16887bd5bfd61a71278","repoFullName":"testauthor/nolockrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T02:04:59.274Z","updatedAt":"2026-11-26T02:04:59.274Z"},"lockPath":"/lock/testauthor/nolockrepo","lockUrl":"http://localhost:5173/lock/testauthor/nolockrepo","launchVerification":{"stamped":false,"code":"LAUNCH_ORDERING_UNPROVABLE","note":"Registration transaction carries no provable lock timestamp (no Locked event) — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Register with the lock transaction itself so ordering (verify → lock) can be proven."}}
+PASS: unprovable-ordering register ok (ordinary grant)
+PASS: unprovable-ordering reports unstamped
+PASS: unprovable-ordering carries the fail-closed code
+PASS: unprovable-ordering grant NOT launchVerified
+PASS: unprovable-ordering grant NOT enrolled
+{"ok":true,"repo":"testauthor/nolockrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":false,"enrollment":null}
+PASS: unprovable-ordering launch has no enrolment
+=== 25. Gregory exception (round-2): the platform's OWN launch may omit the vault ===
+[fixture] GET /repos/gregory/platformrepo/installation -> 200
+[fixture] GET /repos/gregory/platformrepo -> 200
+[fixture] GET /repos/gregory/platformrepo -> 200
+{"ok":true,"verified":true,"githubLogin":"gregory","repo":"gregory/platformrepo","wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6ImdyZWdvcnkiLCJyZXBvIjoiZ3JlZ29yeS9wbGF0Zm9ybXJlcG8iLCJ3YWxsZXQiOiIweDM3NGQ5MWE1Njc0ZmE3Y2Y4NmU3MjUwOTNiNTg0OGI5N2UxZTEzYjQiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NTg2OTksImV4cCI6MTc5NTY1OTU5OSwibm9uY2UiOiJjNzBhZWFiZjY3ZDgyZDczZTU2M2E2MmM4MDUyNTAyNCJ9.3ipPlfmbGSuEFd2MGKqU_cGTaa-7E-ScZKpy08Psn_4","expiresAt":"2026-11-26T02:19:59.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+PASS: gregory verify ok
+{"ok":true,"prepared":true,"repo":"gregory/platformrepo","wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","chain":"base","githubLogin":"gregory","feeLockVault":null,"platformLaunch":true,"launchInput":{"name":"Platform Token","symbol":"PLAT","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input for the platform's own launch. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to Gregory's wallet (the platform share — the scoped raw-wallet exception; launcher launches always use a fee-lock vault). Bankr time-vesting explicitly off (vesting.bps = 0)."}
+PASS: gregory prepare-launch without vault succeeds (platform launch)
+PASS: gregory exception is flagged as a platform launch
+PASS: gregory raw wallet appears ONLY in the 7500 platform position
+PASS: treasury still gets its 2500 on the platform launch
+=== 26. exception scope: a NON-Gregory launcher omitting the vault is still refused ===
+[fixture] GET /repos/testauthor/launchrepo/installation -> 200
+[fixture] GET /repos/testauthor/launchrepo -> 200
+[fixture] GET /repos/testauthor/launchrepo -> 200
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9sYXVuY2hyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NjU4Njk5LCJleHAiOjE3OTU2NTk1OTksIm5vbmNlIjoiMGYxYTFiYzVhOWM3NzdjYjVjNGMxNTU0OTI2N2E3YzYifQ.W65usHGgYrlfS5rzKYqv0yMD9igAwFLnzTv4aKJhYeo","expiresAt":"2026-11-26T02:19:59.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":false,"error":"feeLockVault required: a platform launch names the project's FeeLockVault as the launcher-share fee recipient so trading fees auto-lock instead of arriving liquid (Gregory's fee-lock rule). Deploy/register the vault first, then prepare the launch.","code":"LAUNCH_FEE_VAULT_REQUIRED"}
+PASS: non-gregory no-vault prepare refused
+=== LAUNCH-GATE DRIVER DONE — failures: 0 ===

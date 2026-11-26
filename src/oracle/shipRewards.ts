@@ -80,6 +80,111 @@ export function mergeCommitHashBytes32(mergeCommitSha: string): `0x${string}` {
 }
 
 /**
+ * Reviewer swarm reward per PASS reviewer in a counted push's quorum,
+ * in token wei. Config: SHIP_REVIEWER_REWARD_PER_MERGE (env). Unset →
+ * 10% of the base per-merge reward — a LABELLED PLACEHOLDER: the
+ * reviewer share of the schedule is Gregory's open decision (§8B.2),
+ * not a product constant. 0 disables reviewer rewards.
+ */
+export function configuredReviewerReward(): bigint {
+  const raw = (env.SHIP_REVIEWER_REWARD_PER_MERGE ?? "").trim();
+  if (raw) {
+    try {
+      return parseWei(raw);
+    } catch {
+      console.warn(`[ship-rewards] SHIP_REVIEWER_REWARD_PER_MERGE="${raw}" is not a valid wei amount — reviewer rewards disabled`);
+      return 0n;
+    }
+  }
+  return configuredRewardPerMerge() / 10n;
+}
+
+/**
+ * On-chain payment key for ONE reviewer's reward on ONE merge. The
+ * pool's paid[] map is keyed per merge hash, so a reviewer payment
+ * needs its own derived key (merge SHA + reviewer wallet) or it would
+ * collide with the author's payment for the same merge. The derived
+ * key keeps the same two-layer idempotency: the oracle checks
+ * isPaid(derivedKey) before sending, and the contract refuses a
+ * second payment under it — webhook replays can never double-pay a
+ * reviewer.
+ */
+export function reviewerPaymentKey(mergeCommitSha: string, reviewerWallet: string): string {
+  return `${mergeCommitSha.toLowerCase()}:reviewer:${reviewerWallet.toLowerCase()}`;
+}
+
+export type ReviewerRewardOutcome = {
+  reviewerLogin: string;
+  reviewerWallet: string;
+  result: RewardResult;
+};
+
+/**
+ * Pay the PASS reviewers whose reviews formed the quorum for a push
+ * that has JUST counted. Called only from the webhook counting path
+ * (processPush), after the verifier counted the push — reviewer
+ * attestations themselves never reach this function (design law,
+ * lib/swarmReview.ts). Reviewers are paid to their linked wallet
+ * (most recently linked, same rule as authors); a reviewer whose
+ * wallet has vanished accrues the reward as pending under the derived
+ * payment key, settling on their next wallet link like author
+ * accruals. Never throws.
+ */
+export async function payReviewerRewardsForMerge(args: {
+  chain: string;
+  repoId: string;
+  repoFullName: string;
+  mergeCommitSha: string;
+  reviewers: Array<{ reviewerLogin: string }>;
+}): Promise<ReviewerRewardOutcome[]> {
+  const outcomes: ReviewerRewardOutcome[] = [];
+  if (args.reviewers.length === 0) return outcomes;
+  if (!rewardsAddressForChain(args.chain)) return outcomes;
+
+  const amount = configuredReviewerReward();
+  if (amount <= 0n) return outcomes;
+
+  for (const { reviewerLogin } of args.reviewers) {
+    try {
+      const linked = await listLinkedWallets(reviewerLogin);
+      const wallet = linked[0]?.wallet;
+      if (!wallet) {
+        await recordPendingReward({
+          login: reviewerLogin.toLowerCase(),
+          repoId: args.repoId,
+          repoFullName: args.repoFullName,
+          mergeSha: reviewerPaymentKey(args.mergeCommitSha, reviewerLogin),
+          amount: amount.toString(),
+          chain: args.chain,
+          earnedAt: new Date().toISOString(),
+        });
+        outcomes.push({
+          reviewerLogin,
+          reviewerWallet: "",
+          result: {
+            paid: false,
+            pending: true,
+            reason: `No linked wallet for reviewer @${reviewerLogin} — reviewer reward accrued as pending`,
+          },
+        });
+        continue;
+      }
+      const result = await payReward({
+        chain: args.chain,
+        repoId: args.repoId,
+        recipient: wallet,
+        mergeCommitSha: reviewerPaymentKey(args.mergeCommitSha, wallet),
+        amount,
+      });
+      outcomes.push({ reviewerLogin, reviewerWallet: wallet, result });
+    } catch (err) {
+      console.error(`[ship-rewards] Reviewer reward failed for @${reviewerLogin}:`, err);
+    }
+  }
+  return outcomes;
+}
+
+/**
  * ShipRewards deployment for a chain (audit M9): each chain has its OWN
  * pool contract. Robinhood resolves ONLY from
  * SHIP_REWARDS_ROBINHOOD_ADDRESS — never fall back to the Base address,

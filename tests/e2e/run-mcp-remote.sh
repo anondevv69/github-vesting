@@ -2,7 +2,7 @@
 # TEST-ONLY driver for the remote MCP endpoint (Streamable HTTP at /mcp).
 # Boots the same local stack as run-attestation.sh (fake redis + Hardhat
 # node chainId 8453 + vesting server + seeded grant) and proves:
-#   (a) MCP over HTTP: initialize -> tools/list (8 tools) -> tools/call
+#   (a) MCP over HTTP: initialize -> tools/list (13 tools) -> tools/call
 #       vesting_status returns the seeded grant (mcp/smoke-http.mjs)
 #   (b) unknown tool + malformed JSON-RPC body error cleanly (in smoke-http)
 #   (c) stdio MCP server still passes its smoke (mcp/smoke.mjs) — no

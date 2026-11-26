@@ -9,22 +9,48 @@
  * transports so they cannot drift.
  *
  * The tools wrap the Proof of Dev agent API:
+ *   verify_github      POST /api/launch/verify-github (LAUNCH GATE — Step 0)
+ *   prepare_launch     POST /api/launch/prepare-launch (launch-SDK input;
+ *                                                    REQUIRES the gate token;
+ *                                                    launcher fee share → the
+ *                                                    project's FeeLockVault)
  *   vesting_status     GET  /api/agent/status?repo=
  *   agent_briefing     GET  /api/agent/briefing?wallet=
  *   agent_grants       GET  /api/agent/grants?wallet=
  *   repo_recent_pushes GET  /api/vesting/recent-pushes
- *   prepare_lock       POST /api/agent/lock        (prepare ONLY — never signs)
+ *   prepare_lock       POST /api/agent/lock        (prepare ONLY — never signs;
+ *                                                    REQUIRES a verification
+ *                                                    token from verify_github)
  *   report_ship        POST /api/agent/report-ship (attestation signal only)
  *   ship_report        GET  /api/agent/ship-report?repo=&sha=
  *   link_status        GET  /api/dev/link-wallet/<login>
+ *   enrol_reviewer     POST /api/agent/enrol-reviewer (swarm enrolment)
+ *   review_queue       GET  /api/agent/review-queue?repo=&reviewerLogin=
+ *   review_push        POST /api/agent/review-push   (swarm attestation)
  *
  * Trust notes (same as the API itself — the MCP layer adds no privilege):
  * - Reads are unauthenticated; a wallet address is public information.
+ * - LAUNCH GATE: verify_github is Step 0 of any launch/deploy. The server
+ *   checks (with the GitHub App's own credentials) that the App is
+ *   installed on the repo, the GitHub login owns/admins it, and the wallet
+ *   is linked to that login, then issues a short-lived token bound to
+ *   {login, repo, wallet, chainId}. prepare_lock REQUIRES that token —
+ *   an agent's self-assertion is not verification, and a launch without
+ *   one gets no grant, no push counting, no rewards, no listing.
  * - prepare_lock returns unsigned transactions. Signing + submission is a
  *   separate step that belongs to a human or an agent wallet — this server
  *   holds no keys and cannot move funds.
  * - report_ship files an attestation claim. It NEVER releases tokens;
  *   settlement is the GitHub webhook → verifier → oracle, unchanged.
+ * - REVIEWER SWARM: enrol_reviewer / review_queue / review_push let an
+ *   agent act as an independent push reviewer. Reviews are an
+ *   ADDITIONAL GATE, never a settlement trigger — a quorum can block a
+ *   push from counting on swarm-required grants, but no review (or
+ *   quorum of reviews) can force a release or a reward. Reviewer
+ *   rewards are paid by the oracle on the webhook path after a push
+ *   counts, never at review time. Independence is enforced server-side:
+ *   the author, the author's wallet, and the repo's launcher/claim
+ *   wallets cannot review.
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -99,6 +125,60 @@ export function createProofofdevServer(rawBase: string): McpServer {
   };
 
   reg.tool(
+    "verify_github",
+    "LAUNCH GATE — Step 0 before ANY launch/deploy: run the server-side GitHub App verification for " +
+      "{githubLogin, repo, wallet, chain}. The server (never the agent) checks that the Proof of Dev " +
+      "GitHub App is installed on the repo, that the login owns or admins the repo, and that the wallet " +
+      "is linked to that login. On success it returns a verificationToken (valid ~15 minutes, bound to " +
+      "exactly that login/repo/wallet/chain) which prepare_lock and confirm-lock REQUIRE. If this " +
+      "refuses, stop: relay the error (app not installed / not owner or admin / wallet not linked) and " +
+      "fix that precondition — do not proceed to prepare a launch unverified.",
+    {
+      githubLogin: z.string().describe("GitHub login that owns/admins the repo"),
+      repo: z.string().describe("GitHub repo as owner/repo"),
+      wallet: z.string().describe("Wallet address (0x…) linked to that GitHub login"),
+      chain: z.enum(["base", "robinhood", "base-sepolia"]).optional().describe("Chain (default base)"),
+    },
+    async ({ githubLogin, repo, wallet, chain }) =>
+      api("POST", "/api/launch/verify-github", {
+        wallet,
+        body: { githubLogin, repo, ...(chain !== undefined ? { chain } : {}) },
+      }),
+  );
+
+  reg.tool(
+    "prepare_launch",
+    "PREPARE a platform token launch (Bankr launch-SDK input): REQUIRES a verificationToken from " +
+      "verify_github (Step 0) bound to this exact repo + wallet + chain — without a valid one the server " +
+      "refuses (403) and nothing is prepared. Returns the launch input with the production fee split " +
+      "(2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's " +
+      "feeLockVault — the launcher's fee share NEVER goes to a raw wallet; fees auto-lock and unlock by " +
+      "counted pushes) and Bankr time-vesting explicitly off (vesting.bps = 0). PREPARED ONLY: this " +
+      "tool never signs, broadcasts, or launches. Fails closed (503) while the platform reward " +
+      "treasury wallet is undesignated.",
+    {
+      repo: z.string().describe("GitHub repo as owner/repo"),
+      wallet: z.string().describe("Launcher wallet address (0x…) — must match the verification token"),
+      verificationToken: z.string().describe("REQUIRED — token from verify_github for this exact repo + wallet + chain"),
+      feeLockVault: z.string().describe("The project's FeeLockVault address (0x…) — launcher-share fee recipient"),
+      name: z.string().describe("Token name for the launch input"),
+      symbol: z.string().describe("Token symbol for the launch input"),
+      chain: z.enum(["base", "robinhood", "base-sepolia"]).optional().describe("Chain (default base)"),
+    },
+    async ({ repo, wallet, verificationToken, feeLockVault, name, symbol, chain }) =>
+      api("POST", "/api/launch/prepare-launch", {
+        wallet,
+        body: {
+          repo,
+          verificationToken,
+          feeLockVault,
+          launch: { name, symbol },
+          ...(chain !== undefined ? { chain } : {}),
+        },
+      }),
+  );
+
+  reg.tool(
     "vesting_status",
     "Vesting progress for one repo (owner/repo): verified push count, pushes until next release, locked amount, grant status, recent counted pushes. No wallet needed.",
     { repo: z.string().describe("GitHub repo as owner/repo") },
@@ -130,25 +210,30 @@ export function createProofofdevServer(rawBase: string): McpServer {
   reg.tool(
     "prepare_lock",
     "PREPARE a vesting lock: returns the unsigned approve+lock transactions for a wallet to sign. " +
-      "This tool NEVER signs or submits anything and cannot move funds. Before calling, confirm with the user: " +
+      "This tool NEVER signs or submits anything and cannot move funds. LAUNCH GATE: a verificationToken " +
+      "from verify_github (Step 0) is REQUIRED, bound to this exact repo + wallet + chain — without a " +
+      "valid one the server refuses (403) and nothing is prepared. Before calling, confirm with the user: " +
       "token, amount, repo, chain, total pushes, pushes per milestone. After calling, present the prepared " +
-      "transactions for signing via the user's wallet route, then confirm with POST /api/agent/confirm-lock.",
+      "transactions for signing via the user's wallet route, then confirm with POST /api/agent/confirm-lock " +
+      "(which requires the same verificationToken).",
     {
       wallet: z.string().describe("Funding wallet address (0x…) — the lock recipient"),
       repo: z.string().describe("GitHub repo as owner/repo"),
       token: z.string().describe("ERC-20 contract address (0x…) or symbol held by the wallet"),
       amount: z.string().describe("Human amount, e.g. \"1000\", \"3.49M\", \"1.5K\""),
+      verificationToken: z.string().describe("REQUIRED — token from verify_github for this exact repo + wallet + chain"),
       totalPushes: z.number().int().positive().optional().describe("Total counted pushes in the schedule (default 10)"),
       pushesPerMilestone: z.number().int().positive().optional().describe("Pushes per release (default = totalPushes, one release at the end)"),
       chain: z.enum(["base", "robinhood", "base-sepolia"]).optional().describe("Chain (default base)"),
     },
-    async ({ wallet, repo, token, amount, totalPushes, pushesPerMilestone, chain }) => {
+    async ({ wallet, repo, token, amount, verificationToken, totalPushes, pushesPerMilestone, chain }) => {
       const result = await api("POST", "/api/agent/lock", {
         wallet,
         body: {
           repo,
           token,
           amount,
+          verificationToken,
           ...(totalPushes !== undefined ? { totalPushes } : {}),
           ...(pushesPerMilestone !== undefined ? { pushesPerMilestone } : {}),
           ...(chain !== undefined ? { chain } : {}),
@@ -201,6 +286,75 @@ export function createProofofdevServer(rawBase: string): McpServer {
     },
     async ({ repo, sha }) =>
       api("GET", `/api/agent/ship-report?repo=${encodeURIComponent(repo)}&sha=${encodeURIComponent(sha)}`),
+  );
+
+  reg.tool(
+    "enrol_reviewer",
+    "Enrol yourself (an agent with a linked wallet) as a Proof of Dev swarm reviewer: " +
+      "{githubLogin, wallet}. The wallet MUST already be linked to the login (signature/magic-link " +
+      "store) — reviewer rewards pay that wallet. Enrolment lets you review OTHER people's pushes; " +
+      "you can never review your own pushes, pushes from your wallet, or repos whose launcher/claim " +
+      "wallet is yours (the server refuses those with SWARM_REVIEW_NOT_INDEPENDENT).",
+    {
+      githubLogin: z.string().describe("Your GitHub login"),
+      wallet: z.string().describe("Your wallet address (0x…) — must be linked to the login"),
+    },
+    async ({ githubLogin, wallet }) =>
+      api("POST", "/api/agent/enrol-reviewer", { wallet, body: { githubLogin, wallet } }),
+  );
+
+  reg.tool(
+    "review_queue",
+    "List pushes awaiting swarm review on a repo, filtered for you: only pushes you are independent " +
+      "of and have not already reviewed, on grants where swarm review is required. Each entry carries " +
+      "the head SHA, the author, the server's diff fingerprint, any duplicate flag, and quorum progress.",
+    {
+      repo: z.string().describe("GitHub repo as owner/repo"),
+      reviewerLogin: z.string().describe("Your GitHub login (must be enrolled)"),
+    },
+    async ({ repo, reviewerLogin }) =>
+      api(
+        "GET",
+        `/api/agent/review-queue?repo=${encodeURIComponent(repo)}&reviewerLogin=${encodeURIComponent(reviewerLogin)}`,
+      ),
+  );
+
+  reg.tool(
+    "review_push",
+    "Submit your independent review attestation for one push: {repo, headSha, reviewerLogin, verdict, " +
+      "different, meaningful, checksPass, fingerprint}. Compute the fingerprint YOURSELF from the PR diff " +
+      "using the published algorithm (per-file sha256 of filename|status|normalized content, then sha256 " +
+      "over the sorted per-file hashes) — a PASS whose fingerprint does not match the server's does not " +
+      "count toward quorum. Check three things: the code is genuinely DIFFERENT (not a copy of a prior " +
+      "counted diff), MEANINGFUL (real code, not churn), and PASSING (checks/tests green). verdict=pass " +
+      "requires all three true. A FAIL vetoes the push. DESIGN LAW: a review is a GATE, never a " +
+      "settlement — it moves no money and counts nothing; the GitHub webhook remains the only path " +
+      "that counts pushes and pays (your reviewer reward included).",
+    {
+      repo: z.string().describe("GitHub repo as owner/repo"),
+      headSha: z.string().describe("40-char hex head/merge commit SHA of the push under review"),
+      reviewerLogin: z.string().describe("Your GitHub login (must be enrolled)"),
+      verdict: z.enum(["pass", "fail"]).describe("Your overall verdict"),
+      different: z.boolean().describe("True if the diff is genuinely new code, not a duplicate/replay of a prior counted diff"),
+      meaningful: z.boolean().describe("True if the diff is meaningful real code, not churn"),
+      checksPass: z.boolean().describe("True if the PR's checks/tests pass"),
+      fingerprint: z.string().describe("Your computed whole-diff fingerprint (64-char hex)"),
+      note: z.string().optional().describe("Optional note, e.g. why a FAIL was given (duplicate, churn, red checks)"),
+    },
+    async ({ repo, headSha, reviewerLogin, verdict, different, meaningful, checksPass, fingerprint, note }) =>
+      api("POST", "/api/agent/review-push", {
+        body: {
+          repo,
+          headSha,
+          reviewerLogin,
+          verdict,
+          different,
+          meaningful,
+          checksPass,
+          fingerprint,
+          ...(note !== undefined ? { note } : {}),
+        },
+      }),
   );
 
   reg.tool(

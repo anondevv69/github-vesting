@@ -46,6 +46,9 @@ export const env = {
   BASE_SEPOLIA_RPC_URL: get("BASE_SEPOLIA_RPC_URL", "https://sepolia.base.org"),
   ROBINHOOD_RPC_URL: get("ROBINHOOD_RPC_URL", "https://rpc.mainnet.chain.robinhood.com"),
   GIT_ESCROW_ADDRESS: get("GIT_ESCROW_ADDRESS"),
+  /** FeeStreamEscrow (launcher fee-lock grants) on Base — see
+   *  contracts/FeeStreamEscrow.sol. Unset disables fee-tranche releases. */
+  FEE_STREAM_ESCROW_ADDRESS: get("FEE_STREAM_ESCROW_ADDRESS"),
   /** GitEscrow on Base Sepolia — must NOT fall back to the mainnet address (audit M8). */
   GIT_ESCROW_SEPOLIA_ADDRESS: get("GIT_ESCROW_SEPOLIA_ADDRESS"),
   // ShipRewards pool (spec §8B) — optional; unset address or 0 amount disables rewards.
@@ -54,6 +57,32 @@ export const env = {
   SHIP_REWARDS_ROBINHOOD_ADDRESS: get("SHIP_REWARDS_ROBINHOOD_ADDRESS"),
   /** Flat per-counted-merge reward, in the reward token's smallest unit (wei). */
   SHIP_REWARD_PER_MERGE: get("SHIP_REWARD_PER_MERGE"),
+  /**
+   * Reviewer swarm: per-reviewer reward for a PASS review in a counted
+   * push's quorum, in wei. Unset → defaults to 10% of
+   * SHIP_REWARD_PER_MERGE (labelled placeholder — the reviewer share of
+   * the reward schedule is Gregory's open decision, spec §8B.2).
+   */
+  SHIP_REVIEWER_REWARD_PER_MERGE: get("SHIP_REVIEWER_REWARD_PER_MERGE"),
+  /** Reviewer swarm: independent PASS reviews required to count a
+   *  swarm-gated push. Unset/invalid → 2. */
+  SWARM_REVIEW_QUORUM: get("SWARM_REVIEW_QUORUM"),
+  /**
+   * Platform reward treasury wallet — the 25% fee recipient on Proof of
+   * Dev platform SDK launches (see src/lib/launchFeeConfig.ts). Must be a
+   * claim-capable wallet (claims are beneficiary-signed), NOT the
+   * ShipRewards contract. TODO: no dedicated wallet designated yet —
+   * leave unset until Gregory designates one; platform launch-template
+   * building fails closed while this is empty.
+   */
+  PLATFORM_REWARD_TREASURY_WALLET: get("PLATFORM_REWARD_TREASURY_WALLET"),
+  /** Bankr v4 launch factory + fee ledger (launch-record reads for
+   *  launch recognition, src/lib/launchRecognition.ts). Default to the
+   *  real Base/Robinhood addresses from the Bankr launch SDK; the E2E
+   *  suites override both to a local mock implementing the same three
+   *  views (poolOf / beneficiariesOf / creatorShareOf). */
+  BANKR_FACTORY_ADDRESS: get("BANKR_FACTORY_ADDRESS"),
+  BANKR_FEE_LEDGER_ADDRESS: get("BANKR_FEE_LEDGER_ADDRESS"),
   /** GitEscrow on Robinhood Chain mainnet (4663) */
   GIT_ESCROW_ROBINHOOD_ADDRESS: get("GIT_ESCROW_ROBINHOOD_ADDRESS"),
   /** Optional — protects POST /api/admin/delete-grant */

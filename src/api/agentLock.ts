@@ -22,6 +22,7 @@ import { prepareLockTransactions, parseVestingChain } from "../lib/lockBuilder";
 import { handleRegister } from "./register";
 import { resolveInstallationForRepo, validateRepoAccess, getRepoInfo } from "../github/githubApp";
 import { normalizeRepoFullName, splitRepo } from "../lib/repoId";
+import { validateLaunchToken } from "../lib/launchGate";
 import { getRepoClaim } from "../lib/repoClaims";
 import { Octokit } from "@octokit/rest";
 import { fetchBankrTokenInfo } from "./bankr";
@@ -62,6 +63,49 @@ function resolveWallet(req: Request): string | null {
   const raw = String(header ?? body ?? query ?? "").trim();
   if (!isValidWallet(raw)) return null;
   return raw.toLowerCase();
+}
+
+/**
+ * LAUNCH GATE (Gregory, 2026-11-25): every launch-prep / grant-registration
+ * surface on the agent path requires a valid GitHub App verification token
+ * (POST /api/launch/verify-github) bound to the exact repo + wallet + chain.
+ * No token → no prepare, no confirm, no grant. An agent's assertion that
+ * the app is installed is not verification; the server check is the only
+ * one that counts. Returns true when the request may proceed; otherwise
+ * the 403 response has already been written.
+ */
+export function extractLaunchToken(req: Request): string {
+  return String(
+    req.headers["x-launch-verification"] ??
+      req.body?.verificationToken ??
+      req.body?.launchVerificationToken ??
+      "",
+  ).trim();
+}
+
+async function requireLaunchGate(req: Request, res: Response): Promise<boolean> {
+  const wallet = resolveWallet(req);
+  const repo = String(req.body?.repo ?? req.body?.repoFullName ?? req.query["repo"] ?? "").trim();
+  // Malformed requests keep their existing, more specific 400s downstream.
+  if (!wallet || !repo.includes("/")) return true;
+  const verdict = await validateLaunchToken({
+    token: extractLaunchToken(req),
+    repo,
+    wallet,
+    chain: resolveChain(req),
+  });
+  if (!verdict.ok) {
+    res.status(403).json({
+      ok: false,
+      error: verdict.error,
+      code: verdict.code,
+      verifyFirst: "POST /api/launch/verify-github { githubLogin, repo, wallet, chain }",
+      recognition:
+        "No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment.",
+    });
+    return false;
+  }
+  return true;
 }
 
 function lockUrl(repoFullName: string): string {
@@ -295,6 +339,7 @@ export async function handleAgentFeeTokens(req: Request, res: Response): Promise
 }
 
 export async function handleAgentPrepareLock(req: Request, res: Response): Promise<void> {
+  if (!(await requireLaunchGate(req, res))) return;
   const parsed = await parseLockBody(req);
   if ("error" in parsed) {
     res.status(400).json({ ok: false, error: parsed.error });
@@ -394,6 +439,7 @@ export async function handleAgentPrepareLock(req: Request, res: Response): Promi
 }
 
 export async function handleAgentConfirmLock(req: Request, res: Response): Promise<void> {
+  if (!(await requireLaunchGate(req, res))) return;
   const wallet = resolveWallet(req);
   if (!wallet) {
     res.status(400).json({ ok: false, error: "wallet required" });
@@ -467,6 +513,9 @@ export async function handleAgentConfirmLock(req: Request, res: Response): Promi
     onChainTxHash: lockTxHash,
     installationId: gh.installationId ?? 0,
     streaming,
+    // Launch gate: forward the caller's verification token so grant
+    // registration re-validates it and marks the grant launchVerified.
+    launchVerificationToken: extractLaunchToken(req),
   };
 
   const mockRes = {

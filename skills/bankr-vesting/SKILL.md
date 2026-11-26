@@ -121,9 +121,41 @@ You **can** lock **any ERC-20 on Base or Robinhood Chain (4663)** from terminal 
 
 ### Lock flow (mandatory order)
 
+0. **LAUNCH GATE — verify first (no exceptions).**
+   **`POST https://api.proofofdev.xyz/api/launch/verify-github`** with the
+   `x-wallet-address` header and body `{ "githubLogin": "their-login", "repo": "owner/repo", "chain": "robinhood" }`.
+   The server checks that the Proof of Dev GitHub App is installed on the
+   repo, the login owns/admins it, and the wallet is linked to the login,
+   and returns a `verificationToken` (~15 min, bound to login+repo+wallet+chain).
+   Your own assertion that the app is installed is NOT verification — only
+   this server-issued token counts. If it refuses, relay the error and fix
+   the precondition; do not continue. Steps 1 and 5 REQUIRE the token
+   (body field `verificationToken`); without a valid one they return 403
+   and a grant registered without one gets no launch recognition: no
+   `launchVerified` stamp, no verified-launch listing, no ShipRewards
+   launcher enrolment. (Ordinary vesting registration and counting
+   toward a lock's own schedule are not launch recognition.)
+   A verified launcher is auto-enrolled for ShipRewards at
+   registration. Enrolment is an eligibility record, not a payout:
+   the per-merge ShipRewards payment that exists today pays the **PR
+   author** of each counted merge, on top of the lock's milestone
+   unlocks — a separate, already-working payout; never promise it to
+   a launcher for someone else's merges. Launcher trading fees:
+   today SDK fee recipients claim **liquid WETH** via `buildClaim`
+   and nothing auto-locks fees. Gregory's decided rule is that on a
+   Proof of Dev launch the launcher's fee recipient is a per-project
+   **fee-lock vault** (claim-capable smart account; not the raw
+   wallet, not the escrow contract, which cannot claim); a keeper
+   claims accrued fees and locks them into a fee-stream grant that
+   unlocks over subsequent counted pushes. Denomination is open
+   (WETH, or project token via PodSettler). That rule is **BUILT
+   locally** (FeeLockVault + FeeStreamEscrow + keeper + oracle
+   release step; E2E-proven) — not deployed, so it is not yet live
+   behavior on the platform.
+
 1. **`POST https://api.proofofdev.xyz/api/agent/lock`** (always — even when user gives a `0x` address):
    - Header `x-wallet-address: 0x…`
-   - Body: `{ "chain": "robinhood", "repo": "owner/repo", "token": "0x…", "amount": "614029187", "totalPushes": 50, "pushesPerMilestone": 50 }`
+   - Body: `{ "chain": "robinhood", "repo": "owner/repo", "token": "0x…", "amount": "614029187", "totalPushes": 50, "pushesPerMilestone": 50, "verificationToken": "<token from step 0>" }`
    - `chain`: `"base"` (default), `"robinhood"`, or `"base-sepolia"`
    - `token` = symbol from **wallet holdings on that chain**, fee-recipient name, or **`0x` contract address**
    - `amount` = human units (`855000000`, `855M`, `3.49M`)
@@ -139,7 +171,7 @@ You **can** lock **any ERC-20 on Base or Robinhood Chain (4663)** from terminal 
 
 5. **`POST https://api.proofofdev.xyz/api/agent/confirm-lock`** with:
    - Same `x-wallet-address` header
-   - Body: `{ "chain": "robinhood", "repo": "owner/repo", "lockTxHash": "0x…" }`
+   - Body: `{ "chain": "robinhood", "repo": "owner/repo", "lockTxHash": "0x…", "verificationToken": "<same token from step 0>" }`
 
 6. Format confirm response locally (`references/RESPONSE-SAFETY.md`) — include allowlisted lock page URL on its own line.
 

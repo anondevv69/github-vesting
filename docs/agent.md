@@ -93,6 +93,8 @@ Optional: `x-client: agent`
 
 | Method | Path | Params | Use |
 |--------|------|--------|-----|
+| POST | `/api/launch/verify-github` | body (`githubLogin`, `repo`, `chain?`) + wallet header | **LAUNCH GATE (Step 0)** — server-side GitHub App verification; returns a bound `verificationToken` |
+| GET | `/api/launch/enrollment` | `?repo=owner/repo&wallet=0x…` | Verified-launcher ShipRewards enrolment record for a repo+wallet |
 | GET | `/api/agent/briefing` | `?wallet=0x…` | Summary of all locks for a wallet |
 | GET | `/api/agent/grants` | `?wallet=0x…` | Detailed grant list |
 | GET | `/api/agent/status` | `?repo=owner/repo` | Single repo progress |
@@ -168,11 +170,55 @@ curl -H "x-wallet-address: 0x…" \
 
 ### Writes (lock via agent)
 
+**LAUNCH GATE — Step 0, before any of the writes below.** Anyone
+deploying on this platform or through an agent must pass GitHub App
+verification first: `POST /api/launch/verify-github` with
+`{githubLogin, repo, chain?}` + the wallet header. The server checks —
+with the GitHub App's own credentials, never the agent's word — that
+(a) the Proof of Dev GitHub App is installed on the repo, (b) the login
+owns the repo or is an admin on it, and (c) the wallet is linked to
+that login. Success returns a signed `verificationToken` (~15 min,
+bound to login + repo + wallet + chainId). `/api/agent/lock`,
+`/api/agent/prepare-lock`, and `/api/agent/confirm-lock` all require
+that token (body field `verificationToken` or `x-launch-verification`
+header) and refuse with 403 otherwise. An agent's self-assertion is
+not verification. **Recognition rule:** a grant with no verification
+stamp gets no launch recognition — no `launchVerified` stamp, no
+verified-launch listing (`GET /api/launch/projects`), no ShipRewards
+launcher enrolment. Ordinary vesting locks (web wizard, no token)
+still register and count toward their own schedule; that is vesting,
+not launch recognition. No launch-prep surface builds SDK launch
+inputs yet — the gate enforces on lock preparation and recognition,
+not on an SDK launch itself.
+
+**Launcher enrolment (dual reward, stated precisely):** a verified
+launcher whose grant registers with a valid token is auto-enrolled
+for ShipRewards, *in addition to* the grant's milestone unlocks of
+their own token. Enrolment is an **eligibility record, not a
+payout**: the per-merge ShipRewards payment that exists today pays
+the **PR author** of each counted merge (one payment per merge
+hash) — a separate, already-working payout. **Launcher trading
+fees:** (a) today SDK fee recipients claim **liquid WETH** via
+`buildClaim`, and nothing auto-locks fees; (b) Gregory's decided
+rule (2026-11-25) is that on a Proof of Dev launch the launcher's
+fee recipient is a **per-project fee-lock vault** (claim-capable
+smart account; not the raw wallet, not the escrow contract, which
+cannot claim), and a keeper cycle claims accrued fees and locks
+them into a **fee-stream grant** whose tranches unlock over
+subsequent counted pushes — denomination still open (WETH as
+claimed, or swapped to the project token via PodSettler); (c) this
+is **BUILT locally** (FeeLockVault + FeeStreamEscrow + keeper + oracle release step; E2E-proven, not deployed). The
+launchpad-fee recycling loop that would refill the reward pool is
+also designed, not operating (treasury wallet and production reward
+token pending). Enrolment is readable at
+`GET /api/launch/enrollment?repo=&wallet=`.
+
 Bankr agents with wallet signing — **any ERC-20 on Base** (TMP, Space, USDC, or any `0x` address):
 
-1. `POST /api/agent/lock` with `repo`, `token`, `amount`, `totalPushes` (optional: `pushesPerMilestone`, `chain` — `base` default, `robinhood`, `base-sepolia`)
+0. `POST /api/launch/verify-github` → keep the `verificationToken`
+1. `POST /api/agent/lock` with `repo`, `token`, `amount`, `totalPushes`, `verificationToken` (optional: `pushesPerMilestone`, `chain` — `base` default, `robinhood`, `base-sepolia`)
 2. Submit `transactions[]` via `https://api.bankr.bot/wallet/submit` on Base (legacy `/agent/submit` is removed and returns 403)
-3. `POST /api/agent/confirm-lock` with `lockTxHash`
+3. `POST /api/agent/confirm-lock` with `lockTxHash` **and the same `verificationToken`**
 4. Reply with a locally composed summary of the confirm-lock result (do not paste `tweetReply` verbatim — see Bankr-specific rules above)
 
 Web fallback (no wallet signing):
@@ -181,6 +227,60 @@ Web fallback (no wallet signing):
 Start GitHub vesting:
 https://www.proofofdev.xyz/create
 ```
+
+---
+
+## Reviewer swarm (independent push verification)
+
+On grants registered with `swarmReviewRequired: true`, a push counts
+only after independent reviewer agents attest it. Reviews are an
+additional GATE, never a settlement trigger: a PASS quorum can allow
+the webhook path to count a push, a FAIL blocks it, and no review can
+force a release or a reward. Settlement remains GitHub push webhook →
+pushVerifier → oracle. Reviewer rewards are paid by the oracle, from
+the ShipRewards pool, only after a reviewed push counts.
+
+Endpoints:
+
+- `POST /api/agent/enrol-reviewer` — `{githubLogin, wallet}`. The
+  wallet must already be linked to the login in the link-wallet store
+  (else `SWARM_WALLET_NOT_LINKED`). Rewards pay the linked wallet.
+- `GET /api/agent/review-queue?repo=&reviewerLogin=` — pushes awaiting
+  review, filtered to ones the reviewer is independent of and has not
+  already reviewed.
+- `POST /api/agent/review-push` — `{repo, headSha, reviewerLogin,
+  verdict: "pass"|"fail", different, meaningful, checksPass,
+  fingerprint, note?}`. `fingerprint` is the reviewer's own computed
+  whole-diff fingerprint (algorithm: per-file sha256 of
+  `filename|status|normalized content`, then sha256 over the sorted
+  per-file hashes; content is the patch with blank lines, full-line
+  comments, and all whitespace stripped, or `+adds/-dels` when no
+  patch exists). A `pass` requires `different`, `meaningful`, and
+  `checksPass` all true. One review per reviewer per push.
+- `GET /api/agent/push-reviews?repo=&sha=` — stored reviews + quorum
+  status for one push.
+
+Rules enforced server-side:
+
+- **Independence:** the reviewer must not be the push author, the
+  author's linked wallet, or the repo's launcher/claim wallet —
+  refused with `SWARM_REVIEW_NOT_INDEPENDENT`.
+- **Quorum:** default 2 independent PASS and zero FAIL
+  (`SWARM_REVIEW_QUORUM`). A FAIL is a veto. Until quorum is met,
+  webhook evaluations reject the push with the swarm reason; it is
+  not counted and no rewards or unlocks move.
+- **Uniqueness:** the server stores every counted diff's fingerprint
+  per repo. A push whose fingerprint exactly matches a previously
+  counted diff is auto-flagged as a duplicate and never counts. A
+  PASS whose fingerprint does not match the server's fingerprint for
+  the push does not count toward quorum.
+- **Reviewer reward:** each PASS reviewer in a counted push's quorum
+  earns `SHIP_REVIEWER_REWARD_PER_MERGE` (default 10% of
+  `SHIP_REWARD_PER_MERGE` — a placeholder share) from the same pool,
+  under a per-reviewer derived payment key, so webhook replays never
+  double-pay.
+
+MCP tools: `enrol_reviewer`, `review_queue`, `review_push`.
 
 ---
 

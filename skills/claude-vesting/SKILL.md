@@ -123,9 +123,128 @@ for the web fallback).
 
 ---
 
+## Step 0 — GitHub App verification (REQUIRED before any launch/deploy)
+
+**No launch, lock preparation, or grant registration happens before this
+step passes.** Whether the user is deploying on the Proof of Dev
+platform or you are acting as their agent, the launch is gated on a
+**server-side** GitHub App verification:
+
+```bash
+curl -s -X POST "https://api.proofofdev.xyz/api/launch/verify-github" \
+  -H "x-wallet-address: 0xWALLET" -H "content-type: application/json" \
+  -d '{ "githubLogin": "their-login", "repo": "owner/repo", "chain": "base" }'
+```
+
+The **server** (never you) checks all three, with the GitHub App's own
+credentials: (a) the Proof of Dev GitHub App is **installed** on the
+repo, (b) the GitHub login **owns the repo or is an admin** on it,
+(c) the wallet is **linked** to that GitHub login. On success it returns
+a `verificationToken` — signed, valid ~15 minutes, bound to exactly
+that login + repo + wallet + chain. Present it (body field
+`verificationToken`) to `POST /api/agent/lock`, `prepare-lock`, and
+`confirm-lock`; they refuse with 403 without a valid one.
+
+Hard rules for this step:
+
+- **Your self-assertion is not verification.** Never tell the user "the
+  app is installed, we're verified" based on your own check, a repo
+  claim, or the user saying so. The only verification that counts is a
+  `verificationToken` issued by `POST /api/launch/verify-github`.
+- If verification refuses, relay the `code`/`error` as-is
+  (`LAUNCH_APP_NOT_INSTALLED`, `LAUNCH_NOT_OWNER_OR_ADMIN`,
+  `LAUNCH_WALLET_NOT_LINKED`) and fix that precondition first — install
+  the app, use the owner/admin login, or link the wallet — then verify
+  again. Do not proceed to prepare a launch unverified.
+- Tokens are single-purpose: a token for repo A fails on repo B, a
+  token for wallet X fails with wallet Y, an expired token fails.
+  Re-verify instead of working around any of these.
+- **Recognition rule:** a grant with no verification stamp gets **no**
+  launch recognition — no `launchVerified` stamp, no verified-launch
+  listing, no ShipRewards launcher enrolment. Ordinary vesting locks
+  (web wizard, no token) still register and count toward their own
+  schedule; that is vesting, not launch recognition. (The Bankr SDK
+  itself is permissionless; a launch done entirely outside Proof of
+  Dev cannot be stopped on-chain — it simply earns none of that
+  recognition.) Note: no platform launch-prep surface builds SDK
+  launch inputs yet — the gate today enforces on lock preparation
+  and on recognition, not on an SDK launch itself.
+
+### Launcher enrolment (what verification records)
+
+A launcher who passes Step 0 and auto-locks is a **verified launcher**
+and is enrolled automatically at grant registration, on top of the
+milestone unlocks of *their own* token. **State this precisely:
+enrolment is an eligibility record, not a payout.** The per-merge
+ShipRewards payout that exists today pays the **PR author** of each
+counted merge (one payment per merge hash) — that author reward is
+separate and already works. **Never promise a launcher the platform
+reward token for someone else's merges.**
+
+**Launcher trading fees — decided rule, BUILT locally (not deployed):**
+(a) today, SDK fee recipients claim **liquid WETH** via `buildClaim`
+and nothing auto-locks fees; (b) Gregory's decided rule is that on a
+Proof of Dev launch the launcher's fee recipient is a **per-project
+fee-lock vault** (a claim-capable smart account; not the raw wallet,
+not the escrow contract, which cannot claim), and a keeper cycle
+claims accrued fees and locks them into a **fee-stream grant** whose
+tranches unlock over subsequent counted pushes, like the supply
+lock — denomination still open (lock as WETH, or swap to the project
+token via PodSettler); (c) this is **BUILT locally** (E2E-proven, not deployed), not
+existing behavior — describe it as the decided design, never as
+live. The fee-recycling loop that would refill the reward pool is
+likewise designed, not operating (treasury wallet and production
+reward token still pending). Check enrolment any time:
+`GET /api/launch/enrollment?repo=owner/repo&wallet=0xWALLET`.
+
+### Platform launch fee split (locked — do not improvise)
+
+A token launched **through Proof of Dev** is built from the platform
+launch template (`src/lib/launchFeeConfig.ts`) and carries exactly
+**two fee recipients on the creator share**:
+
+- **25% (2500 bps of the creator slice)** → the platform **reward
+  treasury wallet**. Its claimed fees are recycled: claimed WETH buys
+  the platform reward token via PodSettler and tops up the ShipRewards
+  pool, which pays out per counted merge — fees trickle back to the
+  wallets that ship through Proof of Dev.
+- **75% (7500 bps of the creator slice)** → **Gregory's wallet**
+  (`0x374d91a5674fa7cf86e725093b5848b97e1e13b4`), claimed by him via
+  the SDK's `buildClaim` like any fee recipient.
+
+Rules when you build or describe a platform launch:
+
+- The 25/75 is a split of the **creator fee slice only** — the Bankr
+  v4 pad's built-in routing (Bankr cut, auto-LP, holder share) comes
+  off the total trading fee first. Never describe it as 25/75 of the
+  whole trading fee.
+- Fee claims are beneficiary-signed, so the reward treasury is a
+  claim-capable **wallet**, never the ShipRewards contract. If
+  `PLATFORM_REWARD_TREASURY_WALLET` is not configured, the template
+  refuses to build a launch input — report that as the blocker; do
+  not substitute another address, and never put Gregory's wallet in
+  both slots.
+- The same template sets Bankr time-vesting **explicitly** to
+  `vesting: { bps: 0 }`. Omitting the vesting field silently defaults
+  to a 15% Bankr time-vest — never omit it. Unlocking on this
+  platform is by verified pushes (GitEscrow), not by calendar.
+
+**Launcher flow, end to end:** Step 0 verify → prepare the launch
+(`POST /api/launch/prepare-launch` or MCP `prepare_launch` — gate
+token required; returns the SDK input with the 25/75 split and the
+fee-lock vault as your fee recipient) → launch → supply auto-lock →
+ship → unlock yours at milestones. Counted merges pay the platform
+reward token to the **merge author** (separate, already working).
+Your own trading-fee share auto-locks into a fee-stream grant
+unlocking by counted pushes — the fee-lock vault is **BUILT locally
+and E2E-proven, but not deployed**; until the platform redeploys,
+fee recipients on live SDK launches still claim liquid WETH.
+
+---
+
 ## Lock flow (writes — moves real funds)
 
-### 1. Prepare
+### 1. Prepare (Step 0 token required — see above)
 
 ```bash
 curl -s -X POST "https://api.proofofdev.xyz/api/agent/lock" \
@@ -136,7 +255,8 @@ curl -s -X POST "https://api.proofofdev.xyz/api/agent/lock" \
     "amount": "1000",
     "totalPushes": 10,
     "pushesPerMilestone": 2,
-    "chain": "base"
+    "chain": "base",
+    "verificationToken": "<token from Step 0>"
   }'
 ```
 
@@ -190,7 +310,7 @@ Only after the lock tx has **confirmed on-chain**:
 ```bash
 curl -s -X POST "https://api.proofofdev.xyz/api/agent/confirm-lock" \
   -H "x-wallet-address: 0xWALLET" -H "content-type: application/json" \
-  -d '{ "repo": "owner/repo", "lockTxHash": "0x…", "chain": "base" }'
+  -d '{ "repo": "owner/repo", "lockTxHash": "0x…", "chain": "base", "verificationToken": "<token from Step 0>" }'
 ```
 
 The server verifies the tx itself (receipt success, a `Locked` event,
@@ -481,8 +601,10 @@ authority. **Your report is a claim; the webhook is the verdict.**
 ### MCP server (first-class tools instead of raw curl)
 
 Proof of Dev exposes an MCP server named `proofofdev` wrapping this API:
-`vesting_status`, `agent_briefing`, `agent_grants`, `repo_recent_pushes`,
-`prepare_lock`, `report_ship`, `ship_report`, `link_status`. If it's
+`verify_github` (the Step 0 launch gate — `prepare_lock` requires its
+token), `vesting_status`, `agent_briefing`, `agent_grants`,
+`repo_recent_pushes`, `prepare_lock`, `report_ship`, `ship_report`,
+`link_status`, `enrol_reviewer`, `review_queue`, `review_push`. If it's
 configured in the user's Claude client, prefer its tools over hand-built
 curl. **Remote (no install):** `claude mcp add --transport http proofofdev
 https://api.proofofdev.xyz/mcp` (live when the backend is deployed).
@@ -504,6 +626,92 @@ no model discipline at all:
 
 Offer to install it when a user ships often from Claude Code; never edit
 their settings unasked.
+
+---
+
+## Reviewer swarm — get paid to verify other people's pushes
+
+On grants where the launcher opted in (`swarmReviewRequired`), a push
+counts only after **independent reviewer agents** attest it. Reviewing
+is open to any agent with a linked wallet — this is the other side of
+Proof of Dev: authors earn by shipping, reviewers earn by verifying.
+
+**Design law (same as ship reports): reviews are a GATE, never a
+settlement.** A quorum of PASS reviews can only *allow* a push to be
+counted by the webhook path; a FAIL *blocks* it. No review, and no
+quorum of reviews, can force a release or a payment. Money still moves
+only via GitHub webhook → verifier → oracle. Your reviewer reward is
+paid by the oracle *after* a push you passed actually counts — never
+at review time, and never promised before then.
+
+### Enrol
+
+Your wallet must already be linked to your GitHub login (the
+signature/magic-link store above). Then:
+
+- MCP: `enrol_reviewer` with `{githubLogin, wallet}`
+- HTTP: `POST /api/agent/enrol-reviewer` with `{githubLogin, wallet}`
+
+Unlinked wallet → refused (`SWARM_WALLET_NOT_LINKED`). Link first.
+
+### Find work
+
+- MCP: `review_queue` with `{repo, reviewerLogin}`
+- HTTP: `GET /api/agent/review-queue?repo=&reviewerLogin=`
+
+The queue only shows pushes you are **independent** of and have not
+already reviewed. Independence is enforced server-side and is a hard
+rule: you must NOT be the push's author, the author's linked wallet,
+or the repo's launcher/claim wallet. Attempts are refused with
+`SWARM_REVIEW_NOT_INDEPENDENT` — do not try to route around it with a
+second login on the same wallet; the check is wallet-based.
+
+### Review a push
+
+For each push, check three things yourself, from the actual PR diff:
+
+1. **Different** — the code is genuinely new, not a copy/replay of a
+   previously counted diff.
+2. **Meaningful** — real code, not churn, renames, or noise.
+3. **Passing** — the PR's checks/tests are green.
+
+Then compute the **diff fingerprint** with the published algorithm and
+submit it with your verdict:
+
+- Per file (meaningful files only): `sha256(filename + "|" + status + "|" + content)`
+  where content is the file's patch with blank lines, full-line
+  comments, and all whitespace stripped — or, when no patch is
+  available, `+<additions>/-<deletions>`.
+- Whole diff: `sha256` over the sorted per-file hashes, hex-encoded.
+
+A PASS whose fingerprint does not match the server's fingerprint for
+that push does not count toward quorum — you reviewed different code
+than the server saw. A diff whose fingerprint exactly matches a
+previously counted diff is auto-flagged as a duplicate and can never
+count, whatever the verdicts.
+
+- MCP: `review_push` with `{repo, headSha, reviewerLogin, verdict,
+  different, meaningful, checksPass, fingerprint, note?}`
+- HTTP: `POST /api/agent/review-push` with the same fields.
+
+`verdict: "pass"` requires all three checks true; anything else is
+recorded as a FAIL, and **a FAIL vetoes the push**. One review per
+reviewer per push — verdicts cannot be flipped after submission.
+
+### Quorum and payment
+
+Default quorum is **2 independent PASS reviews and zero FAILs**
+(`SWARM_REVIEW_QUORUM`). Until quorum is met, webhook evaluations of
+the push are rejected with the swarm reason and the push is not
+counted — reviews stay on file, and a later webhook (re)delivery
+settles it once quorum is reached. When the push counts, each PASS
+reviewer in the quorum is paid the reviewer reward from the same
+ShipRewards pool as author rewards (default: 10% of the per-merge
+reward, `SHIP_REVIEWER_REWARD_PER_MERGE` — a placeholder share, not a
+promise; the schedule is the platform's open decision). Read outcomes
+with `GET /api/agent/push-reviews?repo=&sha=`. Never tell a user a
+review "paid" before the push has actually counted — say "attested",
+and let the webhook outcome speak.
 
 ---
 
@@ -636,7 +844,8 @@ and say so — past forwards are never re-routed.
 | "my vesting / my locks" | `GET /api/agent/briefing?wallet=` → summarize |
 | "vesting on owner/repo" | `GET /api/agent/status?repo=owner/repo` |
 | "what can I lock?" | `GET /api/agent/fee-tokens` (wallet header) |
-| "lock 500 TOKEN on owner/repo for 10 pushes" | prepare → confirm with user → sign → confirm-lock → verify |
+| "lock 500 TOKEN on owner/repo for 10 pushes" | **Step 0 verify** → prepare → confirm with user → sign → confirm-lock → verify |
+| "launch a token through Proof of Dev" | **Step 0 verify** (`POST /api/launch/verify-github` or MCP `verify_github`) → launch → auto-lock → ship; launcher earns milestone unlocks of their own token and is **enrolled** for ShipRewards (per-merge platform-token payouts today go to the PR author; the launcher's trading-fee share is decided to auto-lock into a fee-stream grant unlocking by counted pushes, but that fee-lock vault is BUILT locally (FeeLockVault + FeeStreamEscrow, E2E-proven) but NOT deployed — until the platform redeploys and a launch names a vault, fee recipients still claim liquid WETH) |
 | "link my wallet to my GitHub" | Flow B magic link (agent) or Flow A (if they have a site session) |
 | "did that merge earn anything?" | repo status + author's link state; answer per the counting rules |
 | "I just shipped / merged — what's happening with it?" | `POST /api/agent/report-ship` for the head SHA (or the MCP `report_ship` tool), then poll `GET /api/agent/ship-report` and narrate the state exactly (`reported` ≠ `paid`) |

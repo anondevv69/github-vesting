@@ -23,7 +23,8 @@ tool lists so they cannot drift):
 | `agent_briefing` | Summary of all locks for a wallet |
 | `agent_grants` | Detailed grant list for a wallet |
 | `repo_recent_pushes` | Most recent counted (verified) pushes across all Proof of Dev grants |
-| `prepare_lock` | Prepare (never sign) approve+lock transactions |
+| `verify_github` | **Launch gate (Step 0)** — server-side GitHub App verification; returns the bound `verificationToken` that `prepare_lock` requires |
+| `prepare_lock` | Prepare (never sign) approve+lock transactions — REQUIRES a `verificationToken` from `verify_github` |
 | `report_ship` | File a ship report — attestation signal only |
 | `ship_report` | Read a ship report's state (reported/confirmed/paid/rejected/expired) |
 | `link_status` | Wallets linked to a GitHub login, plus `pendingRewards` accrued while unlinked and their total |
@@ -43,12 +44,15 @@ MCP client (Claude Code / Claude app / another agent)
    │     (Streamable HTTP, stateless, JSON responses, no sessions)
    ▼
 proofofdev MCP server  (tools defined once in src/lib/mcpTools.ts —
-   │                    both transports register the identical 8 tools)
+   │                    both transports register the identical 13 tools)
    │  each tool is a thin HTTP call to the agent API:
    │   vesting_status → GET  /api/agent/status        agent_briefing → GET /api/agent/briefing
    │   agent_grants   → GET  /api/agent/grants        repo_recent_pushes → GET /api/vesting/recent-pushes
    │   prepare_lock   → POST /api/agent/lock          report_ship → POST /api/agent/report-ship
    │   ship_report    → GET  /api/agent/ship-report   link_status → GET /api/dev/link-wallet/<login>
+   │   verify_github  → POST /api/launch/verify-github (launch gate, Step 0)
+   │   enrol_reviewer → POST /api/agent/enrol-reviewer (reviewer swarm)
+   │   review_queue   → GET  /api/agent/review-queue   review_push → POST /api/agent/review-push
    ▼
 Proof of Dev agent API  (POD_API_URL; the remote server calls it over
    loopback inside the backend, the stdio server calls the public URL)

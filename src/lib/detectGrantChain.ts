@@ -25,7 +25,15 @@ export async function detectChainFromLockTx(txHash: string): Promise<VestingChai
 
       const fromEscrow = receipt.to?.toLowerCase() === cfg.escrowAddress.toLowerCase();
       const logs = parseEventLogs({ abi: ESCROW_ABI, logs: receipt.logs, eventName: "Locked" });
-      if (fromEscrow || logs.length > 0) return key;
+      // The Locked event must have been emitted BY this chain's
+      // configured escrow — a Locked-shaped log from any other
+      // contract does not make this tx a lock on this chain (and, in
+      // test environments where several chain configs share one RPC,
+      // stops the first probed chain from claiming every local lock).
+      const emittedByEscrow = logs.some(
+        (l) => l.address.toLowerCase() === cfg.escrowAddress!.toLowerCase(),
+      );
+      if (fromEscrow || emittedByEscrow) return key;
     } catch {
       /* tx not on this chain */
     }

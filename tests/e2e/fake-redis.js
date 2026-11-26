@@ -18,7 +18,14 @@ const store = new Map(); // key -> {type:'string'|'set'|'list', value}
 function getEntry(key, type) {
   let e = store.get(key);
   if (!e) {
-    e = { type, value: type === "set" ? new Set() : type === "list" ? [] : "" };
+    e = {
+      type,
+      value:
+        type === "set" ? new Set()
+        : type === "list" ? []
+        : type === "hash" ? new Map()
+        : "",
+    };
     store.set(key, e);
   }
   return e;
@@ -123,6 +130,78 @@ function execCommand(args) {
       e.value = start > stop ? [] : e.value.slice(start, stop + 1);
       return ok();
     }
+    case "HSET": {
+      const e = getEntry(a[0], "hash");
+      let n = 0;
+      for (let i = 1; i + 1 < a.length; i += 2) {
+        if (!e.value.has(a[i])) n++;
+        e.value.set(a[i], a[i + 1]);
+      }
+      return int(n);
+    }
+    case "HGET": {
+      const e = store.get(a[0]);
+      if (!e || e.type !== "hash") return bulk(null);
+      return bulk(e.value.has(a[1]) ? e.value.get(a[1]) : null);
+    }
+    case "HDEL": {
+      const e = store.get(a[0]);
+      if (!e || e.type !== "hash") return int(0);
+      let n = 0;
+      for (const f of a.slice(1)) if (e.value.delete(f)) n++;
+      return int(n);
+    }
+    case "HGETALL": {
+      const e = store.get(a[0]);
+      if (!e || e.type !== "hash") return arr([]);
+      const items = [];
+      for (const [k, v] of e.value) items.push(bulk(k), bulk(v));
+      return arr(items);
+    }
+    case "EVAL": {
+      // TEST-ONLY: implements the one production Lua script — the
+      // atomic claimPush in src/github/pushVerifier.ts — with the same
+      // semantics (single command execution here is atomic, exactly
+      // like a Lua script on real Redis), INCLUDING the round-2
+      // in-script daily-cap (-2) and cooldown (-3) checks for
+      // different SHAs. Any other script is an error so a new
+      // production script can't silently pass tests.
+      const script = a[0] || "";
+      if (!script.includes("claimPush")) return err("fake-redis: unsupported EVAL script");
+      const numKeys = parseInt(a[1] || "0", 10);
+      const keys = a.slice(2, 2 + numKeys);
+      const argv = a.slice(2 + numKeys);
+      const [seenKey, dailyKey, logKey, countKey] = keys;
+      const [sha, logEntry, maxDaily, enforceCap, cooldownMs, enforceCooldown, lines, nowMs] = argv;
+      const seen = getEntry(seenKey, "set");
+      if (seen.value.has(sha)) return int(-1);
+      const daily = getEntry(dailyKey, "string");
+      const dailyVal = parseInt(daily.value || "0", 10);
+      if (enforceCap === "1" && dailyVal >= parseInt(maxDaily || "0", 10)) return int(-2);
+      if (enforceCooldown === "1" && parseInt(lines || "0", 10) < 50) {
+        const logE = store.get(logKey);
+        const list = logE && logE.type === "list" ? logE.value : [];
+        for (let i = list.length - 1; i >= 0; i--) {
+          try {
+            const entry = JSON.parse(list[i]);
+            if (entry && entry.accepted !== false && typeof entry.ts === "number") {
+              if (parseInt(nowMs || "0", 10) - entry.ts < parseInt(cooldownMs || "0", 10)) return int(-3);
+              break;
+            }
+          } catch { /* keep scanning */ }
+        }
+      }
+      seen.value.add(sha);
+      daily.value = String(dailyVal + 1);
+      const log = getEntry(logKey, "list");
+      log.value.push(logEntry);
+      if (log.value.length > 200) log.value = log.value.slice(-200);
+      const counter = getEntry(countKey, "string");
+      const total = parseInt(counter.value || "0", 10) + 1;
+      counter.value = String(total);
+      return int(total);
+    }
+    case "EVALSHA": return err("NOSCRIPT fake-redis has no script cache");
     case "LLEN": {
       const e = store.get(a[0]);
       return int(e && e.type === "list" ? e.value.length : 0);

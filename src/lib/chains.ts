@@ -37,6 +37,12 @@ export type VestingChainConfig = {
   chainId: number;
   rpcUrl: string;
   escrowAddress: string | undefined;
+  /** FeeStreamEscrow for launcher fee-lock grants (Base only for now). */
+  feeStreamEscrowAddress: string | undefined;
+  /** Bankr v4 launch factory (launch-record reads: poolOf). */
+  bankrFactoryAddress: string | undefined;
+  /** Bankr v4 fee ledger (launch-record reads: beneficiariesOf / creatorShareOf). */
+  bankrFeeLedgerAddress: string | undefined;
   explorerBase: string;
   label: string;
 };
@@ -57,6 +63,9 @@ export function getVestingChainConfig(key: VestingChainKey): VestingChainConfig 
         chainId: 4663,
         rpcUrl: env.ROBINHOOD_RPC_URL,
         escrowAddress: resolveRobinhoodEscrowAddress(env.GIT_ESCROW_ROBINHOOD_ADDRESS),
+        feeStreamEscrowAddress: undefined,
+        bankrFactoryAddress: env.BANKR_FACTORY_ADDRESS || "0x2F2FDedE5b61D9B624462FB9e138913fD2620427",
+        bankrFeeLedgerAddress: env.BANKR_FEE_LEDGER_ADDRESS || "0x15e5F60817ee337f58A0B6c34b905C7C2dBC2F64",
         explorerBase: "https://robinhoodchain.blockscout.com",
         label: "Robinhood Chain",
       };
@@ -67,6 +76,9 @@ export function getVestingChainConfig(key: VestingChainKey): VestingChainConfig 
         chainId: baseSepolia.id,
         rpcUrl: env.BASE_SEPOLIA_RPC_URL,
         escrowAddress: env.GIT_ESCROW_SEPOLIA_ADDRESS || undefined,
+        feeStreamEscrowAddress: undefined,
+        bankrFactoryAddress: undefined,
+        bankrFeeLedgerAddress: undefined,
         explorerBase: "https://sepolia.basescan.org",
         label: "Base Sepolia",
       };
@@ -77,6 +89,9 @@ export function getVestingChainConfig(key: VestingChainKey): VestingChainConfig 
         chainId: base.id,
         rpcUrl: env.BASE_RPC_URL,
         escrowAddress: env.GIT_ESCROW_ADDRESS || undefined,
+        feeStreamEscrowAddress: env.FEE_STREAM_ESCROW_ADDRESS || undefined,
+        bankrFactoryAddress: env.BANKR_FACTORY_ADDRESS || "0x8cdE4Edb9A51909eef93F102f5Ce1b950769792E",
+        bankrFeeLedgerAddress: env.BANKR_FEE_LEDGER_ADDRESS || "0x7C836e937831Cd5931A1ACbB9117dF9714D7d1F7",
         explorerBase: "https://basescan.org",
         label: "Base",
       };
