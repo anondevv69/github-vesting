@@ -40,6 +40,7 @@ import {
   type VestingChainKey,
 } from "../lib/chains";
 import { detectStreamingToken, defaultLockFunction } from "../lib/detectLockMode";
+import { BUILDER_DATA_SUFFIX } from "../lib/builderCode";
 
 type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
@@ -712,6 +713,7 @@ export function CreatePage() {
       chain: chainCfg.chain,
       transport: custom(provider),
       account: wallet!,
+      dataSuffix: BUILDER_DATA_SUFFIX,
     });
     const amount = parseUnits(form.lockAmount, form.tokenDecimals);
     const tokenAddr = form.tokenAddress as Address;

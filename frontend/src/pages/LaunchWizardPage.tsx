@@ -43,6 +43,7 @@ import { normalizeRepoFullName, lockPathFromRepo, isValidRepoFullName } from "..
 import { getFrontendChainConfig } from "../lib/chains";
 import { detectStreamingToken, defaultLockFunction } from "../lib/detectLockMode";
 import { formatTokens } from "../lib/format";
+import { BUILDER_DATA_SUFFIX } from "../lib/builderCode";
 import {
   createPublicClient,
   createWalletClient,
@@ -594,6 +595,7 @@ export function LaunchWizardPage() {
         chain: chainCfg.chain,
         transport: custom(provider),
         account: wallet,
+        dataSuffix: BUILDER_DATA_SUFFIX,
       });
       const client = createLaunchClient({
         chain: "base",
@@ -664,6 +666,7 @@ export function LaunchWizardPage() {
         chain: chainCfg.chain,
         transport: custom(provider),
         account: wallet,
+        dataSuffix: BUILDER_DATA_SUFFIX,
       });
       const tokenAddr = state.launchedToken as Address;
       const amount = parseUnits(state.lockAmount, tokenDecimals);
