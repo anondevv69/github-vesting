@@ -69,6 +69,7 @@ import {
 } from "./redis";
 import type { LaunchVerificationClaims } from "./launchGate";
 import { FEE_LOCK_VAULT_ABI, FEE_LOCK_VAULT_BYTECODE } from "./feeLockVaultArtifact";
+import { BUILDER_DATA_SUFFIX } from "./builderCode";
 
 /** The platform's default fee-tranche schedule when the caller does
  *  not name one — the schedule every launch fixture and the beta
@@ -111,7 +112,12 @@ function clientsFor(chain: VestingChainKey) {
   }
   const account = privateKeyToAccount(env.ORACLE_PRIVATE_KEY.trim() as Hex);
   const publicClient = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
-  const walletClient = createWalletClient({ account, chain: cfg.chain, transport: http(cfg.rpcUrl) });
+  const walletClient = createWalletClient({
+    account,
+    chain: cfg.chain,
+    transport: http(cfg.rpcUrl),
+    dataSuffix: BUILDER_DATA_SUFFIX,
+  });
   return { cfg, account, publicClient, walletClient };
 }
 
