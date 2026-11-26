@@ -3,6 +3,7 @@
  * signs it with the test webhook secret, POSTs it to the local server.
  * Usage: REPO=owner/repo node tests/e2e/send-webhook.mjs <case>
  *   case = plain | docs | squash | prhuman | prbot | gl44 | gl45 | gldocs
+ *        | swarm47 | swarm48 (reviewer-swarm driver, grant repo)
  *   REPO defaults to testowner/testrepo; the gl* cases target
  *   testowner/nogrant (the grant-less repo) and need the fixture GitHub
  *   API running (github-fixture.js) with the server started with
@@ -21,6 +22,30 @@ const CASES = {
     after: "a11ce00000000000000000000000000000000001",
     message: "feat: add feature module",
     added: codeFiles("f", 11),
+    modified: [],
+  },
+  plain2: {
+    after: "b22ce00000000000000000000000000000000004",
+    message: "feat: second feature module",
+    added: codeFiles("h", 11),
+    modified: [],
+  },
+  plain3: {
+    after: "c33ce00000000000000000000000000000000005",
+    message: "feat: third feature module",
+    added: codeFiles("i", 11),
+    modified: [],
+  },
+  small: {
+    after: "d44ce00000000000000000000000000000000006",
+    message: "feat: tiny change",
+    added: codeFiles("t", 1),
+    modified: [],
+  },
+  small2: {
+    after: "e55ce00000000000000000000000000000000007",
+    message: "feat: another tiny change",
+    added: codeFiles("u", 1),
     modified: [],
   },
   docs: {
@@ -73,6 +98,20 @@ const CASES = {
     after: "dd".repeat(20),
     message: "docs: update readme",
     added: ["README.md", "docs/guide.md"],
+    modified: [],
+  },
+  // Reviewer-swarm cases (grant repo testowner/testrepo): `after` MUST
+  // equal the fixture API's merge_commit_sha for PRs #47/#48.
+  swarm47: {
+    after: "47".repeat(20),
+    message: "feat: swarm-reviewed thing (#47)",
+    added: codeFiles("s", 11),
+    modified: [],
+  },
+  swarm48: {
+    after: "48".repeat(20),
+    message: "feat: same code again (#48)",
+    added: codeFiles("s", 11),
     modified: [],
   },
 };

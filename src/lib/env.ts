@@ -46,6 +46,18 @@ export const env = {
   BASE_SEPOLIA_RPC_URL: get("BASE_SEPOLIA_RPC_URL", "https://sepolia.base.org"),
   ROBINHOOD_RPC_URL: get("ROBINHOOD_RPC_URL", "https://rpc.mainnet.chain.robinhood.com"),
   GIT_ESCROW_ADDRESS: get("GIT_ESCROW_ADDRESS"),
+  /** Legacy (pre-v2) GitEscrow on Base — the escrow all pre-cutover
+   *  production grants were created under. Grants record the escrow
+   *  they were created under at registration; grants WITHOUT a stored
+   *  escrow resolve to this address on Base so the v2 repoint never
+   *  orphans them (v1→v2 cutover, 2026-11-26). Production sets this
+   *  explicitly to the pre-cutover deployment
+   *  (0x3625F879C678306E92E2C27F61b9BcD8015E81A7). Unset → no legacy
+   *  resolution; unstored grants use the configured escrow. */
+  GIT_ESCROW_LEGACY_ADDRESS: get("GIT_ESCROW_LEGACY_ADDRESS"),
+  /** FeeStreamEscrow (launcher fee-lock grants) on Base — see
+   *  contracts/FeeStreamEscrow.sol. Unset disables fee-tranche releases. */
+  FEE_STREAM_ESCROW_ADDRESS: get("FEE_STREAM_ESCROW_ADDRESS"),
   /** GitEscrow on Base Sepolia — must NOT fall back to the mainnet address (audit M8). */
   GIT_ESCROW_SEPOLIA_ADDRESS: get("GIT_ESCROW_SEPOLIA_ADDRESS"),
   // ShipRewards pool (spec §8B) — optional; unset address or 0 amount disables rewards.
@@ -54,6 +66,49 @@ export const env = {
   SHIP_REWARDS_ROBINHOOD_ADDRESS: get("SHIP_REWARDS_ROBINHOOD_ADDRESS"),
   /** Flat per-counted-merge reward, in the reward token's smallest unit (wei). */
   SHIP_REWARD_PER_MERGE: get("SHIP_REWARD_PER_MERGE"),
+  /**
+   * Reviewer swarm: per-reviewer reward for a PASS review in a counted
+   * push's quorum, in wei. Unset → defaults to 10% of
+   * SHIP_REWARD_PER_MERGE (labelled placeholder — the reviewer share of
+   * the reward schedule is Gregory's open decision, spec §8B.2).
+   */
+  SHIP_REVIEWER_REWARD_PER_MERGE: get("SHIP_REVIEWER_REWARD_PER_MERGE"),
+  /** Reviewer swarm: independent PASS reviews required to count a
+   *  swarm-gated push. Unset/invalid → 2. */
+  SWARM_REVIEW_QUORUM: get("SWARM_REVIEW_QUORUM"),
+  /**
+   * Platform reward treasury wallet — the 25% fee recipient on Proof of
+   * Dev platform SDK launches (see src/lib/launchFeeConfig.ts). Must be a
+   * claim-capable wallet (claims are beneficiary-signed), NOT the
+   * ShipRewards contract. TODO: no dedicated wallet designated yet —
+   * leave unset until Gregory designates one; platform launch-template
+   * building fails closed while this is empty.
+   */
+  PLATFORM_REWARD_TREASURY_WALLET: get("PLATFORM_REWARD_TREASURY_WALLET"),
+  /** Canonical FeeLockVault implementation hash (masked template —
+   *  the executable code with immutable slots zeroed; see
+   *  src/lib/launchRecognition.ts). Unset → the in-code template
+   *  constant computed from this repo's compiled artifact. Set only
+   *  to pin the approved implementation externally. */
+  APPROVED_FEE_LOCK_VAULT_CODEHASH: get("APPROVED_FEE_LOCK_VAULT_CODEHASH"),
+  /** Bankr v4 launch factory + fee ledger (launch-record reads for
+   *  launch recognition, src/lib/launchRecognition.ts). Default to the
+   *  real Base/Robinhood addresses from the Bankr launch SDK; the E2E
+   *  suites override both to a local mock implementing the same three
+   *  views (poolOf / beneficiariesOf / creatorShareOf). */
+  BANKR_FACTORY_ADDRESS: get("BANKR_FACTORY_ADDRESS"),
+  BANKR_FEE_LEDGER_ADDRESS: get("BANKR_FEE_LEDGER_ADDRESS"),
+  /** The Bankr fee ledger a FeeLockVault CLAIMS from (its immutable
+   *  claimLedger binding, validated at prepare-launch — Codex
+   *  round-4). In production this is the same Bankr ledger contract
+   *  as BANKR_FEE_LEDGER_ADDRESS; it is a separate knob so test
+   *  fixtures can model the claim source and the launch-record
+   *  ledger with two mocks. Unset → the chain's fee-ledger default. */
+  BANKR_CLAIM_LEDGER_ADDRESS: get("BANKR_CLAIM_LEDGER_ADDRESS"),
+  /** The chain's canonical WETH — the fee token every platform
+   *  FeeLockVault must be bound to (validated at prepare-launch).
+   *  Unset → the chain default (Base/Base Sepolia canonical WETH). */
+  WETH_ADDRESS: get("WETH_ADDRESS"),
   /** GitEscrow on Robinhood Chain mainnet (4663) */
   GIT_ESCROW_ROBINHOOD_ADDRESS: get("GIT_ESCROW_ROBINHOOD_ADDRESS"),
   /** Optional — protects POST /api/admin/delete-grant */

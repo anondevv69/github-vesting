@@ -109,6 +109,31 @@ export async function getRepoInfo(
   return data;
 }
 
+/**
+ * Collaborator permission level for a user on a repo, via the installation
+ * token ("admin" | "maintain" | "write" | "triage" | "read" | "none").
+ * Returns null when GitHub gives no answer (user is not a collaborator and
+ * not the owner, or the lookup failed) — callers must fail closed.
+ */
+export async function getCollaboratorPermission(
+  installationId: number,
+  owner: string,
+  repo: string,
+  username: string,
+): Promise<string | null> {
+  try {
+    const app = getGithubApp();
+    const octokit = await app.getInstallationOctokit(installationId);
+    const { data } = await octokit.request(
+      "GET /repos/{owner}/{repo}/collaborators/{username}/permission",
+      { owner, repo, username },
+    );
+    return (data as { permission?: string }).permission ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getOAuthUser(code: string): Promise<{
   login: string;
   id: number;

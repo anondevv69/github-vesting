@@ -4,6 +4,8 @@ import { CopyButton } from "./CopyButton";
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const SKILL_URL = "https://github.com/anondevv69/github-vesting/tree/main/skills/bankr-vesting";
 const SKILL_INSTALL = "install GitHub Vesting skill at https://github.com/anondevv69/github-vesting/tree/main/skills/bankr-vesting";
+const CLAUDE_SKILL_URL = "https://github.com/anondevv69/github-vesting/tree/main/skills/claude-vesting";
+const CLAUDE_SKILL_INSTALL = "install the Proof of Dev skill from https://github.com/anondevv69/github-vesting/tree/main/skills/claude-vesting";
 const BRIEFING_URL = `${API_BASE}/api/agent/briefing`;
 
 export function VestingFooter() {
@@ -31,6 +33,19 @@ export function VestingFooter() {
           <div className="vesting-footer__snippet">
             <code>{SKILL_INSTALL}</code>
             <CopyButton text={SKILL_INSTALL} icon />
+          </div>
+        </article>
+
+        <article className="vesting-footer__card vesting-footer__card--claude">
+          <div className="vesting-footer__card-head">
+            <span className="vesting-footer__pill vesting-footer__pill--claude">Claude</span>
+            <a href={CLAUDE_SKILL_URL} target="_blank" rel="noreferrer" className="vesting-footer__card-action">
+              Skill
+            </a>
+          </div>
+          <div className="vesting-footer__snippet">
+            <code>{CLAUDE_SKILL_INSTALL}</code>
+            <CopyButton text={CLAUDE_SKILL_INSTALL} icon />
           </div>
         </article>
 

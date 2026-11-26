@@ -229,7 +229,12 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
 
     if (!result.accepted) {
       console.log(`[webhook] push rejected: ${result.reason}`);
-      res.json({ ok: true, accepted: false, reason: result.reason });
+      res.json({
+        ok: true,
+        accepted: false,
+        reason: result.reason,
+        ...(result.swarm ? { swarm: result.swarm } : {}),
+      });
       return;
     }
 
@@ -245,6 +250,7 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       release: result.release,
       ...(result.prCredit ? { prCredit: result.prCredit } : {}),
       ...(result.reward ? { reward: result.reward } : {}),
+      ...(result.swarm ? { swarm: result.swarm } : {}),
       ...(claimResult.processed ? { repoClaim: claimResult } : {}),
     });
   } catch (err) {

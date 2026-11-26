@@ -57,6 +57,13 @@ import { handleGithubAuthMe, handleGithubAuthLogout } from "./api/githubAuth";
 import { handleAdminDeleteGrant } from "./api/adminGrants";
 import { handleAdminBackfillPushes } from "./api/adminBackfill";
 import { handleGithubInstallationLookup } from "./api/githubInstall";
+import { handleLaunchVerifyGithub, handleLaunchEnrollmentLookup, handleLaunchedProjects, handlePrepareLaunch, handleCountAttestation } from "./api/launchVerify";
+import {
+  handleEnrolReviewer,
+  handleReviewPush,
+  handleReviewQueue,
+  handleGetPushReviews,
+} from "./api/swarmReview";
 
 const app = express();
 
@@ -205,6 +212,13 @@ app.post("/api/dev/link-wallet/magic-session", (req, res) => void handleWalletLi
 app.post("/api/vesting/by-dev/:login/reviews", (req, res) => void handlePostDevReview(req, res));
 app.get("/api/vesting/leaderboard", (req, res) => void handleLeaderboard(req, res));
 
+// ─── Launch gate (Step 0 of any launch/deploy — platform AND agent paths) ──
+app.post("/api/launch/verify-github", (req, res) => void handleLaunchVerifyGithub(req, res));
+app.post("/api/launch/prepare-launch", (req, res) => void handlePrepareLaunch(req, res));
+app.post("/api/launch/count-attestation", (req, res) => void handleCountAttestation(req, res));
+app.get("/api/launch/enrollment", (req, res) => void handleLaunchEnrollmentLookup(req, res));
+app.get("/api/launch/projects", (req, res) => void handleLaunchedProjects(req, res));
+
 // ─── Bankr agent API (for @bankrbot skill) ───────────────────────────────────
 app.get("/api/agent/briefing", (req, res) => void handleAgentBriefing(req, res));
 app.get("/api/agent/grants", (req, res) => void handleAgentGrants(req, res));
@@ -218,6 +232,12 @@ app.post("/api/agent/link-github", (req, res) => void handleAgentLinkGithub(req,
 app.post("/api/agent/report-ship", (req, res) => void handleReportShip(req, res));
 app.get("/api/agent/ship-report", (req, res) => void handleGetShipReport(req, res));
 app.get("/api/agent/ship-reports", (req, res) => void handleListShipReports(req, res));
+
+// ─── Reviewer swarm (attestations gate counting; settlement is the webhook) ──
+app.post("/api/agent/enrol-reviewer", (req, res) => void handleEnrolReviewer(req, res));
+app.get("/api/agent/review-queue", (req, res) => void handleReviewQueue(req, res));
+app.post("/api/agent/review-push", (req, res) => void handleReviewPush(req, res));
+app.get("/api/agent/push-reviews", (req, res) => void handleGetPushReviews(req, res));
 
 // Body-parser failures on /mcp must surface as JSON-RPC parse errors, not
 // Express's default HTML error page (MCP clients can't parse HTML).

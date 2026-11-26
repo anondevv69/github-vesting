@@ -56,7 +56,7 @@ check("initialize", init.json?.result?.serverInfo?.name === "proofofdev",
 // 2. tools/list
 const list = await rpc({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} });
 const names = (list.json?.result?.tools ?? []).map((t) => t.name).sort();
-check("tools/list has 8 tools", names.length === 8, names.join(","));
+check("tools/list has 13 tools", names.length === 13, names.join(","));
 console.log("TOOLS_JSON:" + JSON.stringify(names));
 
 // 3. tools/call vesting_status

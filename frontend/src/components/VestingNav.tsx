@@ -5,6 +5,7 @@ import { useVestingAuth } from "../hooks/useVestingAuth";
 const links = [
   { to: "/", label: "Explore" },
   { to: "/create", label: "Create lock" },
+  { to: "/launch", label: "Launch" },
   { to: "/help", label: "Help" },
   { to: "/agents", label: "Agents" },
 ];

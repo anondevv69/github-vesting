@@ -62,6 +62,27 @@ export type VerifyResult =
   | { accepted: true; reason: string; linesEstimate: number }
   | { accepted: false; reason: string; linesEstimate?: number; codeFiles?: number };
 
+/**
+ * The reviewer-swarm outcome recorded on a push-log entry (Codex
+ * round-2): processPush owns the swarm gate and stamps its verdict
+ * onto the entry it records, so the recount (src/lib/recount.ts) can
+ * replay swarm decisions — a push the swarm blocked never counts in
+ * the recount either, and a counted push's quorum is part of the
+ * record a backup verifier re-checks.
+ */
+export type SwarmLogInfo = {
+  /** The grant was swarm-gated at the time of this push. */
+  required: boolean;
+  /** Diff fingerprint the quorum agreed on (PR-credit path), when known. */
+  fingerprint?: string;
+  passCount: number;
+  failCount: number;
+  /** A reviewer/candidate flagged this diff as a duplicate. */
+  duplicateFlagged: boolean;
+  /** Quorum met: >= required PASS and zero FAIL. */
+  met: boolean;
+};
+
 function branchFromRef(ref: string): string {
   return ref.replace("refs/heads/", "");
 }
@@ -174,7 +195,10 @@ export async function verifyPush(
     };
   }
 
-  // 5. Reject duplicate head commits (same push redelivered or amended re-count).
+  // 5. Reject duplicate head commits (same push redelivered or amended
+  // re-count). NOTE: this SISMEMBER check is a fast path only — under
+  // concurrent deliveries it can pass for two copies of the same push.
+  // The authoritative guard is the atomic claim in recordVerifiedPush.
   const headSha = headCommitSha(payload);
   if (!headSha) {
     return { accepted: false, reason: "No head commit SHA in push" };
@@ -238,11 +262,98 @@ export async function verifyPush(
   };
 }
 
+/**
+ * Atomic claim-and-record Lua script (Codex review fix, 2026-11-25;
+ * extended for Codex round-2 finding 4).
+ *
+ * The duplicate check in verifyPush (SISMEMBER) and the record step
+ * used to be separate Redis operations: two concurrent deliveries of
+ * the same webhook could BOTH pass the duplicate check before either
+ * recorded the SHA, double-counting vesting progress (ShipRewards'
+ * per-merge-hash guard stopped a second reward, but the vesting
+ * counter itself could inflate). This script makes check-and-record
+ * one atomic step.
+ *
+ * Round 2 closes the remaining race the round-1 script left open:
+ * the DAILY CAP and the COOLDOWN were checked in verifyPush against
+ * state read BEFORE the claim, so two DIFFERENT pushes racing at the
+ * cap boundary (one slot left) could both pass the pre-check and
+ * both count, and two pushes inside the cooldown window could both
+ * slip through the same way. Both checks now ALSO happen inside this
+ * script, against live state, before anything is recorded:
+ *   -1  the head SHA was already claimed (duplicate);
+ *   -2  the daily counter is already at the cap;
+ *   -3  the last counted push in the log tail is inside the cooldown
+ *       window and this push is not a substantial-change bypass.
+ * On -2/-3 NOTHING is recorded — in particular the SHA is not
+ * claimed, so the push can still count when it is legitimately
+ * re-delivered after the window/day passes. verifyPush's pre-checks
+ * remain as the fast path that produces the friendly reasons; this
+ * script is the authoritative guard for all three rules.
+ *
+ * KEYS[1] = seen-SHA set · KEYS[2] = daily counter · KEYS[3] = push
+ * log · KEYS[4] = verified-push counter
+ * ARGV[1] = head SHA · ARGV[2] = log entry JSON · ARGV[3] = max
+ * daily · ARGV[4] = enforce cap ("1"/"0") · ARGV[5] = cooldown ms ·
+ * ARGV[6] = enforce cooldown ("1"/"0") · ARGV[7] = lines estimate ·
+ * ARGV[8] = now (ms)
+ */
+const CLAIM_PUSH_LUA = `
+-- claimPush
+if redis.call('SISMEMBER', KEYS[1], ARGV[1]) == 1 then
+  return -1
+end
+if ARGV[4] == '1' then
+  local daily = tonumber(redis.call('GET', KEYS[2]) or '0')
+  if daily >= tonumber(ARGV[3]) then
+    return -2
+  end
+end
+if ARGV[6] == '1' and tonumber(ARGV[7]) < 50 then
+  local tail = redis.call('LRANGE', KEYS[3], -30, -1)
+  for i = #tail, 1, -1 do
+    local ok, entry = pcall(cjson.decode, tail[i])
+    if ok and entry and entry.accepted ~= false and entry.ts then
+      if (tonumber(ARGV[8]) - tonumber(entry.ts)) < tonumber(ARGV[5]) then
+        return -3
+      end
+      break
+    end
+  end
+end
+redis.call('SADD', KEYS[1], ARGV[1])
+redis.call('INCR', KEYS[2])
+redis.call('EXPIRE', KEYS[2], 172800)
+redis.call('RPUSH', KEYS[3], ARGV[2])
+redis.call('LTRIM', KEYS[3], -200, -1)
+return redis.call('INCR', KEYS[4])
+`;
+
+export type ClaimConflict = "duplicate" | "daily-cap" | "cooldown";
+
+/**
+ * Record a verified push: { total } with the repo's new verified-push
+ * total, or { conflict } when the atomic claim refused it — a
+ * concurrent delivery claimed this SHA ("duplicate"), or a DIFFERENT
+ * push won the race for the last daily-cap slot / the cooldown
+ * window ("daily-cap" / "cooldown"). The caller treats any conflict
+ * as a rejection: the push did NOT count. The SISMEMBER/cap/cooldown
+ * pre-checks in verifyPush are only a fast path; THIS claim is the
+ * authoritative guard for all three rules.
+ */
 export async function recordVerifiedPush(
   repoId: string,
   payload: PushPayload,
   verifyResult: Extract<VerifyResult, { accepted: true }>,
-): Promise<number> {
+  opts?: {
+    bypassDailyCap?: boolean;
+    bypassCooldown?: boolean;
+    /** Swarm verdict to stamp onto the recorded entry (recount evidence). */
+    swarm?: SwarmLogInfo;
+    /** Override "now" (tests); defaults to Date.now(). */
+    nowMs?: number;
+  },
+): Promise<{ total: number } | { conflict: ClaimConflict }> {
   const headSha = headCommitSha(payload) ?? "unknown";
   const redis = getRedis();
 
@@ -261,16 +372,32 @@ export async function recordVerifiedPush(
     linesEstimate: verifyResult.linesEstimate,
     commitCount: payload.commits.length,
     accepted: true,
+    ...(opts?.swarm ? { swarm: opts.swarm } : {}),
   });
 
-  await redis.sadd(seenKey, headSha);
-  await redis.incr(dailyKey);
-  await redis.expire(dailyKey, 60 * 60 * 48); // expire in 48h
-  await redis.rpush(logKey, logEntry);
-  await redis.ltrim(logKey, -200, -1); // keep last 200 push logs
+  const result = (await (redis as unknown as {
+    eval: (script: string, numKeys: number, ...args: (string | number)[]) => Promise<unknown>;
+  }).eval(
+    CLAIM_PUSH_LUA,
+    4,
+    seenKey,
+    dailyKey,
+    logKey,
+    pushCountKey,
+    headSha,
+    logEntry,
+    MAX_PUSHES_PER_DAY,
+    opts?.bypassDailyCap ? "0" : "1",
+    MIN_MINUTES_BETWEEN_PUSHES * 60_000,
+    opts?.bypassCooldown ? "0" : "1",
+    verifyResult.linesEstimate,
+    opts?.nowMs ?? Date.now(),
+  )) as number;
 
-  const newTotal = await redis.incr(pushCountKey);
-  return newTotal;
+  if (result === -1) return { conflict: "duplicate" };
+  if (result === -2) return { conflict: "daily-cap" };
+  if (result === -3) return { conflict: "cooldown" };
+  return { total: result };
 }
 
 /** Log a rejected push attempt so the status page shows why it did not count. */
@@ -278,6 +405,7 @@ export async function recordRejectedPush(
   repoId: string,
   payload: PushPayload,
   verifyResult: Extract<VerifyResult, { accepted: false }>,
+  extra?: { swarm?: SwarmLogInfo },
 ): Promise<void> {
   const headSha = headCommitSha(payload) ?? "unknown";
   const logEntry = JSON.stringify({
@@ -290,6 +418,7 @@ export async function recordRejectedPush(
     commitCount: payload.commits?.length ?? 0,
     ...(verifyResult.linesEstimate != null ? { linesEstimate: verifyResult.linesEstimate } : {}),
     ...(verifyResult.codeFiles != null ? { codeFiles: verifyResult.codeFiles } : {}),
+    ...(extra?.swarm ? { swarm: extra.swarm } : {}),
   });
   const redis = getRedis();
   const logKey = KEYS.pushLog(repoId);

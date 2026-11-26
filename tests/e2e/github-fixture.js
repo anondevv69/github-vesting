@@ -11,11 +11,25 @@
  *   POST /app/installations/777/access_tokens              -> fake token
  *   GET  /repos/:owner/:repo/pulls/:n                      -> PR meta
  *   GET  /repos/:owner/:repo/pulls/:n/files                -> PR files
+ *   GET  /repos/:owner/:repo                               -> repo metadata
+ *        (owner = :owner; used by the launch gate's ownership check and
+ *        by validateRepoAccess)
+ *   GET  /repos/:owner/:repo/collaborators/:user/permission
+ *        -> { permission: "admin" } when :user == :owner, else "read"
+ *
+ * Launch-gate fixtures (run-launch-gate.sh):
+ *   any repo named "notinstalled"  -> installation lookup 404s (app absent)
+ *   testauthor/launchrepo          -> installed, owned by testauthor
+ *   otherowner/theirrepo           -> installed, owned by otherowner
  *
  * Repos:
  *   testowner/testrepo — the grant repo (seed.ts):
  *     PR #42 merged, human author (@testauthor)
  *     PR #43 merged, bot author (dependabot[bot])
+ *     PR #47 merged, human author (@testauthor) — swarm happy path
+ *     PR #48 merged, human author (@testauthor) — swarm duplicate case:
+ *       its file list is IDENTICAL to PR #47's, so its diff fingerprint
+ *       exactly equals PR #47's counted fingerprint
  *   testowner/nogrant — NO vesting grant (grant-less reward tests):
  *     PR #44 merged, human author (@testauthor, wallet linked)
  *     PR #45 merged, human author (@ghostdev, NO wallet linked)
@@ -28,6 +42,8 @@ const http = require("http");
 
 const HUMAN_SHA = "c0ffee0000000000000000000000000000000042";
 const BOT_SHA = "b070000000000000000000000000000000000043";
+const SWARM_SHA = "47".repeat(20); // PR #47 merge commit (swarm happy path)
+const SWARM_DUP_SHA = "48".repeat(20); // PR #48 merge commit (duplicate diff)
 const GRANTLESS_LINKED_SHA = "44".repeat(20); // PR #44 merge commit
 const GRANTLESS_UNLINKED_SHA = "45".repeat(20); // PR #45 merge commit
 const INSTALLATION_ID = 777;
@@ -58,6 +74,23 @@ const REPOS = {
       merge_commit_sha: BOT_SHA,
       user: { login: "dependabot[bot]", type: "Bot" },
       files: codeFiles("b"),
+    },
+    47: {
+      number: 47,
+      title: "feat: swarm-reviewed thing",
+      merged_at: "2026-11-25T12:00:00Z",
+      merge_commit_sha: SWARM_SHA,
+      user: { login: "testauthor", type: "User" },
+      files: codeFiles("s"),
+    },
+    48: {
+      number: 48,
+      title: "feat: same code again",
+      merged_at: "2026-11-25T12:05:00Z",
+      merge_commit_sha: SWARM_DUP_SHA,
+      user: { login: "testauthor", type: "User" },
+      // IDENTICAL file list to PR #47 — same diff fingerprint.
+      files: codeFiles("s"),
     },
   },
   "testowner/nogrant": {
@@ -103,7 +136,29 @@ const server = http.createServer((req, res) => {
     }
     const instMatch = path.match(/^\/repos\/([^/]+)\/([^/]+)\/installation$/);
     if (req.method === "GET" && instMatch) {
+      if (instMatch[2] === "notinstalled") {
+        return send(404, { message: "Not Found" }); // launch-gate: app absent
+      }
       return send(200, { id: INSTALLATION_ID, app_id: 123456 });
+    }
+    const permMatch = path.match(/^\/repos\/([^/]+)\/([^/]+)\/collaborators\/([^/]+)\/permission$/);
+    if (req.method === "GET" && permMatch) {
+      const isOwner = permMatch[3].toLowerCase() === permMatch[1].toLowerCase();
+      return send(200, {
+        permission: isOwner ? "admin" : "read",
+        user: { login: permMatch[3], type: "User" },
+      });
+    }
+    const repoMatch = path.match(/^\/repos\/([^/]+)\/([^/]+)$/);
+    if (req.method === "GET" && repoMatch) {
+      return send(200, {
+        id: 424242,
+        full_name: `${repoMatch[1]}/${repoMatch[2]}`,
+        name: repoMatch[2],
+        private: false,
+        default_branch: "main",
+        owner: { login: repoMatch[1], type: "User" },
+      });
     }
     const prMatch = path.match(/^\/repos\/([^/]+)\/([^/]+)\/pulls\/(\d+)(\/files)?$/);
     if (req.method === "GET" && prMatch) {

@@ -15,7 +15,11 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { env } from "../lib/env";
-import { getVestingChainConfig, type VestingChainKey } from "../lib/chains";
+import {
+  getVestingChainConfig,
+  resolveGrantEscrowAddress,
+  type VestingChainKey,
+} from "../lib/chains";
 import { parseWei } from "../lib/wei";
 import { updateGrant, type GrantRecord } from "../lib/redis";
 import { repoIdToBytes32 } from "../lib/repoId";
@@ -150,7 +154,11 @@ export async function triggerReleaseIfMilestone(
     };
   }
 
-  const escrowAddress = getVestingChainConfig(grant.chain as VestingChainKey).escrowAddress;
+  // Per-grant escrow (v1→v2 cutover): a grant is released from the
+  // escrow it was created under — its recorded escrow, or the chain's
+  // legacy escrow for pre-cutover grants — never from whichever
+  // escrow the chain config was since repointed to.
+  const escrowAddress = resolveGrantEscrowAddress(grant);
   if (!escrowAddress) {
     return { triggered: false, reason: `GitEscrow not configured for ${grant.chain}` };
   }
@@ -161,6 +169,19 @@ export async function triggerReleaseIfMilestone(
 
   try {
     const { publicClient, walletClient, account } = getClients(grant.chain);
+
+    // Fail loudly, never vacuously: a release call to an address
+    // with no contract code "succeeds" on-chain while paying nothing
+    // and would still mark the milestone paid. A misresolved escrow
+    // (bad cutover config) must surface as a failed release instead.
+    const escrowCode = await publicClient.getCode({ address: escrowAddress as Address });
+    if (!escrowCode || escrowCode === "0x") {
+      return {
+        triggered: false,
+        reason: `Resolved escrow ${escrowAddress} has no contract code on ${grant.chain} — refusing to release`,
+      };
+    }
+
     const repoIdBytes32 = repoIdToBytes32(repoId);
 
     const expectedPayout =

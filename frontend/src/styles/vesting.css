@@ -2529,3 +2529,171 @@ a.fee-recipient-card__handle:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* ─── Launch page ────────────────────────────────────────────────────────── */
+.launch-status {
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--blue);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  padding: 1rem 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.launch-status__badge {
+  display: inline-block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.25rem;
+  background: var(--blue-dim);
+  color: var(--blue);
+  margin-bottom: 0.65rem;
+}
+
+.launch-status p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.launch-status p strong {
+  color: var(--text);
+}
+
+.launch-status__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.launch-steps {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.launch-step {
+  display: flex;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem;
+}
+
+.launch-step__num {
+  flex-shrink: 0;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--blue-dim);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  margin-top: 0.1rem;
+}
+
+.launch-step h3 {
+  margin: 0 0 0.3rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.launch-step p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.launch-step p strong,
+.launch-guarantee p strong {
+  color: var(--text);
+}
+
+.launch-guarantees {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 720px) {
+  .launch-guarantees {
+    grid-template-columns: 1fr;
+  }
+}
+
+.launch-guarantee {
+  padding: 1rem 1.1rem;
+}
+
+.launch-guarantee h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.launch-guarantee p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.launch-cta {
+  margin-bottom: 1rem;
+}
+
+.launch-cta h2 {
+  margin-top: 0;
+  font-size: 1rem;
+}
+
+/* ─── Agents page: Claude card + asks ────────────────────────────────────── */
+.agents-card--claude {
+  border-left: 2px solid var(--green);
+}
+
+.agents-card__badge--claude {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.agents-card--wide {
+  grid-column: 1 / -1;
+}
+
+.asks-list {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 2rem;
+}
+
+.ask-item__label {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+/* ─── Footer: Claude card ────────────────────────────────────────────────── */
+.vesting-footer__card--claude {
+  border-left: 2px solid var(--green);
+}
+
+.vesting-footer__pill--claude {
+  color: var(--green);
+}
+
+@media (min-width: 900px) {
+  .vesting-footer__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
