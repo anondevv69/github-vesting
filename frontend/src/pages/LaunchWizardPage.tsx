@@ -10,8 +10,12 @@
  *   3. Configure — token name/ticker + lock terms. The platform template
  *      (25% treasury / 75% fee-lock vault, Bankr time-vesting OFF,
  *      no cancel, fees auto-lock) is FIXED — it is shown, never edited.
- *   4. Prepare — POST /api/launch/prepare-launch returns the exact
- *      Bankr SDK launch input; the review screen renders THAT input.
+ *   4. Prepare — if the project has no fee-lock vault yet, POST
+ *      /api/launch/onboard first (the platform deploys the vault from
+ *      the approved implementation + registers its fee grant;
+ *      idempotent and resumable), then POST /api/launch/prepare-launch
+ *      returns the exact Bankr SDK launch input; the review screen
+ *      renders THAT input.
  *   5. Launch & lock — the Bankr launch SDK (@bankr/launch-sdk)
  *      executes in the browser with the user's wallet as signer, using
  *      the prepared input verbatim (the only client-added fields are
@@ -170,9 +174,16 @@ function refusalMessage(code: string | undefined, fallback: string): string {
     case "LAUNCH_TOKEN_BAD_SIGNATURE":
       return "That verification token is not valid for this repo and wallet. Verify again to get a fresh one.";
     case "LAUNCH_FEE_VAULT_REQUIRED":
-      return "PLATFORM SETUP PENDING: prepare-launch needs your project's fee-lock vault, and none was supplied. The platform deploys the vault during onboarding — if yours has not been deployed yet, this step cannot complete until it is. Do not launch outside the platform in the meantime: an outside launch gets no verified recognition.";
+      return "Prepare-launch needs your project's fee-lock vault, and none is known yet. The wizard normally onboards you automatically at Prepare (the platform deploys the vault and registers its fee grant) — if you are seeing this, onboarding did not run or did not finish. Go back to Prepare and try again; do not launch outside the platform in the meantime: an outside launch gets no verified recognition.";
     case "LAUNCH_FEE_GRANT_NOT_REGISTERED":
-      return "PLATFORM SETUP PENDING: your fee-lock vault exists, but the matching fee grant is not registered on the fee escrow yet. The platform registrar registers it during onboarding; once it is in, prepare again — nothing about your launch changes.";
+      return "Your fee-lock vault exists, but the matching fee grant is not registered on the fee escrow yet. The wizard retries onboarding automatically — the platform registrar registers the grant against your existing vault (never a second one). If this persists, press Prepare again.";
+    case "LAUNCH_ONBOARD_GRANT_REGISTRATION_FAILED":
+      return "Onboarding deployed your fee-lock vault but the fee-grant registration did not finish. Nothing is lost and no second vault will be deployed: press Prepare again and onboarding resumes against the same vault until the grant is registered.";
+    case "LAUNCH_ONBOARD_IN_PROGRESS":
+      return "Onboarding for this project is already in flight (a vault deployment or grant registration is landing on-chain). Wait a few seconds, then press Prepare again — the retry collects the result.";
+    case "LAUNCH_ONBOARD_NOT_CONFIGURED":
+    case "LAUNCH_ONBOARD_SIGNER_NOT_REGISTRAR":
+      return "Launch onboarding is not configured on the platform server right now, so no vault can be deployed. This is a platform-side setting, not something you can fix from here.";
     case "LAUNCH_FEE_VAULT_IS_LAUNCHER_WALLET":
       return "The fee-lock vault cannot be your own wallet — the launcher share must land in the vault contract so fees auto-lock instead of arriving liquid.";
     case "LAUNCH_FEE_VAULT_NOT_A_CONTRACT":
@@ -440,6 +451,50 @@ export function LaunchWizardPage() {
     }
   }
 
+  /**
+   * Platform onboarding (POST /api/launch/onboard): the platform
+   * deploys this project's fee-lock vault from the approved
+   * implementation and registers its fee grant — the two operator
+   * actions prepare-launch requires to already exist. Idempotent and
+   * resumable server-side: repeat calls return the same vault, and a
+   * retry after a failed grant registration completes against the
+   * existing vault. Returns the vault address.
+   */
+  async function runOnboard(token: string): Promise<string> {
+    const ppt = state.feePushesPerTranche.trim();
+    const res = await fetch(`${API_BASE}/api/launch/onboard`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-wallet-address": wallet ?? "" },
+      body: JSON.stringify({
+        repo,
+        wallet,
+        chain: CHAIN_KEY,
+        verificationToken: token,
+        ...(ppt ? { feePushesPerTranche: Number(ppt) } : {}),
+      }),
+      ...API_FETCH,
+    });
+    const d = (await res.json()) as {
+      ok?: boolean;
+      code?: string;
+      error?: string;
+      feeLockVault?: string;
+      feeGrant?: { pushesPerTranche?: number };
+    };
+    if (!d.ok || !d.feeLockVault) {
+      throw Object.assign(new Error(refusalMessage(d.code, d.error ?? "Onboarding failed")), {
+        code: d.code,
+      });
+    }
+    patch({
+      feeLockVault: d.feeLockVault,
+      ...(d.feeGrant?.pushesPerTranche
+        ? { feePushesPerTranche: String(d.feeGrant.pushesPerTranche) }
+        : {}),
+    });
+    return d.feeLockVault;
+  }
+
   async function handlePrepare() {
     if (!state.verificationToken) {
       setError("Verify first (Step 2) — prepare-launch requires a verification token.");
@@ -448,22 +503,35 @@ export function LaunchWizardPage() {
     setBusy(true);
     setError(null);
     try {
+      // Onboard first when no vault is known: the platform deploys
+      // the fee-lock vault + registers the fee grant, then prepare
+      // validates them. A vault the user pasted (recovery path) is
+      // used as-is; if prepare then reports its grant missing, one
+      // onboarding resume + one retry closes that gap too.
+      let vault = state.feeLockVault.trim();
+      if (!vault) {
+        setTxStatus("Onboarding: the platform is deploying your fee-lock vault and registering its fee grant…");
+        vault = await runOnboard(state.verificationToken);
+        setTxStatus(null);
+      }
       const ppt = state.feePushesPerTranche.trim();
-      const res = await fetch(`${API_BASE}/api/launch/prepare-launch`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-wallet-address": wallet ?? "" },
-        body: JSON.stringify({
-          repo,
-          wallet,
-          chain: CHAIN_KEY,
-          verificationToken: state.verificationToken,
-          ...(state.feeLockVault.trim() ? { feeLockVault: state.feeLockVault.trim() } : {}),
-          ...(ppt ? { feePushesPerTranche: Number(ppt) } : {}),
-          launch: { name: state.name.trim(), symbol: state.symbol.trim().toUpperCase() },
-        }),
-        ...API_FETCH,
-      });
-      const d = (await res.json()) as {
+      const callPrepare = (vaultAddr: string) =>
+        fetch(`${API_BASE}/api/launch/prepare-launch`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-wallet-address": wallet ?? "" },
+          body: JSON.stringify({
+            repo,
+            wallet,
+            chain: CHAIN_KEY,
+            verificationToken: state.verificationToken,
+            feeLockVault: vaultAddr,
+            ...(ppt ? { feePushesPerTranche: Number(ppt) } : {}),
+            launch: { name: state.name.trim(), symbol: state.symbol.trim().toUpperCase() },
+          }),
+          ...API_FETCH,
+        });
+      let res = await callPrepare(vault);
+      let d = (await res.json()) as {
         ok?: boolean;
         code?: string;
         error?: string;
@@ -471,6 +539,13 @@ export function LaunchWizardPage() {
         feeLockVault?: string | null;
         feePushesPerTranche?: number;
       };
+      if (!d.ok && d.code === "LAUNCH_FEE_GRANT_NOT_REGISTERED") {
+        setTxStatus("Onboarding: registering the fee grant against your vault…");
+        vault = await runOnboard(state.verificationToken);
+        setTxStatus(null);
+        res = await callPrepare(vault);
+        d = (await res.json()) as typeof d;
+      }
       if (!d.ok || !d.launchInput) {
         if (d.code === "LAUNCH_TOKEN_EXPIRED") {
           patch({ step: 2 });
@@ -486,9 +561,13 @@ export function LaunchWizardPage() {
         step: 5,
       });
     } catch (e) {
+      if ((e as { code?: string })?.code === "LAUNCH_TOKEN_EXPIRED") {
+        patch({ step: 2 });
+      }
       setError(e instanceof Error ? e.message : "Prepare failed");
     } finally {
       setBusy(false);
+      setTxStatus(null);
     }
   }
 
@@ -944,17 +1023,18 @@ export function LaunchWizardPage() {
             </p>
           )}
           <label>
-            Fee-lock vault address (from platform onboarding)
+            Fee-lock vault address (optional — the platform deploys it for you)
             <input
               type="text"
-              placeholder="0x…"
+              placeholder="Leave blank — deployed automatically at Prepare"
               value={state.feeLockVault}
               onChange={(e) => patch({ feeLockVault: e.target.value, prepared: null })}
             />
             <span className="field-hint">
-              The platform deploys this per-project vault and registers its fee grant before
-              your launch can be prepared. Paste the address the platform gave you. If you do
-              not have one yet, prepare will stop with a clear platform-setup message.
+              At Prepare, the platform automatically deploys this per-project vault from its
+              approved implementation and registers its fee grant, then fills this in. Only
+              paste an address here if the platform gave you one for a project already
+              onboarded (for example, recovering an interrupted launch).
             </span>
           </label>
           <label>
@@ -1012,10 +1092,13 @@ export function LaunchWizardPage() {
           <button type="button" className="btn btn-ghost" onClick={() => patch({ step: 3 })}>← Back</button>
           <h2>Prepare the launch</h2>
           <p className="muted">
-            Prepare-launch re-reads your fee-lock vault's bindings on-chain and confirms the
-            registered fee grant before it hands out anything signable. Nothing is signed or
-            broadcast in this step.
+            If your project is not onboarded yet, this step onboards it first: the platform
+            deploys your fee-lock vault and registers its fee grant (platform transactions,
+            not yours — nothing for you to sign). Prepare-launch then re-reads the vault's
+            bindings on-chain and confirms the registered fee grant before it hands out
+            anything signable.
           </p>
+          {txStatus && <p className="muted">{txStatus}</p>}
           {tokenExpired && (
             <p className="field-hint err">
               Your verification token has expired. <button type="button" className="btn btn-ghost btn-sm" onClick={() => patch({ step: 2 })}>Re-verify</button> — your configuration is kept.
