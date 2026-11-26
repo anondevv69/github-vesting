@@ -766,3 +766,42 @@ The suffix is appended after the call data and changes nothing else — same tar
 At record time the grant still reads **verifiedPushCount 0/2, status active**, and `recentPushes` is empty — pending pushes are deliberately not written to the push log until settlement (§24), so an empty log here means "inside the window", not "not recorded": the candidates above are the record.
 
 **Expected settlement (not yet executed at record time).** Absent two independent PASS attestations (which would count a push earlier, via the swarm path) or a FAIL (which would veto it permanently), each push counts by **verifier fallback** at window expiry; the background settler sweeps every 60 seconds by default, so each count should land within about a minute after its expiry. Push 1's count pays milestone 1 — **150 VDEMO** released from the legacy escrow to the recipient — and push 2's count pays milestone 2 — the second **150 VDEMO** — completing the grant at 300 VDEMO total. Push 2's settlement-time cooldown is bypassed by its ~75-line estimate, so the two settlements can land two minutes apart. Whether both settlements executed as expected is for the next production read to confirm; this section claims only the verified pending state above.
+
+## 29. SHIPREWARDS POD REPOINT + POOL FUNDING + TREASURY RECYCLE AUTOMATION — LIVE (2026-11-26)
+
+Executed under Gregory's blanket order "Push it all" (2026-11-26 ~16:41 EST), which adopted the standing §8B schedule recommendation that had been open since 2026-11-25. Decisions taken under the order (each reversible by Gregory with one word): reward token = **POD** `0x56a92c2453578897C0682c2D46488DC217e57D4e`; **10,000 POD per counted merge** (author reward); **1,000 POD per reviewer** on swarm-counted pushes.
+
+### 29.1 Repoint — contract + config
+
+- **On-chain:** production ShipRewards `0x0Bea0333d57B2D5506fbCa3Eab36078df77AD82E` carried the pilot's mBANKR (`0x55AFc7c1463ffAaE07056978fd8939D530CB7239`) as rewardToken. Owner/oracle `0x6dfc5fc9…` called `setRewardToken(POD)` — tx `0xd9a10fce228b8978095cc6760fb922b85414d07bbc6f8fad96da61a5bdff0f76`, block 62695751, simulated before broadcast; readback confirms rewardToken = POD. The pool's retired **9,400 mBANKR** balance remains in the contract, untouched (owner-withdrawable via `withdraw` whenever Gregory wants it moved; it is not part of the POD pool accounting, which reads the POD balance).
+- **Config (Railway `variableUpsert`, production):** `SHIP_REWARD_PER_MERGE` 100000000000000000000 (pilot: 100 tokens) → **10000000000000000000000** (10,000 POD, wei); `SHIP_REVIEWER_REWARD_PER_MERGE` unset (code defaulted to 10% of base) → **1000000000000000000000** (1,000 POD, wei). `SHIP_REWARDS_ADDRESS` unchanged. Post-deploy readback (§29.4) confirms both values live.
+
+### 29.2 Initial pool funding — the designed recycle path, run live
+
+The treasury (`0x9F1019CC208eD1786a85d19C616A017cd1cB5291`) held **2.82529085 ANTc** (the §26 fee claim) plus fresh accrual. Funding ran through the new recycle script itself (§29.3) — three consecutive live cycles:
+
+| Cycle | Claim | Swap (PodSettler, ANTc → POD) | Deposit to pool |
+|---|---|---|---|
+| 1 | 0.11097522 ANTc, tx `0x21818710b814501bb04adaeae37b85f076c88772453d331425eabab8b42bd4d3` | approve `0xd37e1c664523971807db695395b0211a241e137cfcf5b7d83fdb48a1e7109630`; **2.93626607 ANTc → 471,162,959.22567572006263963 POD**, tx `0xdff21805a1f1f29a2e13598d4c32da3971ab1928e0241281d96b6b7515520b4d` (received exactly the simulated output; minOut bound 3% under) | 471,162,959.2257 POD, tx `0x36eba3cf90185ba5351efcfdfab1912916cd614bea36c4e6808fd4188dd255de` |
+| 2 | 0.01167121 ANTc (fees the cycle-1 buy itself generated back to the treasury as fee recipient) | **→ 1,863,309.134574322403049107 POD**, tx `0x1bec3a204744af84928452e73f6ce408016b533b688a15a4bd4ccba20042cdeb` | tx `0xa625a4356c9b9b2d70686ec72201806edbb8a00a9a6462e887bddb377f785d7f` |
+| 3 | 0.00004639 ANTc, tx `0xd913f75d589273555a8cd96075e91db9bf58938c75a6a1bfb24bd7a50c70cce0` | below the 0.001 ANTc swap floor — held as dust for later cycles (designed no-op) | — |
+
+**Final pool balance: 473,026,268.360250042465688737 POD** (`rewardBalance()` readback) — enough for ~47,300 author rewards at the adopted schedule before the recycle must refill it. Route note: the swap leg is the direct ANTc → POD PodSettler leg of §9/§22 — the treasury already held the pool's quote asset (ANTc); the ANTc/USDC V3 leg in earlier trades existed only to acquire ANTc from ETH and would have been a value-losing round trip here. Treasury left at 0.00004639 ANTc dust and 0.005039 ETH (gas spend across all cycles ≈ 0.000009 ETH).
+
+### 29.3 Recycle automation — `scripts/treasury-recycle.mts`
+
+New repo script (`npm run treasury:recycle`), chain-derived state only, no local bookkeeping, safe to run at any time:
+
+1. **Claim** — SDK `fees.get` for (POD, treasury); if claimable > 0, SDK `buildClaim`, with the §26 assertions (target = Bankr claim ledger `0x7C836e937831Cd5931A1ACbB9117dF9714D7d1F7`, collectFees-family selector, zero value, simulation from the treasury) before the treasury-signed broadcast.
+2. **Swap** — whole ANTc balance above a 0.001 ANTc dust floor → POD via PodSettler against the POD/ANTc Doppler pool (pool key re-derived from `launchInfo` each run). Exact-amount approve first, then the swap is **simulated** and broadcast with minOut = simulation − 3%; the settled delta is asserted ≥ minOut. (Dry-run mode quotes via an eth_call allowance state-override probe; on ANTc's B20 storage layout that probe does not resolve, so a dry run reports the quote as unavailable rather than guessing — the live path always simulates against real state after the approve.)
+3. **Top up** — whole POD balance transferred into ShipRewards (funding is a plain transfer by contract design). **Fail-closed:** the run refuses before moving anything unless the pool's `rewardToken()` reads POD.
+
+Supporting changes: `@bankr/launch-sdk@1.0.0` added as a repo dependency (the script is `.mts` because the SDK is ESM-only and the repo's tsx loads `.ts` as CJS); viem bumped 2.52.2 → **2.58.7** (the SDK's peer floor is ^2.57.8; package range updated to match). The script's transactions carry the §27 Builder Code suffix like every other platform-originated transaction. A lockfile serialises overlapping runs. `DRY_RUN=1` simulates without broadcasting.
+
+### 29.4 Scheduling, tests, deploy, readback
+
+- **Cron (created this pass, daily, America/New_York mornings):** `pod-treasury-recycle-daily` (~07:18 EST) runs the recycle script and reports its step log; `pod-fee-keeper-sweep-daily` (~08:24 EST) runs the pending fee-release sweep against production Redis and the fee-lock keeper for any onboarded vaults. Both no-op safely today: there are no pending fee releases and no production fee grants/vaults yet (§19.4) — the keeper/sweep legs activate themselves the day the first project onboards, and the keeper still fails closed without a backend count attestation.
+- **Tests (post-change tree):** rewards **28 PASS / 0**, fee-lock **118 PASS / 0**, launch-gate **87 PASS / 0**, stitched **64 PASS / 0 FAIL** — all baselines held under viem 2.58.7. Typecheck: no errors in any touched file; the pre-existing error set elsewhere is untouched.
+- **Push/deploy:** commit transplanted via the Git Data API scoped pattern — production `ship/pr-credit-and-rewards` → `57da3bc6db913dcf6e750b82db0477e0b166aac1`, review `codex-review-round2` → `6bb5c4e02c29598509fcc1026a1ffb76fee8c4e9` (3 paths each: package.json, package-lock.json, scripts/treasury-recycle.mts; scoped verify clean). Railway deployment **`16731d79-56fa-4a7a-a5ee-e8e7386ccbde`** (commit `57da3bc6`, reason: deploy, latestCommit) → **SUCCESS**; `GET /health` → ok, configured, swarm policy intact.
+- **Live readback after deploy:** Railway env shows the two adopted amounts (§29.1); on-chain `rewardToken()` = POD; `rewardBalance()` = **473,026,268.360250042465688737 POD**; treasury claimable = 0.
+- **Still open (unchanged in kind):** the first counted merge against the POD schedule has not happened yet — the first swarm-counted push on any enrolled repo is the end-to-end exercise of the new amounts; the 9,400 mBANKR in the pool contract awaits Gregory's word if he wants it withdrawn.
