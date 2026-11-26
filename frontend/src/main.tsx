@@ -9,6 +9,7 @@ import { CreatePage } from "./pages/CreatePage";
 import { HelpPage } from "./pages/HelpPage";
 import { AgentsPage } from "./pages/AgentsPage";
 import { LaunchPage } from "./pages/LaunchPage";
+import { LaunchWizardPage } from "./pages/LaunchWizardPage";
 import { LinkGithubPage } from "./pages/LinkGithubPage";
 import { lockPathFromRepo, isValidRepoFullName } from "./lib/repoId";
 
@@ -38,6 +39,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Route path="/link-github" element={<LinkGithubPage />} />
         <Route path="/agents" element={<AgentsPage />} />
         <Route path="/launch" element={<LaunchPage />} />
+        <Route path="/launch/start" element={<LaunchWizardPage />} />
 
         <Route path="/vesting/explore" element={<Navigate to="/" replace />} />
         <Route path="/vesting/setup" element={<Navigate to="/create" replace />} />

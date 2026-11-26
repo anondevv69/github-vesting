@@ -36,11 +36,11 @@ const STEPS = [
     ),
   },
   {
-    title: "Your supply auto-locks",
+    title: "Lock supply as part of launch",
     body: (
       <>
-        The locked share of your supply goes into the Proof of Dev escrow as part of the same
-        flow, and the grant is stamped as a verified launch. The lock has <strong>no cancel</strong>{" "}
+        You sign the lock as part of the launch sequence: the locked share of your supply goes
+        into the Proof of Dev escrow, and the grant is stamped as a verified launch. The lock has <strong>no cancel</strong>{" "}
         and no recipient exit — it opens only as verified pushes land.
       </>
     ),
@@ -142,10 +142,14 @@ export function LaunchPage() {
           The Proof of Dev platform is deployed and live on Base: the no-cancel escrow, fee
           locking, and the verified launch pipeline are running in production, and the platform
           token <strong>POD</strong> is launched, paired with tokenized NVIDIA (NVDAc). Verified
-          launches are opening in beta: connect your GitHub to start yours.
+          launches are opening in beta: launch from this site with the web wizard, or deploy
+          with your agent.
         </p>
         <div className="launch-status__actions">
-          <Link to="/create" className="btn btn-sm">
+          <Link to="/launch/start" className="btn btn-sm">
+            Start a launch (beta)
+          </Link>
+          <Link to="/create" className="btn btn-ghost btn-sm">
             Create a lock (live)
           </Link>
           <Link to="/agents" className="btn btn-ghost btn-sm">
@@ -215,14 +219,18 @@ export function LaunchPage() {
       </div>
 
       <section className="vesting-card launch-cta">
-        <h2>Deploy with the ask</h2>
+        <h2>Two doors, same launch</h2>
         <p className="muted">
-          There is no launch form to fill in. Install a skill into your agent — Bankr or Claude —
-          and paste it one prompt; the agent runs verification, preparation, launch, and lock end
-          to end. The skills page has the install lines and the exact asks.
+          Launch right here on the site with the web wizard — connect GitHub, verify, configure,
+          sign — or install a skill into your agent, Bankr or Claude, and paste it one prompt;
+          the agent runs the same verification, preparation, launch, and lock end to end. Both
+          doors use the identical backend pipeline and the identical template.
         </p>
         <div className="agents-card__actions">
-          <Link to="/agents" className="btn btn-sm">
+          <Link to="/launch/start" className="btn btn-sm">
+            Start a launch (beta)
+          </Link>
+          <Link to="/agents" className="btn btn-ghost btn-sm">
             Get the skills &amp; asks
           </Link>
           <Link to="/help" className="btn btn-ghost btn-sm">

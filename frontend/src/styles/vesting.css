@@ -2751,3 +2751,51 @@ a.fee-recipient-card__handle:hover {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* ─── Launch wizard (/launch/start) ─────────────────────────────────────── */
+.launch-wiz-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  counter-reset: wizstep;
+}
+
+.launch-wiz-steps li {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: var(--bg-card);
+}
+
+.launch-wiz-steps li.active {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-dim);
+}
+
+.launch-wiz-steps li.done {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.launch-wiz-resume {
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--amber, #d97706);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.launch-wiz-resume code {
+  word-break: break-all;
+}
