@@ -23,6 +23,7 @@ import {
 import { parseWei } from "../lib/wei";
 import { updateGrant, type GrantRecord } from "../lib/redis";
 import { repoIdToBytes32 } from "../lib/repoId";
+import { BUILDER_DATA_SUFFIX } from "../lib/builderCode";
 
 const GIT_ESCROW_ABI = parseAbi([
   "function release(bytes32 repoId, uint256 totalVerifiedPushes) external",
@@ -52,6 +53,7 @@ function getClients(chain: GrantRecord["chain"]) {
     account,
     chain: cfg.chain,
     transport: http(cfg.rpcUrl),
+    dataSuffix: BUILDER_DATA_SUFFIX,
   });
   return { publicClient, walletClient, account, cfg };
 }

@@ -54,6 +54,7 @@ import { env } from "../lib/env";
 import { getVestingChainConfig, type VestingChainKey } from "../lib/chains";
 import { getGrant, getRedis, KEYS, type GrantRecord } from "../lib/redis";
 import { repoIdToBytes32 } from "../lib/repoId";
+import { BUILDER_DATA_SUFFIX } from "../lib/builderCode";
 
 const FEE_STREAM_ABI = parseAbi([
   "function releaseFee(bytes32 repoId, uint256 totalVerifiedPushes) external returns (uint256 paidNow)",
@@ -144,7 +145,12 @@ export async function triggerFeeReleaseIfDue(
   try {
     const account = privateKeyToAccount(env.ORACLE_PRIVATE_KEY as `0x${string}`);
     const publicClient = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
-    const walletClient = createWalletClient({ account, chain: cfg.chain, transport: http(cfg.rpcUrl) });
+    const walletClient = createWalletClient({
+      account,
+      chain: cfg.chain,
+      transport: http(cfg.rpcUrl),
+      dataSuffix: BUILDER_DATA_SUFFIX,
+    });
 
     const hash = await walletClient.writeContract({
       address: escrowAddress as Address,

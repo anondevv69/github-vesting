@@ -26,6 +26,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 import { recountEligiblePushes } from "../src/lib/recount";
 import { repoIdFromFullName, repoIdToBytes32 } from "../src/lib/repoId";
+import { BUILDER_DATA_SUFFIX } from "../src/lib/builderCode";
 
 const ESCROW_ABI = parseAbi([
   "function release(bytes32 repoId, uint256 totalVerifiedPushes) external",
@@ -72,7 +73,12 @@ async function main() {
 
   const account = privateKeyToAccount(backupKey as `0x${string}`);
   const publicClient = createPublicClient({ chain: base, transport: http(rpcUrl) });
-  const walletClient = createWalletClient({ account, chain: base, transport: http(rpcUrl) });
+  const walletClient = createWalletClient({
+    account,
+    chain: base,
+    transport: http(rpcUrl),
+    dataSuffix: BUILDER_DATA_SUFFIX,
+  });
 
   let releaseTx: Hash | null = null;
   try {

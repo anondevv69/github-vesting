@@ -60,6 +60,7 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 import { getPendingFeeRelease } from "../src/oracle/feeLock";
+import { BUILDER_DATA_SUFFIX } from "../src/lib/builderCode";
 
 const VAULT_ABI = parseAbi([
   "function claimFees(bytes calldata data) external returns (uint256 amount)",
@@ -117,7 +118,12 @@ async function main() {
 
   const account = privateKeyToAccount(keeperKey as `0x${string}`);
   const publicClient = createPublicClient({ chain: base, transport: http(rpcUrl) });
-  const walletClient = createWalletClient({ account, chain: base, transport: http(rpcUrl) });
+  const walletClient = createWalletClient({
+    account,
+    chain: base,
+    transport: http(rpcUrl),
+    dataSuffix: BUILDER_DATA_SUFFIX,
+  });
 
   for (const vault of vaults) {
     const out: Record<string, unknown> = { vault };

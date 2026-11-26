@@ -36,6 +36,7 @@ import { env } from "../lib/env";
 import { getVestingChainConfig, type VestingChainKey } from "../lib/chains";
 import { parseWei } from "../lib/wei";
 import { repoIdToBytes32 } from "../lib/repoId";
+import { BUILDER_DATA_SUFFIX } from "../lib/builderCode";
 import { listLinkedWallets } from "../lib/devWallets";
 import {
   listPendingRewards,
@@ -220,7 +221,12 @@ export async function payReward(args: {
     const cfg = getVestingChainConfig(args.chain as VestingChainKey);
     const account = privateKeyToAccount(env.ORACLE_PRIVATE_KEY as `0x${string}`);
     const publicClient = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
-    const walletClient = createWalletClient({ account, chain: cfg.chain, transport: http(cfg.rpcUrl) });
+    const walletClient = createWalletClient({
+      account,
+      chain: cfg.chain,
+      transport: http(cfg.rpcUrl),
+      dataSuffix: BUILDER_DATA_SUFFIX,
+    });
 
     const commitKey = mergeCommitHashBytes32(args.mergeCommitSha);
 
