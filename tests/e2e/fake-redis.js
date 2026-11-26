@@ -52,6 +52,18 @@ function execCommand(args) {
     case "QUIT": return ok();
     case "FLUSHALL": case "FLUSHDB": store.clear(); return ok();
     case "GET": {
+      // Fault injection (round-3): while the control key is present,
+      // GETs of prepared-launch records fail with a Redis error so
+      // the launch-gate suite can prove the backend fails CLOSED on
+      // a prepared-record lookup error (never treats it as "no
+      // record"). Toggled via tests/e2e/fault-toggle.ts.
+      if (
+        store.has("__fault_prepared_launch_get") &&
+        typeof a[0] === "string" &&
+        a[0].includes("prepared_launch")
+      ) {
+        return err("injected prepared-launch lookup fault");
+      }
       const e = store.get(a[0]);
       return e && e.type === "string" ? bulk(e.value) : bulk(null);
     }

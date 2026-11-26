@@ -10,8 +10,9 @@
 #       counted push (counted pushes on it remain ORDINARY vesting
 #       counting — the lock is real — but create no launch
 #       recognition and no launcher eligibility);
-# while a verified launch (token + post-verification lock) IS listed
-# and enrolled. Same local stack as run-launch-gate.sh.
+# while a verified launch (token + prepare-launch + post-verification
+# lock — round-3: the prepared record is REQUIRED for the stamp) IS
+# listed and enrolled. Same local stack as run-launch-gate.sh.
 set -u
 cd "$(dirname "$0")/../.."
 ROOT="$(pwd)"
@@ -69,6 +70,9 @@ set_test_env() {
   export FRONTEND_URL="http://localhost:5173"
   export SERVER_URL="http://127.0.0.1:3210"
   export GITHUB_API_BASE_URL="http://127.0.0.1:8977"
+  # Treasury for prepare-launch (the deployer stands in as the
+  # designated reward treasury, as in run-launch-gate.sh).
+  export PLATFORM_REWARD_TREASURY_WALLET="${DEPLOYER:-}"
 }
 
 wait_http() {
@@ -142,6 +146,16 @@ echo "$LOCK_OUT"
 PRE_LOCK_TX="$(printf '%s' "$LOCK_OUT" | grep -o 'LOCK_TX=0x[0-9a-f]*' | cut -d= -f2)"
 echo "pre-verification lock tx: $PRE_LOCK_TX"
 
+echo "=== 3c. recognition fixture (round-3: prepared record REQUIRED for the stamp) ==="
+npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/deploy-gate-recognition.ts || exit 1
+FEE_STREAM_ESCROW_ADDRESS="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['feeStreamEscrow'])")"
+BANKR_RECORD_ADDRESS="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['bankrRecord'])")"
+export FEE_STREAM_ESCROW_ADDRESS
+export BANKR_FACTORY_ADDRESS="$BANKR_RECORD_ADDRESS"
+export BANKR_FEE_LEDGER_ADDRESS="$BANKR_RECORD_ADDRESS"
+VAULT_LAUNCH="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultLaunch'])")"
+echo "feeStreamEscrow=$FEE_STREAM_ESCROW_ADDRESS vaultLaunch=$VAULT_LAUNCH"
+
 
 echo "=== 4. fixture GitHub API ==="
 node tests/e2e/github-fixture.js &
@@ -160,13 +174,17 @@ npx tsx tests/e2e/seed.ts || exit 1
 npx tsx tests/e2e/seed-gate.ts || exit 1
 
 
-echo "=== 7. verified launch: verify -> post-verification lock -> register with token ==="
+echo "=== 7. verified launch: verify -> post-verification lock -> prepare-launch -> register with token ==="
 OUT="$(verify testauthor "$LAUNCH_REPO" "$RECIPIENT")"; echo "$OUT"
 check "verified launch: token issued" "$OUT" '"verified":true'
 TOKEN="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
 LOCK_OUT="$(LOCK_REPO="$LAUNCH_REPO" LOCK_AMOUNT=10 npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/lock-for-repo.ts)" || exit 1
 echo "$LOCK_OUT"
 V_LOCK_TX="$(printf '%s' "$LOCK_OUT" | grep -o 'LOCK_TX=0x[0-9a-f]*' | cut -d= -f2)"
+OUT="$(curl -s -X POST "$API/api/launch/prepare-launch" -H 'content-type: application/json' \
+  -H "x-wallet-address: $RECIPIENT" \
+  -d "{\"repo\":\"$LAUNCH_REPO\",\"verificationToken\":\"$TOKEN\",\"feeLockVault\":\"$VAULT_LAUNCH\",\"launch\":{\"name\":\"Launch Token\",\"symbol\":\"LTK\"}}")"; echo "$OUT"
+check "verified launch: prepare-launch ok" "$OUT" '"prepared":true'
 REG_V="{\"repoFullName\":\"$LAUNCH_REPO\",\"platform\":\"github\",\"recipient\":\"$RECIPIENT\",\"token\":\"$PTK\",\"chain\":\"base\",\"totalLocked\":\"10000000000000000000\",\"totalPushesRequired\":2,\"pushesPerMilestone\":1,\"tokensPerMilestone\":\"5000000000000000000\",\"onChainTxHash\":\"$V_LOCK_TX\",\"installationId\":777,\"streaming\":false,\"launchVerificationToken\":\"$TOKEN\"}"
 OUT="$(curl -s -X POST "$API/api/vesting/register" -H 'content-type: application/json' -d "$REG_V")"; echo "$OUT"
 check "verified launch registered stamped" "$OUT" '"launchVerified":true'

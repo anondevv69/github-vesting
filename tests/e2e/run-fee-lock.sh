@@ -32,6 +32,16 @@
 #       (+15); push 3 -> tranche 2 completes (+15). 3 counted pushes
 #       total — the verifier's daily cap (3/day) is real and the
 #       timeline is built inside it.
+#   round-3:
+#     - registerFeeGrant from a non-owner reverts (registrar-only)
+#     - blocker 3 exact case: push 7 counted in the backend, its fee
+#       report pending (on-chain counter still 6) -> keeper DEFERS
+#       before moving any funds -> sweep lands the report -> keeper
+#       locks tranche 4 with backendCountAtLock = 7 -> push 8
+#       half-vests it (+10 WETH)
+#     - blocker 1 lock-event match: a lock event for a different
+#       repo / recipient / token leaves the grant UNSTAMPED with
+#       LAUNCH_LOCK_{REPO,RECIPIENT,TOKEN}_MISMATCH
 # No external calls, no real keys.
 set -u
 cd "$(dirname "$0")/../.."
@@ -190,6 +200,7 @@ check "raw transfer call reverts" "$OUT" "VAULT_CHECK raw transfer(address,uint2
 check "lockAccrued with nothing accrued reverts" "$OUT" "VAULT_CHECK lockAccrued with nothing accrued: REVERTED"
 check "addFeeTranche from non-vault reverts" "$OUT" "VAULT_CHECK addFeeTranche from non-vault: REVERTED"
 check "releaseFee from non-oracle reverts" "$OUT" "VAULT_CHECK releaseFee from non-oracle: REVERTED"
+check "registerFeeGrant from non-owner reverts (registrar-only, round-3)" "$OUT" "VAULT_CHECK registerFeeGrant from non-owner (registrar-only, round-3): REVERTED"
 
 echo "=== 12. balances before keeper: nothing claimed, nothing released ==="
 OUT="$(npx tsx tests/e2e/balances-fee.ts before)"; echo "$OUT"
@@ -200,6 +211,7 @@ echo "=== 13. keeper cycle 1: claim 40 WETH -> lock tranche 1 ==="
 OUT="$(KEEPER_PRIVATE_KEY="$KEEPER_KEY" FEE_CLAIM_SOURCE="$SOURCE" npx tsx scripts/fee-lock-keeper.ts "$VAULT")"; echo "$OUT"
 check "keeper locked 40 WETH" "$OUT" '"lockedAmount":"40000000000000000000"'
 check "keeper tranche 1 baseline = 0 counted pushes (provenance)" "$OUT" '"expectedBaseline":"0"'
+check "keeper tranche 1 backendCountAtLock = 0 (round-3)" "$OUT" '"backendCountAtLock":"0"'
 OUT="$(npx tsx tests/e2e/balances-fee.ts after-lock1)"; echo "$OUT"
 check "fee escrow holds the locked 40" "$OUT" "feeEscrow WETH=40"
 check "vault drained after lock" "$OUT" "vault WETH=0"
@@ -215,6 +227,7 @@ AMOUNT=30 npx hardhat run --config hardhat.local.config.ts --network localhost t
 OUT="$(KEEPER_PRIVATE_KEY="$KEEPER_KEY" FEE_CLAIM_SOURCE="$SOURCE" npx tsx scripts/fee-lock-keeper.ts "$VAULT")"; echo "$OUT"
 check "keeper locked 30 WETH (tranche 2)" "$OUT" '"lockedAmount":"30000000000000000000"'
 check "keeper tranche 2 baseline = 1 counted push (provenance)" "$OUT" '"expectedBaseline":"1"'
+check "keeper tranche 2 backendCountAtLock = 1 (round-3)" "$OUT" '"backendCountAtLock":"1"'
 OUT="$(npx tsx tests/e2e/balances-fee.ts after-lock2)"; echo "$OUT"
 check "fee escrow holds 20 unreleased tranche-1 + 30 tranche-2" "$OUT" "feeEscrow WETH=50"
 check "tranche 2 not released before its pushes" "$OUT" "recipient PTK=0 WETH=20"
@@ -335,6 +348,7 @@ AMOUNT=20 npx hardhat run --config hardhat.local.config.ts --network localhost t
 OUT="$(KEEPER_PRIVATE_KEY="$KEEPER_KEY" FEE_CLAIM_SOURCE="$SOURCE" npx tsx scripts/fee-lock-keeper.ts "$VAULT")"; echo "$OUT"
 check "keeper locked 20 WETH (tranche 3)" "$OUT" '"lockedAmount":"20000000000000000000"'
 check "keeper tranche 3 baseline = 3 counted pushes" "$OUT" '"expectedBaseline":"3"'
+check "keeper tranche 3 backendCountAtLock = 3 (round-3)" "$OUT" '"backendCountAtLock":"3"'
 
 echo "=== 26. push 4 with a BROKEN fee leg: supply milestone pays, fee release fails -> pending ==="
 OUT="$(FEE_STREAM_ESCROW_ADDRESS="$GIT_ESCROW_ADDR" npx tsx tests/e2e/fee-retry.ts push fee4000000000000000000000000000000000001)"; echo "$OUT"
@@ -365,6 +379,97 @@ check "pending cleared by the next counted push" "$OUT" '"pending":null'
 OUT="$(npx tsx tests/e2e/balances-fee.ts after-push6)"; echo "$OUT"
 check "tranche 3 completed via the push-path retry (90 WETH)" "$OUT" "WETH=90"
 check "supply unchanged through the retry cycle (1000 PTK)" "$OUT" "recipient PTK=1000"
+
+# ─── Round-3, blocker 3: the reviewer's exact gap ───
+# Backend counts push 7; its fee report FAILS (pending retry), so
+# the on-chain counter stays at 6. A keeper lock attempted in that
+# gap must DEFER; after the sweep lands the report, the keeper
+# locks with backendCountAtLock = 7 and the tranche vests only
+# against push 8+.
+
+echo "=== 29. round-3: +20 WETH accrued; push 7 counts in the backend, fee report FAILS -> pending, on-chain stays 6 ==="
+AMOUNT=20 npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/fee-topup.ts || exit 1
+OUT="$(FEE_STREAM_ESCROW_ADDRESS="$GIT_ESCROW_ADDR" npx tsx tests/e2e/fee-retry.ts push fee7000000000000000000000000000000000004)"; echo "$OUT"
+check "push 7 counted in the backend" "$OUT" '"accepted":true'
+check "push 7 fee release failed" "$OUT" 'Fee release tx failed'
+check "pending recorded (basis = push 7)" "$OUT" '"pushCount":7'
+OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/fee-state.ts)"; echo "$OUT"
+check "on-chain counter still 6 while the report is pending" "$OUT" "knownPushCount=6"
+check "still 3 tranches on-chain" "$OUT" "tranches=3"
+
+echo "=== 30. round-3: keeper attempts to lock in the gap -> DEFERRED, no funds move ==="
+OUT="$(KEEPER_PRIVATE_KEY="$KEEPER_KEY" FEE_CLAIM_SOURCE="$SOURCE" npx tsx scripts/fee-lock-keeper.ts "$VAULT")"; echo "$OUT"
+check "keeper deferred on the pending report" "$OUT" '"lockDeferred"'
+check "keeper deferral names the pending total 7" "$OUT" "pending fee release for total 7"
+check_absent_fee() { if printf '%s' "$2" | grep -qF "$3"; then echo "FAIL: $1 (unexpectedly present: $3)"; FAILURES=$((FAILURES + 1)); else echo "PASS: $1"; fi; }
+check_absent_fee "keeper did NOT lock while deferred" "$OUT" '"lockedAmount"'
+OUT="$(npx tsx tests/e2e/balances-fee.ts after-deferred-keeper)"; echo "$OUT"
+check "vault still holds 0 (deferral precedes the claim leg)" "$OUT" "vault WETH=0"
+check "recipient unchanged during the gap (90 WETH)" "$OUT" "WETH=90"
+OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/fee-state.ts)"; echo "$OUT"
+check "no tranche was created in the gap" "$OUT" "tranches=3"
+
+echo "=== 31. round-3: sweep lands the pending report -> on-chain counter 7, nothing new vests ==="
+OUT="$(npx tsx scripts/fee-release-sweep.ts)"; echo "$OUT"
+check "sweep retried the pending release" "$OUT" '"swept":1'
+OUT="$(npx tsx tests/e2e/fee-retry.ts pending)"; echo "$OUT"
+check "pending cleared after the sweep" "$OUT" '"pending":null'
+OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/fee-state.ts)"; echo "$OUT"
+check "on-chain counter now 7" "$OUT" "knownPushCount=7"
+OUT="$(npx tsx tests/e2e/balances-fee.ts after-gap-sweep)"; echo "$OUT"
+check "the landed report vested nothing new (all tranches already full, 90 WETH)" "$OUT" "WETH=90"
+
+echo "=== 32. round-3: keeper locks tranche 4 with backendCountAtLock = 7 ==="
+OUT="$(KEEPER_PRIVATE_KEY="$KEEPER_KEY" FEE_CLAIM_SOURCE="$SOURCE" npx tsx scripts/fee-lock-keeper.ts "$VAULT")"; echo "$OUT"
+check "keeper locked 20 WETH (tranche 4)" "$OUT" '"lockedAmount":"20000000000000000000"'
+check "keeper tranche 4 on-chain baseline = 7" "$OUT" '"expectedBaseline":"7"'
+check "keeper tranche 4 backendCountAtLock = 7" "$OUT" '"backendCountAtLock":"7"'
+OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/fee-state.ts)"; echo "$OUT"
+check "tranche 4 stamped baseline 7 with backendCountAtLock 7" "$OUT" "tranche3 amount=20000000000000000000 baseline=7 backend=7 released=0"
+
+echo "=== 33. round-3: push 8 (healthy) -> tranche 4 half-vests (+10 WETH) ==="
+OUT="$(npx tsx tests/e2e/fee-retry.ts push fee8000000000000000000000000000000000005)"; echo "$OUT"
+check "push 8 counted and its fee release succeeded" "$OUT" '"accepted":true'
+OUT="$(npx tsx tests/e2e/balances-fee.ts after-push8)"; echo "$OUT"
+check "tranche 4 half-vested (100 WETH total)" "$OUT" "WETH=100"
+check "supply unchanged (1000 PTK)" "$OUT" "recipient PTK=1000"
+
+# ─── Round-3, blocker 1: the lock EVENT must match the registration ───
+VAULT6="$(JR vault6)"; VAULT7="$(JR vault7)"; VAULT8="$(JR vault8)"
+WETH_FEE="$(J weth)"
+
+echo "=== 34. round-3: lock event for a DIFFERENT repo -> UNSTAMPED (LAUNCH_LOCK_REPO_MISMATCH) ==="
+set_record "[[\"$DEPLOYER\",2500],[\"$VAULT6\",7500]]"
+T="$(verify_for testowner/feeproj6)"
+OUT="$(prepare_for testowner/feeproj6 "$T" "$VAULT6")"; echo "$OUT"
+check "feeproj6 prepare ok" "$OUT" '"prepared":true'
+LTX="$(LOCK_REPO="testowner/feeproj6-other" LOCK_AMOUNT=10 npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/lock-for-repo-fee.ts | grep -o 'LOCK_TX=0x[0-9a-f]*' | cut -d= -f2)"
+OUT="$(register_for testowner/feeproj6 "$T" "$VAULT6" "$LTX")"; echo "$OUT"
+check "feeproj6 unstamped" "$OUT" '"stamped":false'
+check "feeproj6 lock-repo mismatch code" "$OUT" '"code":"LAUNCH_LOCK_REPO_MISMATCH"'
+check_absent_fee "feeproj6 grant NOT launchVerified" "$OUT" '"launchVerified":true'
+
+echo "=== 35. round-3: lock event naming a DIFFERENT recipient -> UNSTAMPED (LAUNCH_LOCK_RECIPIENT_MISMATCH) ==="
+set_record "[[\"$DEPLOYER\",2500],[\"$VAULT7\",7500]]"
+T="$(verify_for testowner/feeproj7)"
+OUT="$(prepare_for testowner/feeproj7 "$T" "$VAULT7")"; echo "$OUT"
+check "feeproj7 prepare ok" "$OUT" '"prepared":true'
+LTX="$(LOCK_REPO="testowner/feeproj7" LOCK_AMOUNT=10 LOCK_SIGNER_INDEX=3 npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/lock-for-repo-fee.ts | grep -o 'LOCK_TX=0x[0-9a-f]*' | cut -d= -f2)"
+OUT="$(register_for testowner/feeproj7 "$T" "$VAULT7" "$LTX")"; echo "$OUT"
+check "feeproj7 unstamped" "$OUT" '"stamped":false'
+check "feeproj7 lock-recipient mismatch code" "$OUT" '"code":"LAUNCH_LOCK_RECIPIENT_MISMATCH"'
+check_absent_fee "feeproj7 grant NOT launchVerified" "$OUT" '"launchVerified":true'
+
+echo "=== 36. round-3: lock event locking a DIFFERENT token -> UNSTAMPED (LAUNCH_LOCK_TOKEN_MISMATCH) ==="
+set_record "[[\"$DEPLOYER\",2500],[\"$VAULT8\",7500]]"
+T="$(verify_for testowner/feeproj8)"
+OUT="$(prepare_for testowner/feeproj8 "$T" "$VAULT8")"; echo "$OUT"
+check "feeproj8 prepare ok" "$OUT" '"prepared":true'
+LTX="$(LOCK_REPO="testowner/feeproj8" LOCK_AMOUNT=10 LOCK_TOKEN="$WETH_FEE" npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/lock-for-repo-fee.ts | grep -o 'LOCK_TX=0x[0-9a-f]*' | cut -d= -f2)"
+OUT="$(register_for testowner/feeproj8 "$T" "$VAULT8" "$LTX")"; echo "$OUT"
+check "feeproj8 unstamped" "$OUT" '"stamped":false'
+check "feeproj8 lock-token mismatch code" "$OUT" '"code":"LAUNCH_LOCK_TOKEN_MISMATCH"'
+check_absent_fee "feeproj8 grant NOT launchVerified" "$OUT" '"launchVerified":true'
 
 echo "=== FEE-LOCK DRIVER DONE — failures: $FAILURES ==="
 [ "$FAILURES" -eq 0 ] || exit 1

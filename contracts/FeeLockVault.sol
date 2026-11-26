@@ -20,7 +20,12 @@ interface IBankrFeeLedger {
 }
 
 interface IFeeStreamEscrow {
-    function addFeeTranche(bytes32 repoId, uint256 amount, uint256 expectedBaseline) external;
+    function addFeeTranche(
+        bytes32 repoId,
+        uint256 amount,
+        uint256 expectedBaseline,
+        uint256 backendCountAtLock
+    ) external;
 }
 
 /**
@@ -145,17 +150,23 @@ contract FeeLockVault is ReentrancyGuard {
      *         project's fee-stream grant as a new tranche
      *         (permissionless keeper step). This is the vault's ONLY
      *         outbound path. `expectedBaseline` binds the tranche to
-     *         the escrow's current counted-push total: the escrow
-     *         reverts if its total has moved since the keeper read
-     *         it, so a tranche can never be stamped with a stale
-     *         baseline (which would vest it against pushes that
-     *         happened before the fees even locked).
+     *         the escrow's current on-chain counted-push total: the
+     *         escrow reverts if its total has moved since the keeper
+     *         read it. `backendCountAtLock` is the backend's own
+     *         counted total at lock time, which can be AHEAD of the
+     *         on-chain total when a fee report is pending retry; the
+     *         escrow stamps the tranche with max(the two), so the
+     *         tranche can never vest against a push counted before
+     *         the fees locked, in either counter.
      */
-    function lockAccrued(uint256 expectedBaseline) external nonReentrant returns (uint256 amount) {
+    function lockAccrued(
+        uint256 expectedBaseline,
+        uint256 backendCountAtLock
+    ) external nonReentrant returns (uint256 amount) {
         amount = IERC20(feeToken).balanceOf(address(this));
         require(amount > 0, "FeeLockVault: nothing accrued");
         IERC20(feeToken).forceApprove(escrow, amount);
-        IFeeStreamEscrow(escrow).addFeeTranche(repoId, amount, expectedBaseline);
+        IFeeStreamEscrow(escrow).addFeeTranche(repoId, amount, expectedBaseline, backendCountAtLock);
         emit FeesLocked(amount);
     }
 

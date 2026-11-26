@@ -48,6 +48,12 @@ async function main() {
   const vault3 = await deployVault("testowner/feeproj3", "testowner/otherproj");
   const vault4 = await deployVault("testowner/feeproj4");
   const vault5 = await deployVault("testowner/feeproj5");
+  // Round-3 lock-event mismatch trio: correctly-bound vaults for
+  // feeproj6/7/8 — the mismatch is in the LOCK EVENT each driver
+  // step presents (different repo / recipient / token), not here.
+  const vault6 = await deployVault("testowner/feeproj6");
+  const vault7 = await deployVault("testowner/feeproj7");
+  const vault8 = await deployVault("testowner/feeproj8");
 
   const Impostor = await ethers.getContractFactory("MockVaultImpostor");
   const impostor = await Impostor.deploy(feeEscrow, weth, rid("testowner/feeproj2"), recipient.address, source);
@@ -85,6 +91,9 @@ async function main() {
     vault3,
     vault4,
     vault5,
+    vault6,
+    vault7,
+    vault8,
     impostor2: impostorAddr,
     escrowB: escrowBAddr,
   };

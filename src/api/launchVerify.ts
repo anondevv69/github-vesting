@@ -25,7 +25,11 @@ import {
   GREGORY_FEE_RECIPIENT_WALLET,
   type Address,
 } from "../lib/launchFeeConfig";
-import { readVaultBinding, recordPreparedLaunch } from "../lib/launchRecognition";
+import {
+  canonicalVaultCodehash,
+  readVaultBinding,
+  recordPreparedLaunch,
+} from "../lib/launchRecognition";
 
 /**
  * GET /api/launch/projects — the VERIFIED-LAUNCH listing (recognition
@@ -110,11 +114,17 @@ export async function handleLaunchEnrollmentLookup(req: Request, res: Response):
  * omitting it, passing the launcher's own wallet, or passing any
  * address without code is refused here.
  *
- * RECOGNITION PIN (Codex round-2): a successful preparation records
- * the prepared fee recipients and the vault's runtime codehash (read
- * on-chain now) as the prepared-launch record. Grant registration
- * later compares the actual launch + vault against this record —
- * preparing an input is no longer the end of the evidence chain.
+ * RECOGNITION PIN (Codex round-2, hardened round-3): a successful
+ * preparation records the prepared fee recipients, the vault's
+ * approved-implementation hash, and the verification lineage (login,
+ * token nonce, token issued-at) as the prepared-launch record. The
+ * vault must be an instance of the ONE approved FeeLockVault
+ * implementation — a supplied contract whose implementation hash
+ * differs is refused (LAUNCH_VAULT_NOT_APPROVED_IMPL); pinning an
+ * arbitrary contract's hash is not identity. Grant registration
+ * later REQUIRES this record and compares the actual launch + vault
+ * against it — preparing an input is no longer the end of the
+ * evidence chain.
  */
 export async function handlePrepareLaunch(req: Request, res: Response): Promise<void> {
   const repo = String(req.body?.repo ?? req.body?.repoFullName ?? "").trim();
@@ -164,7 +174,7 @@ export async function handlePrepareLaunch(req: Request, res: Response): Promise<
       return;
     }
     const binding = await readVaultBinding(chain, vaultLc);
-    if (!binding.hasCode || !binding.codehash) {
+    if (!binding.hasCode || !binding.implCodehash) {
       res.status(400).json({
         ok: false,
         error:
@@ -173,7 +183,21 @@ export async function handlePrepareLaunch(req: Request, res: Response): Promise<
       });
       return;
     }
-    vaultCodehash = binding.codehash;
+    // Canonical implementation check (Codex round-3, blocker 2):
+    // the vault must be an instance of the ONE approved FeeLockVault
+    // implementation (masked-template hash — see launchRecognition).
+    // Pinning whatever hash an arbitrary supplied contract happens
+    // to have proves continuity, not identity, and is refused.
+    if (binding.implCodehash !== canonicalVaultCodehash()) {
+      res.status(400).json({
+        ok: false,
+        error:
+          `feeLockVault ${vaultLc} is not an instance of the approved FeeLockVault implementation (implementation hash ${binding.implCodehash}, expected ${canonicalVaultCodehash()}). Only vaults deployed from the platform's approved implementation can receive a launcher fee share.`,
+        code: "LAUNCH_VAULT_NOT_APPROVED_IMPL",
+      });
+      return;
+    }
+    vaultCodehash = canonicalVaultCodehash();
   } else if (!isPlatformLaunch) {
     res.status(400).json({
       ok: false,
@@ -199,12 +223,17 @@ export async function handlePrepareLaunch(req: Request, res: Response): Promise<
     return;
   }
 
-  // Pin the preparation as the recognition record (see header).
+  // Pin the preparation as the recognition record (see header),
+  // including the verification lineage (login + nonce + issued-at)
+  // registration binds against — a later fresh token chains to this
+  // record; it never replaces it.
   await recordPreparedLaunch({
     repo: normalizeRepoFullName(repo),
     wallet: walletLc,
     chainId: verdict.claims.chainId,
+    githubLogin: verdict.claims.githubLogin,
     verificationNonce: verdict.claims.nonce,
+    verificationIat: verdict.claims.iat,
     feeLockVault: vaultLc,
     vaultCodehash,
     feeRecipients: launchInput.feeRecipients.map((r) => ({
@@ -226,7 +255,7 @@ export async function handlePrepareLaunch(req: Request, res: Response): Promise<
     ...(isPlatformLaunch && !vaultLc ? { platformLaunch: true } : {}),
     launchInput,
     note: vaultLc
-      ? "PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients and the vault codehash were recorded; registration will compare the actual launch against them."
+      ? "PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."
       : "PREPARED ONLY — unsigned Bankr SDK launch input for the platform's own launch. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to Gregory's wallet (the platform share — the scoped raw-wallet exception; launcher launches always use a fee-lock vault). Bankr time-vesting explicitly off (vesting.bps = 0).",
   });
 }

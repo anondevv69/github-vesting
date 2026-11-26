@@ -14,7 +14,7 @@
   "feeClaimSource": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
   "repoId": "0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3",
   "repoFullName": "testowner/testrepo",
-  "lockTx": "0x52363a4d456c7b40493be964994de90a95cd891ab5507c067977c1d03e38fac9",
+  "lockTx": "0x1c80ae80684702c9ce94214947a3708d65943eaaf2a557a430eb68fafabdc814",
   "deployTxs": {
     "ptk": "0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b"
   }

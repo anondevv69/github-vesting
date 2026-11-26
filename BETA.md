@@ -29,17 +29,21 @@ Request a launch verification for the exact repo + wallet + chain. You receive a
 
 ## Step 4 — Prepare the launch
 
-Call prepare-launch (web or the MCP `prepare_launch` tool) with your verification token and your project's fee-lock vault address. You get back the exact launch input the platform approves:
+Call prepare-launch (web or the MCP `prepare_launch` tool) with your verification token and your launch parameters. Two pieces of infrastructure are the platform's job, not yours:
 
-- **Fee split (of the creator fee slice):** 25% to the platform reward treasury, 75% to your project's fee-lock vault. Never to your raw wallet — that is what makes your fees lock instead of arriving liquid.
-- **Bankr time-vesting: explicitly zero.** Your unlock schedule is the push schedule, not a calendar.
-- Your token name, ticker, and supply terms are yours.
+- **Your fee-lock vault is deployed for you.** During onboarding the platform deploys your project's FeeLockVault from the platform's one approved vault implementation, bound to your repo and your claim wallet, and the platform's backend registrar registers the fee grant on the fee escrow. You never deploy the vault and never register the grant yourself — and a vault that is not an instance of the approved implementation is refused at prepare-launch, whoever deployed it.
+- **You get back the exact launch input the platform approves:**
+  - **Fee split (of the creator fee slice):** 25% to the platform reward treasury, 75% to your project's fee-lock vault. Never to your raw wallet — that is what makes your fees lock instead of arriving liquid.
+  - **Bankr time-vesting: explicitly zero.** Your unlock schedule is the push schedule, not a calendar.
+  - Your token name, ticker, and supply terms are yours.
 
 If the treasury is not yet designated or the token check fails, prepare-launch refuses — closed doors are deliberate; nothing half-launches.
 
+**If your verification token expires mid-flow:** the 15-minute token covers the interactive steps, and a launch can outlast it. If it expires between launch and registration, re-run Step 3 to get a fresh token and register with the fresh token — do NOT re-prepare. Registration binds to your ORIGINAL prepared record: the fresh token must chain to the same GitHub login, repo, wallet, and chain, issued at or after the original verification, and the lock's ordering is judged against the ORIGINAL verification time, so a lock you made in good order is never failed for predating the fresh token. If your registration already landed, repeating it changes nothing — the platform refuses a duplicate active grant and the original stands.
+
 ## Step 5 — Launch and lock
 
-Execute the launch with the prepared input (the SDK does the Bankr launch; you sign from your own wallet). Then lock the agreed supply into **GitEscrowV2** for your repo: total pushes and pushes-per-milestone are set at lock time. At registration the platform verifies the whole chain of evidence — verification ordering, vault code and bindings, the launch's actual fee recipients, and that the lock sits in the configured v2 escrow — and stamps your grant as a **verified launch**. Only verified launches are listed, enrolled, and counted as platform projects. (You can also make an *ordinary lock* without any of this; it works, it just carries no launch recognition.)
+Execute the launch with the prepared input (the SDK does the Bankr launch; you sign from your own wallet). Then lock the agreed supply into **GitEscrowV2** for your repo: total pushes and pushes-per-milestone are set at lock time. At registration the platform verifies the whole chain of evidence — the prepared-launch record made under your verification, verification ordering, that the lock transaction's own event names your repo, your wallet, and your token, the vault's approved implementation and bindings, the launch's actual fee recipients, and that the lock sits in the configured v2 escrow — and stamps your grant as a **verified launch**. Only verified launches are listed, enrolled, and counted as platform projects. (You can also make an *ordinary lock* without any of this; it works, it just carries no launch recognition.)
 
 Read this part twice: **the v2 lock has no cancel.** Not for recipients, not for the platform, not on request, not by an agent you instruct. If your GitHub repo or the App becomes unavailable, recovery is by verifier redundancy — the escrow owner rotates the oracle and a backup verifier recounts your pushes from the recorded log — never by unlocking early.
 
@@ -71,8 +75,8 @@ Any linked wallet can enrol as a reviewer (`enrol_reviewer` via MCP, or the agen
 - Fee denomination is **WETH** for the first launch (denominated in WETH, so its fiat value still moves with ETH). A swap-to-your-token option is planned, not built.
 - The push log used for recovery recounts is retained per repo (checkpointed); a recount certifies only history it can cover and refuses rather than estimates when it cannot.
 - Contracts are locally tested and independently agent-reviewed; treat beta amounts as dust until a full audit is published.
-- A launch made entirely outside the platform (the Bankr SDK is permissionless) cannot be stopped — it simply receives no verification, no listing, no counting, and no rewards.
+- A launch made entirely outside the platform (the Bankr SDK is permissionless) cannot be stopped — it simply receives no verified-launch recognition. Ordinary locks and grant-less authors still count and earn through their own paths; what an outside launch never gets is the verified-launch stamp, the listing, and launcher enrolment.
 
 ## Support
 
-During the beta, issues go through the platform operator (Gregory) directly — there is no support desk and no admin who can move your tokens, by design. If something looks wrong, include your repo, your grant's chain + contract address, and the push SHA in question; every decision the system made about a push is in its log with the reason attached.
+During the beta, issues go through the platform operator (Gregory) directly — there is no support desk. The trust model, stated exactly: **no one can cancel your lock or pull your tokens out early — there is no cancel function and no recipient exit, for anyone.** What the platform operator CAN do is rotate the oracle, and the oracle is the component that supplies the counted-push totals that authorize releases. A compromised or malicious oracle is therefore a trust assumption of this design, named as such: it could report counts that did not happen. It cannot redirect tokens to itself (releases pay only the grant's recipient, on the schedule fixed at lock time), and every count it reports is checked against the platform's recorded push log in recovery recounts. If something looks wrong, include your repo, your grant's chain + contract address, and the push SHA in question; every decision the system made about a push is in its log with the reason attached.

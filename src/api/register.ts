@@ -45,9 +45,22 @@ async function lockTxInfo(
    *  contract OTHER than the chain's configured escrow — the lock
    *  does not live in the configured v2 escrow (Codex round-2). */
   lockedInWrongEscrow: boolean;
+  /** The Locked event's recipient + token (Codex round-3): the
+   *  event parsed from the receipt must be the lock THIS
+   *  registration describes — same repo, same recipient, same
+   *  token — not merely some lock in the configured escrow. */
+  eventRecipient: string | null;
+  eventToken: string | null;
 }> {
+  const empty = {
+    repoId: null,
+    blockTimestampSec: null,
+    lockedInWrongEscrow: false,
+    eventRecipient: null,
+    eventToken: null,
+  };
   const cfg = getVestingChainConfig(chain);
-  if (!cfg.escrowAddress) return { repoId: null, blockTimestampSec: null, lockedInWrongEscrow: false };
+  if (!cfg.escrowAddress) return empty;
   try {
     const client = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
     const receipt = await client.getTransactionReceipt({ hash: txHash as Hash });
@@ -61,7 +74,7 @@ async function lockTxInfo(
     );
     const lockedInWrongEscrow = logs.length === 0 && allLogs.length > 0;
     const repoId = logs[0]?.args?.repoId;
-    if (!repoId) return { repoId: null, blockTimestampSec: null, lockedInWrongEscrow };
+    if (!repoId) return { ...empty, lockedInWrongEscrow };
     // Block timestamp of the lock tx — used by the launch gate's
     // ordering check (the lock must not predate the verification
     // token that stamps the grant). Only available when the
@@ -71,10 +84,16 @@ async function lockTxInfo(
       const block = await client.getBlock({ blockNumber: receipt.blockNumber });
       blockTimestampSec = Number(block.timestamp);
     } catch { /* timestamp stays null → ordering unprovable for this tx */ }
-    return { repoId: repoId.slice(2), blockTimestampSec, lockedInWrongEscrow };
+    return {
+      repoId: repoId.slice(2),
+      blockTimestampSec,
+      lockedInWrongEscrow,
+      eventRecipient: logs[0]?.args?.recipient?.toLowerCase() ?? null,
+      eventToken: logs[0]?.args?.token?.toLowerCase() ?? null,
+    };
   } catch (err) {
     console.warn("[register] Could not read Locked event from tx:", err);
-    return { repoId: null, blockTimestampSec: null, lockedInWrongEscrow: false };
+    return empty;
   }
 }
 
@@ -146,6 +165,7 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
   let launchVerifiedLogin: string | undefined;
   let launchVerificationNonce: string | undefined;
   let launchTokenIat: number | undefined;
+  let launchTokenChainId: number | undefined;
   if (platform === "github" && body.launchVerificationToken) {
     const verdict = await validateLaunchToken({
       token: body.launchVerificationToken,
@@ -160,6 +180,7 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     launchVerifiedLogin = verdict.claims.githubLogin;
     launchVerificationNonce = verdict.claims.nonce;
     launchTokenIat = verdict.claims.iat;
+    launchTokenChainId = verdict.claims.chainId;
   }
 
   const detectedChain = await detectChainFromLockTx(onChainTxHash);
@@ -167,19 +188,12 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
   const lockInfo = await lockTxInfo(onChainTxHash, chainKey);
   const repoId = lockInfo.repoId ?? repoIdFromPlatform(platform, repoFullName);
 
-  // Launch-gate ORDERING check (Codex review fix, 2026-11-25; made
-  // FAIL-CLOSED in the follow-up pass): a stamp asserts "verified
-  // FIRST, then locked/launched". The stamp is granted ONLY when the
-  // registration tx is the lock tx itself (it carries a Locked event,
-  // so its block timestamp is known) AND that timestamp is >= the
-  // verification token's issued-at. Two failure shapes both withhold
-  // the stamp and the enrolment (the grant still registers — it is a
-  // valid ordinary vesting lock):
-  //   (a) provable predating: lock block time < token iat;
-  //   (b) unprovable ordering: the tx carries no Locked event (or its
-  //       block time cannot be read), so no lock timestamp >= iat can
-  //       be established. Previously (b) was stamped on the token
-  //       alone — a documented gap, now closed fail-closed.
+  // Launch-gate checks (Codex rounds 1–3). A stamp asserts "verified
+  // FIRST, then locked/launched, with the PREPARED launch input".
+  // Every failure below withholds the stamp and the enrolment; the
+  // grant still registers as an ordinary vesting lock, and the
+  // response carries launchVerification {stamped:false, code} so the
+  // reason is never silent.
   let launchOrderingNote: string | undefined;
   let launchOrderingCode: string | undefined;
   const withholdStamp = (code: string, note: string) => {
@@ -189,7 +203,80 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     launchVerifiedLogin = undefined;
     launchVerificationNonce = undefined;
   };
+
+  // ── Round-3, blocker 1: a prepared-launch record is REQUIRED ──────
+  // Recognition no longer rests on ordering alone. The presented
+  // token must bind to the prepared record made under the SAME
+  // verification lineage:
+  //   - a lookup ERROR fails closed (never "no record, skip checks");
+  //   - no record at all → LAUNCH_NO_PREPARED_RECORD;
+  //   - the record's chain, login, repo, and wallet must equal the
+  //     presented token's claims and this registration;
+  //   - the presented nonce must either BE the record's nonce, or
+  //     CHAIN to it: a fresh token (the 15-minute token expired
+  //     between prepare and register) issued to the same
+  //     login/repo/wallet/chain at or after the record's
+  //     verification time. Ordering is then judged against the
+  //     ORIGINAL verification time (effectiveIat), so a lock made
+  //     after the original verification is not failed for predating
+  //     the fresh token — and a token issued BEFORE the preparation
+  //     can never chain to it.
+  let prepared: Awaited<ReturnType<typeof getPreparedLaunch>> = null;
+  let effectiveIat = launchTokenIat;
   if (launchVerifiedLogin && launchTokenIat !== undefined) {
+    let lookupFailed = false;
+    try {
+      prepared = await getPreparedLaunch(normalizedRepo, recipient);
+    } catch (err) {
+      lookupFailed = true;
+      console.warn(`[register] Prepared-launch lookup failed for ${normalizedRepo}:`, err);
+    }
+    if (lookupFailed) {
+      withholdStamp(
+        "LAUNCH_PREPARED_LOOKUP_FAILED",
+        "The prepared-launch record lookup FAILED (storage error) — fail-closed: grant registered WITHOUT the launchVerified stamp or launcher enrolment. A lookup error is never treated as 'no record'.",
+      );
+    } else if (!prepared) {
+      withholdStamp(
+        "LAUNCH_NO_PREPARED_RECORD",
+        "No prepared-launch record exists for this repo+wallet — verified recognition requires the launch to have gone through POST /api/launch/prepare-launch. Grant registered WITHOUT the launchVerified stamp or launcher enrolment (ordinary unstamped grant).",
+      );
+    } else if (prepared.chainId !== launchTokenChainId) {
+      withholdStamp(
+        "LAUNCH_PREPARED_CHAIN_MISMATCH",
+        `Prepared-launch record is for chain ${prepared.chainId} but the presented verification token is for chain ${launchTokenChainId ?? "unknown"} — grant registered WITHOUT the launchVerified stamp or launcher enrolment.`,
+      );
+    } else if (
+      prepared.githubLogin !== launchVerifiedLogin ||
+      prepared.wallet !== recipient.toLowerCase() ||
+      prepared.repo !== normalizedRepo.toLowerCase()
+    ) {
+      withholdStamp(
+        "LAUNCH_PREPARED_BINDING_MISMATCH",
+        "The prepared-launch record's login/repo/wallet do not match the presented verification token and this registration — grant registered WITHOUT the launchVerified stamp or launcher enrolment.",
+      );
+    } else if (prepared.verificationNonce !== launchVerificationNonce) {
+      if (launchTokenIat >= prepared.verificationIat) {
+        // Token-expiry path: fresh token, same lineage — ordering
+        // judges against the ORIGINAL verification time.
+        effectiveIat = prepared.verificationIat;
+      } else {
+        withholdStamp(
+          "LAUNCH_PREPARED_NONCE_MISMATCH",
+          "The presented verification token neither matches the prepared record's nonce nor chains to it (it was issued before the preparation) — grant registered WITHOUT the launchVerified stamp or launcher enrolment.",
+        );
+      }
+    }
+  }
+
+  // ── ORDERING (fail-closed): the stamp is granted ONLY when the
+  // registration tx is the lock tx itself (it carries a Locked
+  // event, so its block timestamp is known) AND that timestamp is
+  // >= the effective verification time. Failure shapes: (a)
+  // provable predating; (b) unprovable ordering (no Locked event /
+  // unreadable block time); (c) the Locked event came from a
+  // contract other than the chain's configured escrow.
+  if (launchVerifiedLogin && effectiveIat !== undefined) {
     if (lockInfo.lockedInWrongEscrow) {
       withholdStamp(
         "LAUNCH_LOCK_NOT_IN_CONFIGURED_ESCROW",
@@ -200,44 +287,65 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
         "LAUNCH_ORDERING_UNPROVABLE",
         "Registration transaction carries no provable lock timestamp (no Locked event) — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Register with the lock transaction itself so ordering (verify → lock) can be proven.",
       );
-    } else if (lockInfo.blockTimestampSec < launchTokenIat) {
+    } else if (lockInfo.blockTimestampSec < effectiveIat) {
       withholdStamp(
         "LAUNCH_ORDERING_PREDATES_VERIFICATION",
-        "Lock transaction predates the verification token — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Verify first, then lock, then register.",
+        "Lock transaction predates the verification — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Verify first, then lock, then register.",
       );
     }
   }
 
-  // Launch RECOGNITION evidence (Codex round-2, finding 2): ordering
-  // alone proves verify→lock, not that the PREPARED launch input was
-  // used. When a prepared-launch record exists for this repo+wallet,
-  // or the registration presents a fee-lock vault, the stamp
+  // ── LOCK-EVENT MATCH (round-3, blocker 1): the Locked event parsed
+  // from the receipt must be the lock THIS registration describes —
+  // same repo, same recipient, same token. A receipt carrying some
+  // other lock in the configured escrow proves nothing about this
+  // grant.
+  if (launchVerifiedLogin && lockInfo.repoId !== null) {
+    const expectedRepoId = repoIdFromPlatform(platform, repoFullName).toLowerCase();
+    if (lockInfo.repoId.toLowerCase() !== expectedRepoId) {
+      withholdStamp(
+        "LAUNCH_LOCK_REPO_MISMATCH",
+        "The lock transaction's Locked event is for a different repo than this registration — grant registered WITHOUT the launchVerified stamp or launcher enrolment.",
+      );
+    } else if (lockInfo.eventRecipient !== recipient.toLowerCase()) {
+      withholdStamp(
+        "LAUNCH_LOCK_RECIPIENT_MISMATCH",
+        "The lock transaction's Locked event names a different recipient than this registration — grant registered WITHOUT the launchVerified stamp or launcher enrolment.",
+      );
+    } else if (lockInfo.eventToken !== token.toLowerCase()) {
+      withholdStamp(
+        "LAUNCH_LOCK_TOKEN_MISMATCH",
+        "The lock transaction's Locked event locks a different token than this registration — grant registered WITHOUT the launchVerified stamp or launcher enrolment.",
+      );
+    }
+  }
+
+  // ── RECOGNITION evidence (round-2 finding 2, round-3 hardened):
+  // with the prepared record established above, the stamp
   // additionally requires:
   //   (a) the vault is a contract whose immutable bindings (escrow
   //       destination = the chain's configured FeeStreamEscrow,
   //       repoId, launcher) match this registration;
-  //   (b) when a prepared record pinned one, the vault's runtime
-  //       codehash equals the codehash read at prepare time;
-  //   (c) when a prepared record exists, the token's ACTUAL fee
-  //       recipients (read from Bankr's factory + fee ledger) equal
-  //       the prepared recipients.
-  // Any failure withholds the stamp (the grant still registers as an
-  // ordinary lock). With no prepared record and no vault presented,
-  // recognition rests on ordering alone — the documented residue in
-  // src/lib/launchRecognition.ts.
+  //   (b) the vault is an instance of the ONE approved FeeLockVault
+  //       implementation — its masked-template implementation hash
+  //       equals the canonical hash pinned in the prepared record
+  //       (prepare-launch refuses any other implementation, so the
+  //       pin IS the canonical hash; an arbitrary contract's own
+  //       hash is never accepted as identity);
+  //   (c) the token's ACTUAL fee recipients (read from Bankr's
+  //       factory + fee ledger) equal the prepared recipients.
   let recognitionFeeLockVault: string | undefined;
-  if (launchVerifiedLogin) {
-    const prepared = await getPreparedLaunch(normalizedRepo, recipient).catch(() => null);
+  if (launchVerifiedLogin && prepared) {
     const presentedVault =
       typeof body.feeLockVault === "string" && /^0x[0-9a-fA-F]{40}$/.test(body.feeLockVault)
         ? body.feeLockVault.toLowerCase()
         : undefined;
-    const vault = presentedVault ?? prepared?.feeLockVault ?? undefined;
+    const vault = presentedVault ?? prepared.feeLockVault ?? undefined;
     // A prepared record with NO vault is the platform's own launch
     // (Gregory exception): no vault exists to bind — only the
     // fee-config comparison applies to it.
-    const isPreparedPlatformLaunch = prepared !== null && !prepared.feeLockVault && !presentedVault;
-    if ((prepared || presentedVault) && !isPreparedPlatformLaunch) {
+    const isPreparedPlatformLaunch = !prepared.feeLockVault && !presentedVault;
+    if (!isPreparedPlatformLaunch) {
       if (!vault) {
         withholdStamp(
           "LAUNCH_VAULT_UNVERIFIABLE",
@@ -274,11 +382,11 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
           );
         } else if (
           prepared?.vaultCodehash &&
-          binding.codehash !== prepared.vaultCodehash
+          binding.implCodehash !== prepared.vaultCodehash
         ) {
           withholdStamp(
             "LAUNCH_VAULT_CODEHASH_MISMATCH",
-            `Fee-lock vault ${vault} codehash does not match the codehash pinned at prepare-launch — the contract presented at registration is not the contract that was prepared. Grant registered WITHOUT the launchVerified stamp or launcher enrolment.`,
+            `Fee-lock vault ${vault} is not an instance of the approved FeeLockVault implementation pinned at prepare-launch (implementation hash ${binding.implCodehash ?? "unreadable"}, expected ${prepared.vaultCodehash}) — the contract presented at registration is not the implementation that was prepared. Grant registered WITHOUT the launchVerified stamp or launcher enrolment.`,
           );
         }
       }

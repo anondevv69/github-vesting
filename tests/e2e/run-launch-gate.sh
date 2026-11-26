@@ -25,6 +25,16 @@
 #     - NO token (legacy path)         -> grant registers, but NO
 #                                        enrolment (unverified launch
 #                                        gets no launcher rewards)
+#   round-3 (prepared record REQUIRED for the stamp):
+#     - valid token + lock, NO prepare -> unstamped,
+#                                        LAUNCH_NO_PREPARED_RECORD
+#     - prepared lookup ERROR (fault   -> unstamped, fail-closed,
+#       injected in fake redis)          LAUNCH_PREPARED_LOOKUP_FAILED
+#     - fresh token chaining to the    -> STAMPED (ordering judged
+#       prepared record (token expiry)   against the ORIGINAL
+#                                        verification time)
+#     - token issued BEFORE the        -> unstamped,
+#       preparation                      LAUNCH_PREPARED_NONCE_MISMATCH
 # No external calls, no real keys (Hardhat test accounts + throwaway RSA).
 # ROBINHOOD_RPC_URL is pointed at the local node so register's chain
 # detection probe fails fast instead of calling the real RH RPC.
@@ -161,6 +171,26 @@ echo "$LOCK_OUT"
 PRE_LOCK_TX="$(printf '%s' "$LOCK_OUT" | grep -o 'LOCK_TX=0x[0-9a-f]*' | cut -d= -f2)"
 echo "pre-verification lock tx: $PRE_LOCK_TX"
 
+echo "=== 3c. recognition fixture (round-3: prepared record now REQUIRED for the stamp) ==="
+# Deploys the FeeStreamEscrow + genuine FeeLockVaults + mock Bankr
+# launch record the prepare-launch/registration recognition flow
+# reads, and points the chain config at them (env read by the
+# server at request time via src/lib/chains.ts defaults).
+npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/deploy-gate-recognition.ts || exit 1
+FEE_STREAM_ESCROW_ADDRESS="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['feeStreamEscrow'])")"
+BANKR_RECORD_ADDRESS="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['bankrRecord'])")"
+export FEE_STREAM_ESCROW_ADDRESS
+export BANKR_FACTORY_ADDRESS="$BANKR_RECORD_ADDRESS"
+export BANKR_FEE_LEDGER_ADDRESS="$BANKR_RECORD_ADDRESS"
+VAULT_LAUNCH="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultLaunch'])")"
+VAULT_CHAIN="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultChain'])")"
+VAULT_STALE="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultStale'])")"
+VAULT_ORDER="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultOrder'])")"
+VAULT_NOLOCK="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultNolock'])")"
+CTK="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['ctk'])")"
+STK="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['stk'])")"
+echo "feeStreamEscrow=$FEE_STREAM_ESCROW_ADDRESS vaultLaunch=$VAULT_LAUNCH"
+
 
 echo "=== 4. fixture GitHub API ==="
 node tests/e2e/github-fixture.js &
@@ -250,7 +280,13 @@ OUT="$(curl -s -X POST "$API/api/vesting/register" -H 'content-type: application
   -d "$REG_BODY,\"launchVerificationToken\":\"garbage\"}")"; echo "$OUT"
 check "garbage token register refused" "$OUT" '"code":"LAUNCH_TOKEN_MALFORMED"'
 
-echo "=== 18. register: valid token -> grant stamped + launcher enrolled ==="
+echo "=== 18. register: valid token + PREPARED launch -> grant stamped + launcher enrolled ==="
+# Round-3: the stamp now requires the prepared-launch record, so the
+# happy path prepares first (same token, the repo's genuine vault).
+OUT="$(curl -s -X POST "$API/api/launch/prepare-launch" -H 'content-type: application/json' \
+  -H "x-wallet-address: $RECIPIENT" \
+  -d "{\"repo\":\"$LAUNCH_REPO\",\"verificationToken\":\"$TOKEN\",\"feeLockVault\":\"$VAULT_LAUNCH\",\"launch\":{\"name\":\"Launch Token\",\"symbol\":\"LTK\"}}")"; echo "$OUT"
+check "step-18 prepare-launch ok" "$OUT" '"prepared":true'
 OUT="$(curl -s -X POST "$API/api/vesting/register" -H 'content-type: application/json' \
   -d "$REG_BODY,\"launchVerificationToken\":\"$TOKEN\"}")"; echo "$OUT"
 check "verified register ok" "$OUT" '"ok":true'
@@ -297,10 +333,17 @@ sleep 3 # widen the wall-clock gap over the step-3b lock (see the note there)
 OUT="$(verify testauthor testauthor/orderrepo "$RECIPIENT")"; echo "$OUT"
 check "orderrepo verify ok" "$OUT" '"verified":true'
 ORDER_TOKEN="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
+# Round-3: prepare first so the prepared-record gate passes and the
+# ORDERING check is the one that withholds the stamp.
+OUT="$(curl -s -X POST "$API/api/launch/prepare-launch" -H 'content-type: application/json' \
+  -H "x-wallet-address: $RECIPIENT" \
+  -d "{\"repo\":\"testauthor/orderrepo\",\"verificationToken\":\"$ORDER_TOKEN\",\"feeLockVault\":\"$VAULT_ORDER\",\"launch\":{\"name\":\"Order Token\",\"symbol\":\"ORD\"}}")"; echo "$OUT"
+check "orderrepo prepare-launch ok" "$OUT" '"prepared":true'
 REG_ORDER="{\"repoFullName\":\"testauthor/orderrepo\",\"platform\":\"github\",\"recipient\":\"$RECIPIENT\",\"token\":\"$PTK\",\"chain\":\"base\",\"totalLocked\":\"10000000000000000000\",\"totalPushesRequired\":2,\"pushesPerMilestone\":1,\"tokensPerMilestone\":\"5000000000000000000\",\"onChainTxHash\":\"$PRE_LOCK_TX\",\"installationId\":777,\"streaming\":false,\"launchVerificationToken\":\"$ORDER_TOKEN\"}"
 OUT="$(curl -s -X POST "$API/api/vesting/register" -H 'content-type: application/json' -d "$REG_ORDER")"; echo "$OUT"
 check "predated-lock register ok (ordinary grant)" "$OUT" '"ok":true'
 check "predated-lock register reports unstamped" "$OUT" '"stamped":false'
+check "predated-lock carries the ordering code" "$OUT" '"code":"LAUNCH_ORDERING_PREDATES_VERIFICATION"'
 check_absent "predated-lock grant NOT launchVerified" "$OUT" '"launchVerified":true'
 check_absent "predated-lock grant NOT enrolled" "$OUT" '"launcherRewardEnrolled":true'
 ENR="$(curl -s "$API/api/launch/enrollment?repo=testauthor/orderrepo&wallet=$RECIPIENT")"; echo "$ENR"
@@ -310,6 +353,12 @@ echo "=== 24. ordering FAIL-CLOSED: valid token + registration tx with NO Locked
 OUT="$(verify testauthor testauthor/nolockrepo "$RECIPIENT")"; echo "$OUT"
 check "nolockrepo verify ok" "$OUT" '"verified":true'
 NOLOCK_TOKEN="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
+# Round-3: prepare first so the prepared-record gate passes and the
+# fail-closed ORDERING check is the one that withholds the stamp.
+OUT="$(curl -s -X POST "$API/api/launch/prepare-launch" -H 'content-type: application/json' \
+  -H "x-wallet-address: $RECIPIENT" \
+  -d "{\"repo\":\"testauthor/nolockrepo\",\"verificationToken\":\"$NOLOCK_TOKEN\",\"feeLockVault\":\"$VAULT_NOLOCK\",\"launch\":{\"name\":\"Nolock Token\",\"symbol\":\"NLK\"}}")"; echo "$OUT"
+check "nolockrepo prepare-launch ok" "$OUT" '"prepared":true'
 REG_NOLOCK="{\"repoFullName\":\"testauthor/nolockrepo\",\"platform\":\"github\",\"recipient\":\"$RECIPIENT\",\"token\":\"$PTK\",\"chain\":\"base\",\"totalLocked\":\"10000000000000000000\",\"totalPushesRequired\":2,\"pushesPerMilestone\":1,\"tokensPerMilestone\":\"5000000000000000000\",\"onChainTxHash\":\"$MINT_TX\",\"installationId\":777,\"streaming\":false,\"launchVerificationToken\":\"$NOLOCK_TOKEN\"}"
 OUT="$(curl -s -X POST "$API/api/vesting/register" -H 'content-type: application/json' -d "$REG_NOLOCK")"; echo "$OUT"
 check "unprovable-ordering register ok (ordinary grant)" "$OUT" '"ok":true'
@@ -340,6 +389,86 @@ OUT="$(curl -s -X POST "$API/api/launch/prepare-launch" -H 'content-type: applic
   -H "x-wallet-address: $RECIPIENT" \
   -d "{\"repo\":\"$LAUNCH_REPO\",\"verificationToken\":\"$FRESH_TOKEN\",\"launch\":{\"name\":\"Sneaky\",\"symbol\":\"SNK\"}}")"; echo "$OUT"
 check "non-gregory no-vault prepare refused" "$OUT" '"code":"LAUNCH_FEE_VAULT_REQUIRED"'
+
+echo "=== 27. round-3: valid token + lock but NO prepared record -> UNSTAMPED (LAUNCH_NO_PREPARED_RECORD) ==="
+OUT="$(verify testauthor testauthor/nopreprepo "$RECIPIENT")"; echo "$OUT"
+check "nopreprepo verify ok" "$OUT" '"verified":true'
+NOPREP_TOKEN="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
+LOCK_OUT="$(LOCK_REPO="testauthor/nopreprepo" LOCK_AMOUNT=10 npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/lock-for-repo.ts)" || exit 1
+NOPREP_LOCK_TX="$(printf '%s' "$LOCK_OUT" | grep -o 'LOCK_TX=0x[0-9a-f]*' | cut -d= -f2)"
+REG_NOPREP="{\"repoFullName\":\"testauthor/nopreprepo\",\"platform\":\"github\",\"recipient\":\"$RECIPIENT\",\"token\":\"$PTK\",\"chain\":\"base\",\"totalLocked\":\"10000000000000000000\",\"totalPushesRequired\":2,\"pushesPerMilestone\":1,\"tokensPerMilestone\":\"5000000000000000000\",\"onChainTxHash\":\"$NOPREP_LOCK_TX\",\"installationId\":777,\"streaming\":false,\"launchVerificationToken\":\"$NOPREP_TOKEN\"}"
+OUT="$(curl -s -X POST "$API/api/vesting/register" -H 'content-type: application/json' -d "$REG_NOPREP")"; echo "$OUT"
+check "no-prepared register ok (ordinary grant)" "$OUT" '"ok":true'
+check "no-prepared reports unstamped" "$OUT" '"stamped":false'
+check "no-prepared carries the code" "$OUT" '"code":"LAUNCH_NO_PREPARED_RECORD"'
+check_absent "no-prepared grant NOT launchVerified" "$OUT" '"launchVerified":true'
+check_absent "no-prepared grant NOT enrolled" "$OUT" '"launcherRewardEnrolled":true'
+ENR="$(curl -s "$API/api/launch/enrollment?repo=testauthor/nopreprepo&wallet=$RECIPIENT")"; echo "$ENR"
+check "no-prepared launch has no enrolment" "$ENR" '"enrolled":false'
+
+echo "=== 28. round-3: prepared-record lookup ERROR -> FAIL CLOSED (LAUNCH_PREPARED_LOOKUP_FAILED) ==="
+OUT="$(verify testauthor testauthor/faultrepo "$RECIPIENT")"; echo "$OUT"
+check "faultrepo verify ok" "$OUT" '"verified":true'
+FAULT_TOKEN="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
+LOCK_OUT="$(LOCK_REPO="testauthor/faultrepo" LOCK_AMOUNT=10 npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/lock-for-repo.ts)" || exit 1
+FAULT_LOCK_TX="$(printf '%s' "$LOCK_OUT" | grep -o 'LOCK_TX=0x[0-9a-f]*' | cut -d= -f2)"
+REG_FAULT="{\"repoFullName\":\"testauthor/faultrepo\",\"platform\":\"github\",\"recipient\":\"$RECIPIENT\",\"token\":\"$PTK\",\"chain\":\"base\",\"totalLocked\":\"10000000000000000000\",\"totalPushesRequired\":2,\"pushesPerMilestone\":1,\"tokensPerMilestone\":\"5000000000000000000\",\"onChainTxHash\":\"$FAULT_LOCK_TX\",\"installationId\":777,\"streaming\":false,\"launchVerificationToken\":\"$FAULT_TOKEN\"}"
+REDIS_URL="redis://127.0.0.1:6399" npx tsx tests/e2e/fault-toggle.ts prepared-launch-get on || exit 1
+OUT="$(curl -s -X POST "$API/api/vesting/register" -H 'content-type: application/json' -d "$REG_FAULT")"; echo "$OUT"
+REDIS_URL="redis://127.0.0.1:6399" npx tsx tests/e2e/fault-toggle.ts prepared-launch-get off || exit 1
+check "lookup-fault register ok (ordinary grant)" "$OUT" '"ok":true'
+check "lookup-fault reports unstamped" "$OUT" '"stamped":false'
+check "lookup-fault carries the fail-closed code" "$OUT" '"code":"LAUNCH_PREPARED_LOOKUP_FAILED"'
+check_absent "lookup-fault grant NOT launchVerified" "$OUT" '"launchVerified":true'
+ENR="$(curl -s "$API/api/launch/enrollment?repo=testauthor/faultrepo&wallet=$RECIPIENT")"; echo "$ENR"
+check "lookup-fault launch has no enrolment" "$ENR" '"enrolled":false'
+
+echo "=== 29. round-3 token-expiry path: fresh token CHAINS to the prepared record -> STAMPED ==="
+# Verify T1 -> lock -> prepare under T1 -> the 15-min token
+# "expires" -> verify again (fresh token T2, new nonce) -> register
+# with T2. The registration must bind to the ORIGINAL prepared
+# record and judge ordering against T1's issuance (the lock predates
+# T2, so an implementation judging against the presented token
+# would wrongly withhold for predating).
+OUT="$(verify testauthor testauthor/chainrepo "$RECIPIENT")"; echo "$OUT"
+CHAIN_T1="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
+LOCK_OUT="$(LOCK_REPO="testauthor/chainrepo" LOCK_TOKEN="$CTK" LOCK_AMOUNT=10 npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/lock-for-repo.ts)" || exit 1
+CHAIN_LOCK_TX="$(printf '%s' "$LOCK_OUT" | grep -o 'LOCK_TX=0x[0-9a-f]*' | cut -d= -f2)"
+OUT="$(curl -s -X POST "$API/api/launch/prepare-launch" -H 'content-type: application/json' \
+  -H "x-wallet-address: $RECIPIENT" \
+  -d "{\"repo\":\"testauthor/chainrepo\",\"verificationToken\":\"$CHAIN_T1\",\"feeLockVault\":\"$VAULT_CHAIN\",\"launch\":{\"name\":\"Chain Token\",\"symbol\":\"CTK\"}}")"; echo "$OUT"
+check "chainrepo prepare under T1 ok" "$OUT" '"prepared":true'
+OUT="$(verify testauthor testauthor/chainrepo "$RECIPIENT")"; echo "$OUT"
+CHAIN_T2="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
+REG_CHAIN="{\"repoFullName\":\"testauthor/chainrepo\",\"platform\":\"github\",\"recipient\":\"$RECIPIENT\",\"token\":\"$CTK\",\"chain\":\"base\",\"totalLocked\":\"10000000000000000000\",\"totalPushesRequired\":2,\"pushesPerMilestone\":1,\"tokensPerMilestone\":\"5000000000000000000\",\"onChainTxHash\":\"$CHAIN_LOCK_TX\",\"installationId\":777,\"streaming\":false,\"launchVerificationToken\":\"$CHAIN_T2\"}"
+OUT="$(curl -s -X POST "$API/api/vesting/register" -H 'content-type: application/json' -d "$REG_CHAIN")"; echo "$OUT"
+check "chained-token register ok" "$OUT" '"ok":true'
+check "chained-token grant STAMPED" "$OUT" '"launchVerified":true'
+check "chained-token grant enrolled" "$OUT" '"launcherRewardEnrolled":true'
+check_absent "chained-token register carries no withhold code" "$OUT" '"stamped":false'
+ENR="$(curl -s "$API/api/launch/enrollment?repo=testauthor/chainrepo&wallet=$RECIPIENT")"; echo "$ENR"
+check "chained-token enrolment present" "$ENR" '"enrolled":true'
+
+echo "=== 30. round-3: token issued BEFORE the preparation cannot chain -> UNSTAMPED (LAUNCH_PREPARED_NONCE_MISMATCH) ==="
+OUT="$(verify testauthor testauthor/stalerepo "$RECIPIENT")"; echo "$OUT"
+STALE_T1="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
+sleep 2 # ensure T2's iat is strictly later than T1's
+OUT="$(verify testauthor testauthor/stalerepo "$RECIPIENT")"; echo "$OUT"
+STALE_T2="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
+OUT="$(curl -s -X POST "$API/api/launch/prepare-launch" -H 'content-type: application/json' \
+  -H "x-wallet-address: $RECIPIENT" \
+  -d "{\"repo\":\"testauthor/stalerepo\",\"verificationToken\":\"$STALE_T2\",\"feeLockVault\":\"$VAULT_STALE\",\"launch\":{\"name\":\"Stale Token\",\"symbol\":\"STK\"}}")"; echo "$OUT"
+check "stalerepo prepare under T2 ok" "$OUT" '"prepared":true'
+LOCK_OUT="$(LOCK_REPO="testauthor/stalerepo" LOCK_TOKEN="$STK" LOCK_AMOUNT=10 npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/lock-for-repo.ts)" || exit 1
+STALE_LOCK_TX="$(printf '%s' "$LOCK_OUT" | grep -o 'LOCK_TX=0x[0-9a-f]*' | cut -d= -f2)"
+REG_STALE="{\"repoFullName\":\"testauthor/stalerepo\",\"platform\":\"github\",\"recipient\":\"$RECIPIENT\",\"token\":\"$STK\",\"chain\":\"base\",\"totalLocked\":\"10000000000000000000\",\"totalPushesRequired\":2,\"pushesPerMilestone\":1,\"tokensPerMilestone\":\"5000000000000000000\",\"onChainTxHash\":\"$STALE_LOCK_TX\",\"installationId\":777,\"streaming\":false,\"launchVerificationToken\":\"$STALE_T1\"}"
+OUT="$(curl -s -X POST "$API/api/vesting/register" -H 'content-type: application/json' -d "$REG_STALE")"; echo "$OUT"
+check "stale-token register ok (ordinary grant)" "$OUT" '"ok":true'
+check "stale-token reports unstamped" "$OUT" '"stamped":false'
+check "stale-token carries the nonce-mismatch code" "$OUT" '"code":"LAUNCH_PREPARED_NONCE_MISMATCH"'
+check_absent "stale-token grant NOT launchVerified" "$OUT" '"launchVerified":true'
+ENR="$(curl -s "$API/api/launch/enrollment?repo=testauthor/stalerepo&wallet=$RECIPIENT")"; echo "$ENR"
+check "stale-token launch has no enrolment" "$ENR" '"enrolled":false'
 
 echo "=== LAUNCH-GATE DRIVER DONE — failures: $FAILURES ==="
 [ "$FAILURES" -eq 0 ] || exit 1

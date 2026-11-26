@@ -10,8 +10,10 @@
  *   - recipient (acct #2) locks 1,000 PTK into GitEscrowV2 for
  *     testowner/testrepo (totalPushes=4, pushesPerMilestone=2 →
  *     500 PTK per supply milestone);
- *   - recipient registers the fee grant on FeeStreamEscrow
- *     (pushesPerTranche=2) naming the vault;
+ *   - the deployer (FeeStreamEscrow owner = registrar, round-3)
+ *     registers the fee grant on FeeStreamEscrow
+ *     (pushesPerTranche=2) naming the recipient + the vault — the
+ *     contract validates the vault's bindings on-chain;
  *   - deployer funds ShipRewards with 10,000 RWD;
  *   - claim source holds 1,000 WETH with 40 WETH claimable by the vault
  *     (models trading fees accrued to the vault as fee recipient).
@@ -66,10 +68,12 @@ async function main() {
     .lock(repoId, await ptk.getAddress(), ethers.parseUnits("1000", 18), 4, 2);
   await lockTx.wait();
 
-  // Fee grant registration: recipient names the vault, 2 pushes/tranche.
+  // Fee grant registration (round-3): the escrow OWNER (registrar)
+  // registers recipient + token + vault explicitly; the contract
+  // validates the vault's immutable bindings before accepting.
   const regTx = await feeEscrow
-    .connect(recipient)
-    .registerFeeGrant(repoId, await weth.getAddress(), vaultAddr, 2);
+    .connect(deployer)
+    .registerFeeGrant(repoId, recipient.address, await weth.getAddress(), vaultAddr, 2);
   await regTx.wait();
 
   // Fund the reward pool.

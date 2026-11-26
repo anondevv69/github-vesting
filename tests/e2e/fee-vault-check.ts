@@ -62,12 +62,18 @@ async function main() {
     return r;
   }));
 
-  await expectRevert("lockAccrued with nothing accrued", vault.connect(author).lockAccrued(0n));
+  await expectRevert("lockAccrued with nothing accrued", vault.connect(author).lockAccrued(0n, 0n));
 
   const feeEscrow = await ethers.getContractAt("FeeStreamEscrow", state.feeStreamEscrow);
   await expectRevert(
     "addFeeTranche from non-vault",
-    feeEscrow.connect(recipient).addFeeTranche(state.repoId, 1n, 0n),
+    feeEscrow.connect(recipient).addFeeTranche(state.repoId, 1n, 0n, 0n),
+  );
+  await expectRevert(
+    "registerFeeGrant from non-owner (registrar-only, round-3)",
+    feeEscrow
+      .connect(recipient)
+      .registerFeeGrant(state.repoId, recipient.address, state.weth, state.feeLockVault, 2),
   );
   await expectRevert(
     "releaseFee from non-oracle",

@@ -19,7 +19,10 @@ async function main() {
   const state = JSON.parse(fs.readFileSync(path.join(__dirname, "state.json"), "utf8"));
 
   const [, , recipient] = await ethers.getSigners();
-  const ptk = await ethers.getContractAt("MockERC20", state.ptk);
+  // LOCK_TOKEN overrides the locked token (round-3 gate steps lock
+  // per-repo tokens whose fee records differ); default is state PTK.
+  const tokenAddr = process.env.LOCK_TOKEN ?? state.ptk;
+  const ptk = await ethers.getContractAt("MockERC20", tokenAddr);
   const escrow = await ethers.getContractAt("GitEscrow", state.gitEscrow);
 
   const repoId = ethers.keccak256(ethers.toUtf8Bytes(repo));
@@ -29,7 +32,7 @@ async function main() {
   await mintTx.wait();
   const approveTx = await ptk.connect(recipient).approve(state.gitEscrow, amount);
   await approveTx.wait();
-  const lockTx = await escrow.connect(recipient).lock(repoId, state.ptk, amount, 2, 1);
+  const lockTx = await escrow.connect(recipient).lock(repoId, tokenAddr, amount, 2, 1);
   const receipt = await lockTx.wait();
   const block = await ethers.provider.getBlock(receipt!.blockNumber);
   console.log("repo:", repo, "repoId:", repoId, "blockTimestamp:", block?.timestamp);

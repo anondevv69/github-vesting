@@ -76,6 +76,12 @@ export const env = {
    * building fails closed while this is empty.
    */
   PLATFORM_REWARD_TREASURY_WALLET: get("PLATFORM_REWARD_TREASURY_WALLET"),
+  /** Canonical FeeLockVault implementation hash (masked template —
+   *  the executable code with immutable slots zeroed; see
+   *  src/lib/launchRecognition.ts). Unset → the in-code template
+   *  constant computed from this repo's compiled artifact. Set only
+   *  to pin the approved implementation externally. */
+  APPROVED_FEE_LOCK_VAULT_CODEHASH: get("APPROVED_FEE_LOCK_VAULT_CODEHASH"),
   /** Bankr v4 launch factory + fee ledger (launch-record reads for
    *  launch recognition, src/lib/launchRecognition.ts). Default to the
    *  real Base/Robinhood addresses from the Bankr launch SDK; the E2E
