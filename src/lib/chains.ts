@@ -43,6 +43,13 @@ export type VestingChainConfig = {
   bankrFactoryAddress: string | undefined;
   /** Bankr v4 fee ledger (launch-record reads: beneficiariesOf / creatorShareOf). */
   bankrFeeLedgerAddress: string | undefined;
+  /** The Bankr fee ledger a FeeLockVault claims from — the value its
+   *  immutable claimLedger must equal at prepare-launch (round-4).
+   *  Same contract as bankrFeeLedgerAddress in production. */
+  bankrClaimLedgerAddress: string | undefined;
+  /** Canonical WETH on this chain — the fee token every platform
+   *  FeeLockVault must be bound to (prepare-launch, round-4). */
+  wethAddress: string | undefined;
   explorerBase: string;
   label: string;
 };
@@ -66,6 +73,8 @@ export function getVestingChainConfig(key: VestingChainKey): VestingChainConfig 
         feeStreamEscrowAddress: undefined,
         bankrFactoryAddress: env.BANKR_FACTORY_ADDRESS || "0x2F2FDedE5b61D9B624462FB9e138913fD2620427",
         bankrFeeLedgerAddress: env.BANKR_FEE_LEDGER_ADDRESS || "0x15e5F60817ee337f58A0B6c34b905C7C2dBC2F64",
+        bankrClaimLedgerAddress: env.BANKR_CLAIM_LEDGER_ADDRESS || env.BANKR_FEE_LEDGER_ADDRESS || "0x15e5F60817ee337f58A0B6c34b905C7C2dBC2F64",
+        wethAddress: env.WETH_ADDRESS || undefined,
         explorerBase: "https://robinhoodchain.blockscout.com",
         label: "Robinhood Chain",
       };
@@ -79,6 +88,8 @@ export function getVestingChainConfig(key: VestingChainKey): VestingChainConfig 
         feeStreamEscrowAddress: undefined,
         bankrFactoryAddress: undefined,
         bankrFeeLedgerAddress: undefined,
+        bankrClaimLedgerAddress: env.BANKR_CLAIM_LEDGER_ADDRESS || undefined,
+        wethAddress: env.WETH_ADDRESS || "0x4200000000000000000000000000000000000006",
         explorerBase: "https://sepolia.basescan.org",
         label: "Base Sepolia",
       };
@@ -92,6 +103,8 @@ export function getVestingChainConfig(key: VestingChainKey): VestingChainConfig 
         feeStreamEscrowAddress: env.FEE_STREAM_ESCROW_ADDRESS || undefined,
         bankrFactoryAddress: env.BANKR_FACTORY_ADDRESS || "0x8cdE4Edb9A51909eef93F102f5Ce1b950769792E",
         bankrFeeLedgerAddress: env.BANKR_FEE_LEDGER_ADDRESS || "0x7C836e937831Cd5931A1ACbB9117dF9714D7d1F7",
+        bankrClaimLedgerAddress: env.BANKR_CLAIM_LEDGER_ADDRESS || env.BANKR_FEE_LEDGER_ADDRESS || "0x7C836e937831Cd5931A1ACbB9117dF9714D7d1F7",
+        wethAddress: env.WETH_ADDRESS || "0x4200000000000000000000000000000000000006",
         explorerBase: "https://basescan.org",
         label: "Base",
       };

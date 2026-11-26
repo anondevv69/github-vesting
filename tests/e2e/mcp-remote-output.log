@@ -31,7 +31,7 @@ server up
 server-side repoId (no 0x): 533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
 on-chain repoId matches: true
 grant saved for testowner/testrepo
-linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T02:51:04.693Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T03:39:45.574Z","source":"signed"}]
 === 6. MCP over HTTP smoke ===
 PASS  initialize — server={"name":"proofofdev","version":"0.1.0"} protocol=2024-11-05
 PASS  tools/list has 13 tools — agent_briefing,agent_grants,enrol_reviewer,link_status,prepare_launch,prepare_lock,repo_recent_pushes,report_ship,review_push,review_queue,ship_report,verify_github,vesting_status
@@ -90,8 +90,8 @@ Node.js v24.22.1
     "installationId": 0,
     "status": "active",
     "streaming": false,
-    "createdAt": "2026-11-26T02:51:04.661Z",
-    "updatedAt": "2026-11-26T02:51:04.661Z"
+    "createdAt": "2026-11-26T03:39:45.496Z",
+    "updatedAt": "2026-11-26T03:39:45.497Z"
   },
   "progress": {
     "verifiedPushCount": 0,

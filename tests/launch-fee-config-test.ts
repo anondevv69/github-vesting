@@ -153,4 +153,32 @@ check("treasury can never be the fee-lock vault either", () => {
   );
 });
 
-console.log(`\nlaunch-fee-config: ${passed}/9 checks PASS`);
+// Round-4: the REAL designated treasury. Gregory designated a
+// dedicated treasury wallet (hidden_files/treasury-wallet.json,
+// created 2026-11-25); with it configured, the fail-closed path
+// lifts and the built input carries exactly that address in the
+// 2500 position. Skipped (loudly) if the record is absent.
+import * as fs from "node:fs";
+import * as path from "node:path";
+const treasuryRecordPath = path.join(__dirname, "..", "hidden_files", "treasury-wallet.json");
+if (fs.existsSync(treasuryRecordPath)) {
+  const record = JSON.parse(fs.readFileSync(treasuryRecordPath, "utf8")) as { address: string };
+  check("designated treasury wallet lifts the fail-closed path (real address)", () => {
+    const input = buildPlatformLaunchInput(
+      { name: "Treasury Probe", symbol: "TRP" },
+      { launcher: TEST_LAUNCHER, rewardTreasuryWallet: record.address as `0x${string}` },
+    );
+    assert.equal(input.feeRecipients.length, 2);
+    assert.equal(input.feeRecipients[0]!.recipient.toLowerCase(), record.address.toLowerCase());
+    assert.equal(input.feeRecipients[0]!.shareBps, 2500);
+    assert.notEqual(
+      input.feeRecipients[0]!.recipient.toLowerCase(),
+      GREGORY_FEE_RECIPIENT_WALLET.toLowerCase(),
+    );
+  });
+  console.log(`  (designated treasury on file: ${record.address})`);
+} else {
+  console.log("  SKIP designated-treasury check — hidden_files/treasury-wallet.json absent");
+}
+
+console.log(`\nlaunch-fee-config: ${passed} checks PASS`);

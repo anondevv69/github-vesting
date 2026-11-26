@@ -55,6 +55,25 @@ async function main() {
   const vault7 = await deployVault("testowner/feeproj7");
   const vault8 = await deployVault("testowner/feeproj8");
 
+  // Round-4 (blocker 3): prepare-launch requires the matching fee
+  // grant to be registered FIRST, so the registrar (the escrow
+  // owner = deployer) registers a grant for every recognition repo
+  // whose driver flow prepares a launch. feeproj3's vault is bound
+  // to a different repo, so NO grant can be registered for it
+  // (registration itself validates the binding) — its prepare now
+  // refuses at the binding check, which is the round-4 behavior.
+  const feeEscrowC = await ethers.getContractAt("FeeStreamEscrow", feeEscrow);
+  const reg = async (repo: string, vaultAddr: string) => {
+    await (await feeEscrowC.registerFeeGrant(rid(repo), recipient.address, weth, vaultAddr, 2)).wait();
+  };
+  await reg("testowner/feeproj", vault1);
+  await reg("testowner/feeproj2", vault2);
+  await reg("testowner/feeproj4", vault4);
+  await reg("testowner/feeproj5", vault5);
+  await reg("testowner/feeproj6", vault6);
+  await reg("testowner/feeproj7", vault7);
+  await reg("testowner/feeproj8", vault8);
+
   const Impostor = await ethers.getContractFactory("MockVaultImpostor");
   const impostor = await Impostor.deploy(feeEscrow, weth, rid("testowner/feeproj2"), recipient.address, source);
   const impostorAddr = await impostor.getAddress();

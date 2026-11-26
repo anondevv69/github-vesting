@@ -187,9 +187,12 @@ stamp gets no launch recognition — no `launchVerified` stamp, no
 verified-launch listing (`GET /api/launch/projects`), no ShipRewards
 launcher enrolment. Ordinary vesting locks (web wizard, no token)
 still register and count toward their own schedule; that is vesting,
-not launch recognition. No launch-prep surface builds SDK launch
-inputs yet — the gate enforces on lock preparation and recognition,
-not on an SDK launch itself.
+not launch recognition. A launch-prep surface
+(`POST /api/launch/prepare-launch`, MCP `prepare_launch`) does
+build SDK launch inputs — built and tested locally; the production
+API does not have these endpoints until the platform redeploys, so
+today the gate enforces on lock preparation and recognition, not
+on an SDK launch itself.
 
 **Launcher enrolment (dual reward, stated precisely):** a verified
 launcher whose grant registers with a valid token is auto-enrolled
@@ -205,13 +208,26 @@ fee recipient is a **per-project fee-lock vault** (claim-capable
 smart account; not the raw wallet, not the escrow contract, which
 cannot claim), and a keeper cycle claims accrued fees and locks
 them into a **fee-stream grant** whose tranches unlock over
-subsequent counted pushes — denomination still open (WETH as
-claimed, or swapped to the project token via PodSettler); (c) this
-is **BUILT locally** (FeeLockVault + FeeStreamEscrow + keeper + oracle release step; E2E-proven, not deployed). The
-launchpad-fee recycling loop that would refill the reward pool is
-also designed, not operating (treasury wallet and production reward
-token pending). Enrolment is readable at
-`GET /api/launch/enrollment?repo=&wallet=`.
+subsequent counted pushes — denomination DECIDED: WETH for the
+first launch (the project-token swap via PodSettler stays
+deferred); (c) this is **BUILT locally** (FeeLockVault +
+FeeStreamEscrow + keeper + oracle release step; E2E-proven, not
+deployed). The platform launch order is: platform deploys the
+vault from the approved implementation → platform registrar
+registers the fee grant → prepare-launch validates every vault
+binding (repo, launcher, escrow, WETH fee token, Bankr claim
+ledger) and the registered grant before returning the input.
+Tranche baselines are set from an oracle-signed count attestation
+the keeper fetches from the backend at lock time — no caller ever
+supplies a count — and fee releases settle in capped batches: a
+release stays queued until the contract reports nothing further
+due at that count, with the sweep draining backlogs even when
+pushing stops ("fees are still settling" is a real intermediate
+state). The launchpad-fee recycling loop that would refill the
+reward pool is also designed, not operating (the reward treasury
+wallet is designated and claim-proven in a live dust launch; the
+production reward token's name/ticker is still open). Enrolment
+is readable at `GET /api/launch/enrollment?repo=&wallet=`.
 
 Bankr agents with wallet signing — **any ERC-20 on Base** (TMP, Space, USDC, or any `0x` address):
 

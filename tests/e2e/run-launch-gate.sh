@@ -182,7 +182,20 @@ BANKR_RECORD_ADDRESS="$(python3 -c "import json;print(json.load(open('tests/e2e/
 export FEE_STREAM_ESCROW_ADDRESS
 export BANKR_FACTORY_ADDRESS="$BANKR_RECORD_ADDRESS"
 export BANKR_FEE_LEDGER_ADDRESS="$BANKR_RECORD_ADDRESS"
+# Round-4 prepare-launch binding config: the chain's WETH and the
+# Bankr CLAIM ledger (the fixture's claim source — distinct from
+# the launch-record ledger above, as the two mocks model one
+# production contract).
+export WETH_ADDRESS="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['weth'])")"
+export BANKR_CLAIM_LEDGER_ADDRESS="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['claimSource'])")"
 VAULT_LAUNCH="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultLaunch'])")"
+VAULT_BIND_REPO="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultBindRepo'])")"
+VAULT_BIND_LAUNCHER="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultBindLauncher'])")"
+VAULT_BIND_ESCROW="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultBindEscrow'])")"
+VAULT_BIND_TOKEN="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultBindToken'])")"
+VAULT_BIND_LEDGER="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultBindLedger'])")"
+VAULT_NOGRANT="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultNogrant'])")"
+VAULT_GRANTMIS="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultGrantmis'])")"
 VAULT_CHAIN="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultChain'])")"
 VAULT_STALE="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultStale'])")"
 VAULT_ORDER="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultOrder'])")"
@@ -469,6 +482,43 @@ check "stale-token carries the nonce-mismatch code" "$OUT" '"code":"LAUNCH_PREPA
 check_absent "stale-token grant NOT launchVerified" "$OUT" '"launchVerified":true'
 ENR="$(curl -s "$API/api/launch/enrollment?repo=testauthor/stalerepo&wallet=$RECIPIENT")"; echo "$ENR"
 check "stale-token launch has no enrolment" "$ENR" '"enrolled":false'
+
+echo "=== 31. round-4: prepare-launch validates the vault's BINDINGS + the registered fee grant ==="
+# Each wrong-binding vault is a genuine approved-implementation
+# instance with exactly one immutable wrong. Round 3 caught these
+# only at registration (after a possible launch); round 4 refuses
+# at prepare, before any launch input exists.
+OUT="$(verify testauthor testauthor/bindingsrepo "$RECIPIENT")"; echo "$OUT"
+BIND_TOKEN="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
+prepare_launch() { # repo token vault [ppt]
+  local ppt_field=""
+  if [ -n "${4:-}" ]; then ppt_field=",\"feePushesPerTranche\":$4"; fi
+  curl -s -X POST "$API/api/launch/prepare-launch" -H 'content-type: application/json' \
+    -H "x-wallet-address: $RECIPIENT" \
+    -d "{\"repo\":\"$1\",\"verificationToken\":\"$2\",\"feeLockVault\":\"$3\",\"launch\":{\"name\":\"Bind\",\"symbol\":\"BND\"}$ppt_field}"
+}
+OUT="$(prepare_launch testauthor/bindingsrepo "$BIND_TOKEN" "$VAULT_BIND_REPO")"; echo "$OUT"
+check "vault bound to another repo refused at prepare" "$OUT" '"code":"LAUNCH_VAULT_REPO_MISMATCH"'
+check_absent "repo-mismatch prepare returned no input" "$OUT" '"prepared":true'
+OUT="$(prepare_launch testauthor/bindingsrepo "$BIND_TOKEN" "$VAULT_BIND_LAUNCHER")"; echo "$OUT"
+check "vault bound to another launcher refused at prepare" "$OUT" '"code":"LAUNCH_VAULT_LAUNCHER_MISMATCH"'
+OUT="$(prepare_launch testauthor/bindingsrepo "$BIND_TOKEN" "$VAULT_BIND_ESCROW")"; echo "$OUT"
+check "vault bound to another escrow refused at prepare" "$OUT" '"code":"LAUNCH_VAULT_ESCROW_MISMATCH"'
+OUT="$(prepare_launch testauthor/bindingsrepo "$BIND_TOKEN" "$VAULT_BIND_TOKEN")"; echo "$OUT"
+check "vault bound to a non-WETH token refused at prepare" "$OUT" '"code":"LAUNCH_VAULT_TOKEN_MISMATCH"'
+OUT="$(prepare_launch testauthor/bindingsrepo "$BIND_TOKEN" "$VAULT_BIND_LEDGER")"; echo "$OUT"
+check "vault bound to another claim ledger refused at prepare" "$OUT" '"code":"LAUNCH_VAULT_LEDGER_MISMATCH"'
+OUT="$(verify testauthor testauthor/nograntrepo "$RECIPIENT")"; echo "$OUT"
+NOGRANT_TOKEN="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
+OUT="$(prepare_launch testauthor/nograntrepo "$NOGRANT_TOKEN" "$VAULT_NOGRANT")"; echo "$OUT"
+check "correct vault but NO registered fee grant refused at prepare" "$OUT" '"code":"LAUNCH_FEE_GRANT_NOT_REGISTERED"'
+OUT="$(verify testauthor testauthor/grantmisrepo "$RECIPIENT")"; echo "$OUT"
+GRANTMIS_TOKEN="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
+OUT="$(prepare_launch testauthor/grantmisrepo "$GRANTMIS_TOKEN" "$VAULT_GRANTMIS" 2)"; echo "$OUT"
+check "fee grant with wrong pushesPerTranche refused at prepare" "$OUT" '"code":"LAUNCH_FEE_GRANT_MISMATCH"'
+OUT="$(prepare_launch testauthor/grantmisrepo "$GRANTMIS_TOKEN" "$VAULT_GRANTMIS" 3)"; echo "$OUT"
+check "prepare succeeds when the expectation matches the registered grant (ppt=3)" "$OUT" '"prepared":true'
+check "prepare reports the grant's verified pushesPerTranche" "$OUT" '"feePushesPerTranche":3'
 
 echo "=== LAUNCH-GATE DRIVER DONE — failures: $FAILURES ==="
 [ "$FAILURES" -eq 0 ] || exit 1

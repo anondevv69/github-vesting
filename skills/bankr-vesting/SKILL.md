@@ -2,7 +2,7 @@
 name: github-vesting
 description: GitHub-gated token vesting on proofofdev.xyz — lock ANY ERC-20 on Base or Robinhood Chain (4663) via api.proofofdev.xyz, link GitHub, repo claims. Use for github vesting, lock tokens, vesting progress, link github, proofofdev, robinhood, RHAGENT. NEVER use github-vesting.vercel.app for API.
 tags: [github, vesting, bankr, base, robinhood, defi, proofofdev]
-version: 3
+version: 4
 ---
 
 # GitHub Vesting — Bankr agent skill
@@ -147,11 +147,21 @@ You **can** lock **any ERC-20 on Base or Robinhood Chain (4663)** from terminal 
    **fee-lock vault** (claim-capable smart account; not the raw
    wallet, not the escrow contract, which cannot claim); a keeper
    claims accrued fees and locks them into a fee-stream grant that
-   unlocks over subsequent counted pushes. Denomination is open
-   (WETH, or project token via PodSettler). That rule is **BUILT
+   unlocks over subsequent counted pushes. Denomination is DECIDED:
+   WETH for the first launch (project-token swap via PodSettler
+   deferred). The launch order on the platform is: the platform
+   deploys the vault, the platform registrar registers the fee
+   grant, and only then does prepare-launch validate every vault
+   binding (repo, launcher, escrow, WETH, Bankr claim ledger) plus
+   the registered grant before returning a signable input. Inside
+   the fee loop, tranche baselines come from an oracle-signed count
+   attestation the keeper fetches from the backend (nobody supplies
+   a count by hand), and fee releases settle in capped batches
+   drained by a sweep — vested fees can read as "still settling"
+   rather than paid in one call. That whole surface is **BUILT
    locally** (FeeLockVault + FeeStreamEscrow + keeper + oracle
-   release step; E2E-proven) — not deployed, so it is not yet live
-   behavior on the platform.
+   release step; E2E-proven) — not deployed, so none of it is live
+   behavior on the production API yet.
 
 1. **`POST https://api.proofofdev.xyz/api/agent/lock`** (always — even when user gives a `0x` address):
    - Header `x-wallet-address: 0x…`

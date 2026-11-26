@@ -57,7 +57,7 @@ import { handleGithubAuthMe, handleGithubAuthLogout } from "./api/githubAuth";
 import { handleAdminDeleteGrant } from "./api/adminGrants";
 import { handleAdminBackfillPushes } from "./api/adminBackfill";
 import { handleGithubInstallationLookup } from "./api/githubInstall";
-import { handleLaunchVerifyGithub, handleLaunchEnrollmentLookup, handleLaunchedProjects, handlePrepareLaunch } from "./api/launchVerify";
+import { handleLaunchVerifyGithub, handleLaunchEnrollmentLookup, handleLaunchedProjects, handlePrepareLaunch, handleCountAttestation } from "./api/launchVerify";
 import {
   handleEnrolReviewer,
   handleReviewPush,
@@ -215,6 +215,7 @@ app.get("/api/vesting/leaderboard", (req, res) => void handleLeaderboard(req, re
 // ─── Launch gate (Step 0 of any launch/deploy — platform AND agent paths) ──
 app.post("/api/launch/verify-github", (req, res) => void handleLaunchVerifyGithub(req, res));
 app.post("/api/launch/prepare-launch", (req, res) => void handlePrepareLaunch(req, res));
+app.post("/api/launch/count-attestation", (req, res) => void handleCountAttestation(req, res));
 app.get("/api/launch/enrollment", (req, res) => void handleLaunchEnrollmentLookup(req, res));
 app.get("/api/launch/projects", (req, res) => void handleLaunchedProjects(req, res));
 

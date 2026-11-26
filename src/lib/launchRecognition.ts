@@ -38,11 +38,12 @@
  * immutable slots masked out — see below); the immutable VALUES
  * embedded in those slots are constrained separately by the binding
  * checks (escrow / repoId / launcher / feeToken are all read back
- * and compared). The one immutable not compared to a configured
- * value is the claim ledger: a vault built from the approved code
- * with a hostile claim ledger can at worst refuse to claim (the
- * code's only outbound path is into its escrow), never redirect
- * funds.
+ * and compared). Round 4 closed the last un-compared immutable at
+ * the PREPARE step: prepare-launch now validates ALL five bindings
+ * (repo, launcher, escrow, fee token, AND the Bankr claim ledger)
+ * plus the registered fee grant before returning a launch input —
+ * see handlePrepareLaunch in src/api/launchVerify.ts. Registration
+ * remains the second line of defence.
  */
 
 import {
@@ -89,15 +90,17 @@ const VAULT_ABI = parseAbi([
 // overrides the expected hash for deployments that pin it externally;
 // the masking offsets/length stay those of this template.
 export const APPROVED_VAULT_TEMPLATE = {
-  byteLength: 2575,
+  byteLength: 2891,
   immutableOffsets: [
-    [146, 32], [214, 32], [253, 32], [292, 32], [391, 32],
-    [456, 32], [671, 32], [705, 32], [757, 32], [816, 32],
-    [1026, 32], [1413, 32], [1535, 32], [1698, 32], [1833, 32],
+    [146, 32], [214, 32], [253, 32], [325, 32], [391, 32],
+    [456, 32], [671, 32], [705, 32], [764, 32], [809, 32],
+    [1021, 32], [1408, 32], [1530, 32], [1693, 32], [1828, 32],
   ] as Array<[number, number]>,
   /** keccak256 of the artifact's deployedBytecode with the immutable
-   *  slots above zeroed (the template already carries zeroes there). */
-  codehash: "0x23727ce322e32a699207682efe8ae3334274f04345fb6e27288f1bf5e3da161b",
+   *  slots above zeroed (the template already carries zeroes there).
+   *  Regenerated in the round-4 pass (lockAccrued now passes an
+   *  oracle-signed CountAttestation through to the escrow). */
+  codehash: "0x81f3375b5edec3e6b00d9a07fda53a954156a2a6de2320b5a0bd1a70d7032c2b",
 } as const;
 
 /** The expected masked-template hash for an approved vault. */
@@ -166,6 +169,9 @@ export type PreparedLaunchRecord = {
   /** The exact fee recipients the prepared input carries. */
   feeRecipients: LaunchFeeRecipient[];
   vestingBps: 0;
+  /** The fee grant's on-chain pushesPerTranche, verified at
+   *  prepare time against the registered grant (round-4). */
+  feePushesPerTranche?: number;
   preparedAt: string;
 };
 
@@ -262,6 +268,54 @@ export async function readVaultBinding(
   out.feeToken = feeToken ? String(feeToken).toLowerCase() : null;
   out.claimLedger = claimLedger ? String(claimLedger).toLowerCase() : null;
   return out;
+}
+
+// ─── Fee-grant read (Codex round-4, blocker 3) ──────────────────────────
+
+const FEE_GRANT_ABI = parseAbi([
+  "function feeGrants(bytes32 repoId) view returns (address recipient, address token, address vault, uint256 pushesPerTranche, uint256 totalFeeLocked, uint256 totalFeeReleased, uint256 settledCursor, bool registered)",
+]);
+
+export type FeeGrantOnChain = {
+  recipient: string;
+  token: string;
+  vault: string;
+  pushesPerTranche: number;
+  registered: boolean;
+};
+
+/**
+ * Read a repo's registered fee grant from the chain's configured
+ * FeeStreamEscrow. Returns null when no escrow is configured or the
+ * read fails (unprovable — callers that require the grant must
+ * refuse). Prepare-launch uses this to prove the registrar has
+ * ALREADY registered the matching fee grant before any launch
+ * input is returned: deploy vault → registrar registers grant →
+ * prepare verifies grant + bindings → input.
+ */
+export async function readFeeGrant(
+  chain: VestingChainKey,
+  repoIdHex: string,
+): Promise<FeeGrantOnChain | null> {
+  const { cfg, client } = publicClientFor(chain);
+  if (!cfg.feeStreamEscrowAddress) return null;
+  try {
+    const g = await client.readContract({
+      address: cfg.feeStreamEscrowAddress as Address,
+      abi: FEE_GRANT_ABI,
+      functionName: "feeGrants",
+      args: [`0x${repoIdHex.replace(/^0x/, "")}` as Hex],
+    });
+    return {
+      recipient: String(g[0]).toLowerCase(),
+      token: String(g[1]).toLowerCase(),
+      vault: String(g[2]).toLowerCase(),
+      pushesPerTranche: Number(g[3]),
+      registered: g[7] === true,
+    };
+  } catch {
+    return null;
+  }
 }
 
 // ─── Launch-use evidence ─────────────────────────────────────────────────

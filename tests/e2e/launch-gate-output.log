@@ -135,7 +135,7 @@ author: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551594 of 16777216
-  Block #1:            0x50776100b1c43e9739ec61b1a818b965458f34a9084aa01b9d0d386f63eea70b
+  Block #1:            0x3c25239796178cfe1bd0992d4954360dd075f8aa864bd0d60f98a3fd8b15c608
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -149,7 +149,7 @@ PTK: 0x5FbDB2315678afecb367f032d93F642f64180aa3 deployTx: 0x5bebf31074097527093a
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #2:            0x9529f26a09815c21c6ac528b48da1e59047e96af55c28ea08b96af1bae6df57a
+  Block #2:            0xe9a3d262e73f913a658cce3d62337921237bafc98096879e212ff1a550270f60
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -184,7 +184,7 @@ RWD: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 deployTx: 0x5b7587e8cafecb4cb875
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1869326 of 16777216
-  Block #3:            0x7dabefa4aea843b5724b861f76bb284cd2c500b3663f1e633cbc57e0d0b6b484
+  Block #3:            0x4c943d6c6fca1307da5ad2c68944b01e945f11d17aa30e0c166234898960eaac
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -219,7 +219,7 @@ GitEscrow: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 deployTx: 0x970c5e6d3b0825
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            793530 of 16777216
-  Block #4:            0x2fbc03de611e0c9eeb9427fb996abde708ff1476c89aa8fa54466399529629d5
+  Block #4:            0xd213e1a8bc1bf1097fad96249b65da0e3123f8c97ea46940652285fa3794cbad
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -233,7 +233,7 @@ ShipRewards: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9 deployTx: 0xf9bda7b950d8
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #5:            0x5d0dbf26632033bb4ec83ff93b3af2536e5dfbfe232496f30d2ec43a943488f3
+  Block #5:            0x70f136809693d7d63b750bf38e89b12281e4781b4ae34f8174e0533332dd5429
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -247,7 +247,7 @@ mint PTK→recipient tx: 0xee6c2808b4002778359d77436ae2d40bdd47bebc0aaf03ad12e28
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            68445 of 16777216
-  Block #6:            0xe37c5db6b684aeec65df3c54ead1d8128aefe020311b976dc1c315204422b089
+  Block #6:            0xb2f910f4c0a49530b8358f1542a66ccf49302331994e196776c6272de3eeb1f2
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -262,7 +262,7 @@ repoId: 0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46383 of 16777216
-  Block #7:            0x9e9daa17bc6ffb948ea3497d714726ad494e2342783e87a4ffed823c55dabd8d
+  Block #7:            0x413fd4acc5c88560826eca25fbc7e0409e42e8c93855ea87d88f282e38dc04b5
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -276,7 +276,7 @@ approve tx: 0xf6b889b8b1e548e9c34d69b02d4f882bbd1d0ebdfc622d4e28e35c7e030eab43
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            263864 of 16777216
-  Block #8:            0x9c20118c8c69cb12bc26424e0cfb36e7e7e0bc6208bcaf6efc870d97a1a410ae
+  Block #8:            0xda8ae060ab0663206edd9c81b022ed86603928ac75528965f33977d78a6d8db6
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -296,7 +296,7 @@ on-chain grant: recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC totalLocked
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            46844 of 16777216
-  Block #9:            0x350a17ff27a2a612b5f281d4b9b01d91eb97e87fcadd0402ee25acfaf1143ad8
+  Block #9:            0x7910ea62e12e77116c824c4ee338bd313a7610e7da2808e5d9aada5296119127
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -384,7 +384,7 @@ recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC author=0x90F79bf6EB2c4f8703
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            51309 of 16777216
-  Block #10:           0x73fa81726b55695f5fd0e70427fa53d2152352d6b2ac81ce452209afeee155c7
+  Block #10:           0x5142a6e022075f791c3d3906362c4e215424fe7934bd6a8272f23f2fa2c7e599
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -397,7 +397,7 @@ recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC author=0x90F79bf6EB2c4f8703
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #11:           0x284dd341dbda5f379ee8c37c44512afe87f76e20f2d17190717da47c21241823
+  Block #11:           0x1268da1bb4e2f46e7f357cfe3fa83050c1c2ce1b3886788a305290d4af2e4020
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -410,12 +410,12 @@ recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC author=0x90F79bf6EB2c4f8703
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            229652 of 16777216
-  Block #12:           0x13346a6b5a6d368385dac07d1d622e08043f5e29bfadb9d1951939e1970d1a03
+  Block #12:           0xe215d2743e77de961dedbaa90763e6dfac3b8be058951d965b6862aa35307488
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
 [32meth_getBlockByNumber[0m
-repo: testauthor/orderrepo repoId: 0x0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f blockTimestamp: 1795660560
+repo: testauthor/orderrepo repoId: 0x0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f blockTimestamp: 1795663764
 LOCK_TX=0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f896323600fa15
 pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f896323600fa15
 === 3c. recognition fixture (round-3: prepared record now REQUIRED for the stamp) ===
@@ -472,7 +472,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551606 of 16777216
-  Block #13:           0xe0291cee474145c64a38f1b574bbe68410ccc6e1c03e8c668c0ef18b9928515c
+  Block #13:           0x91794725b4a7b95cf79287c5f5e02657ca028697086c998fd3c91d0b3bc16501
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -505,7 +505,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1792931 of 16777216
-  Block #14:           0xc5fbbe228f8464b15ab042c529f2e7f6870648686329bf3572fe536e369ceb45
+  Block #14:           0x1ce455abd9c3a91cdaa0663451d3500911164eec0f0e015e99aa6de298f9ae5d
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -534,11 +534,11 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
 [32meth_sendTransaction[0m
   Contract deployment: FeeStreamEscrow
   Contract address:    0x610178da211fef7d417bc0e6fed39f05609ad788
-  Transaction:         0x408ccc85d6f1de9674c9baa452ca99429ce29ff7df10eca964784ef93d9eecb6
+  Transaction:         0x41ec020f849d928a6110e615e6e1a295dfba25c5e44676bf16128a47544127be
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
-  Gas used:            1361632 of 16777216
-  Block #15:           0xb51582b8b624025e6cf72105b800cf3306a174fdb7d85bd60b9a0bcc0cd10c23
+  Gas used:            1905421 of 16777216
+  Block #15:           0x0da0c668e198342ad93f7bb1cc3b319c26e230453d428966bd83e76ae13f1e34
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -567,11 +567,11 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
 [32meth_sendTransaction[0m
   Contract deployment: MockFeeClaimSource
   Contract address:    0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
-  Transaction:         0xbbafe0c31e25b40a6385d1b6454c48edcabb8c2960b43b3efbe5d991597e4201
+  Transaction:         0xbf19bf29c54b4ff522e612b3b83ca77c8f6e42a8c38049c2c4343dd7e7660955
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            353762 of 16777216
-  Block #16:           0x8833c762d21fdb5adf0df5a42f85e40cc5b655bdc3bc725927e8a9725587506b
+  Block #16:           0x8a65698c0ff4a373bfd054daa802f1cc6beda0590e86d4d6503751203996be72
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -600,11 +600,11 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
 [32meth_sendTransaction[0m
   Contract deployment: MockBankrLaunchRecord
   Contract address:    0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0
-  Transaction:         0x863d2833fbd696f769fe0155068cfdc769b2c5370ece9121ac69e983bb901b94
+  Transaction:         0x5c6e078f823cc754d00aac65f171f03aee12d94e40ae7892cde566e24726b0e3
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            381277 of 16777216
-  Block #17:           0xe36cf7ab3bca87fa9e5d86ae001750673468222f0b8e50ff9a8581b235976d41
+  Block #17:           0xb60b82249f4911012c6f2f2533be4866c7d62199db32e628876de4a01337dfb8
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -633,11 +633,11 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
 [32meth_sendTransaction[0m
   Contract deployment: FeeLockVault
   Contract address:    0x0dcd1bf9a1b36ce34237eeafef220932846bcd82
-  Transaction:         0xce6d7572ae641c7a01fb37d8e8147d209f050c6335854ce1b7324b3d0e26edf0
+  Transaction:         0x17178665e97d6c191c02ba22d1bbe5c3cd061ff73db290d7231a8117d3b84e77
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
-  Gas used:            666216 of 16777216
-  Block #18:           0x1fb30be735473af716c7eacc669045095682d07bd651b3180986c5cfcb7d3247
+  Gas used:            734540 of 16777216
+  Block #18:           0x2d71390d982d29faf427a49d045fb37b277888ec9a38d2dd657c1309571286a3
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -645,11 +645,11 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
 [32meth_sendTransaction[0m
   Contract deployment: FeeLockVault
   Contract address:    0x9a676e781a523b5d0c0e43731313a708cb607508
-  Transaction:         0xc35b812fb101be0cef713ff70f5eb1121fc9e24bdcb8f61a988a14029f66e050
+  Transaction:         0x579c15fc8363bd4d126e2a457c30603c578509154edcea077ae4ff73a8f40814
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
-  Gas used:            666216 of 16777216
-  Block #19:           0xacf3de528316131dc66d40b1dc6a870a5895547089dfdacef4a93e7cb5918df9
+  Gas used:            734540 of 16777216
+  Block #19:           0xce88638fb077e9e44d4f9b871d67e108cacf0f3416eb16482de60424a62893cf
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -657,11 +657,11 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
 [32meth_sendTransaction[0m
   Contract deployment: FeeLockVault
   Contract address:    0x0b306bf915c4d645ff596e518faf3f9669b97016
-  Transaction:         0x36982afc43abd17c74a43c105e576daf88dc449e6936fd591eb98b8cb32542f8
+  Transaction:         0x3c6c080e28f65e830f5cae8bcde679de0e2b2f2a8c8d9d0d2fc3e9e0c93d451f
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
-  Gas used:            666216 of 16777216
-  Block #20:           0x7007f7b1662a105a3d0a1b36b165a3a2b8c90a79f3773ec86fb49de9218db55e
+  Gas used:            734540 of 16777216
+  Block #20:           0x9ba1be14b8cfb5c5db6b1d5d4dee6ccb3830c1c9f3627385e0b004799209ea29
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -669,11 +669,11 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
 [32meth_sendTransaction[0m
   Contract deployment: FeeLockVault
   Contract address:    0x959922be3caee4b8cd9a407cc3ac1c251c2007b1
-  Transaction:         0xb755eae3106f5a01776be133e2373b0a1297b7aca3da9e62724f24506f5bb98c
+  Transaction:         0x97f9ad8001e09b8aac1bc4ec9a620a3d4a2a292f52a4c9f9d11e54efc56e4f78
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
-  Gas used:            666216 of 16777216
-  Block #21:           0xb0bb58f4348ef4bb6b39a00b156fc1d7fd05b909d2c47e6f4a1e8c4b5b233d36
+  Gas used:            734540 of 16777216
+  Block #21:           0x671c7654c140681e9970dda5142a6a3c81aba75d8bc1444cd26c154a391bd07c
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -681,47 +681,245 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
 [32meth_sendTransaction[0m
   Contract deployment: FeeLockVault
   Contract address:    0x9a9f2ccfde556a7e9ff0848998aa4a0cfd8863ae
-  Transaction:         0x8d136bdca6ee7c6085f843f6ce4965e1e8adbbbd83b8ec6d7b379aa770d5d289
+  Transaction:         0x3edfbd9794c06118ece117f844e9661a0b83ed1f248eb0c3a754b41ba41096f2
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
-  Gas used:            666216 of 16777216
-  Block #22:           0xeca0d733245199bac93ac272a4b228e6d157e4ea94ef406baf37ad23c75a9bec
+  Gas used:            734540 of 16777216
+  Block #22:           0x048959f07c776e0a46fff7bec1c5e2195842367de1b22ef4fcc75c2ad2fdaadd
+
+[32meth_getTransactionByHash[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       FeeStreamEscrow#registerFeeGrant
+  Transaction:         0xb3030847df43c5998dff3369cb59708c7633e32cde920cafe0e755df32491b1d
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+  Value:               0 ETH
+  Gas used:            151559 of 16777216
+  Block #23:           0xf1c999e79d06e944406d647493e67412785baad1abfa893122f37b1334c8fb05
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       FeeStreamEscrow#registerFeeGrant
+  Transaction:         0xe563c31b4cc4032ea2e06b60776eb721659c1f58fffb3d8ba02900b1b0bf4534
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+  Value:               0 ETH
+  Gas used:            151559 of 16777216
+  Block #24:           0x7049735e557d1081ad4a0253f8336b9e61a506a3c7a09dad6ec0f1453e8c779c
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       FeeStreamEscrow#registerFeeGrant
+  Transaction:         0x678c62171446b72b6918d4ed6ad29e9ed826df40a8ab4efc149d2174d22043cb
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+  Value:               0 ETH
+  Gas used:            151559 of 16777216
+  Block #25:           0xda6856f7eb8897baff7abf699a4a7f210d9bd3fcb01ec539f8b81e06b3549d2c
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       FeeStreamEscrow#registerFeeGrant
+  Transaction:         0x00eb701da363291f2a66df05afe9c27a1a87abcf60886c1c71c25b055592a1a3
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+  Value:               0 ETH
+  Gas used:            151559 of 16777216
+  Block #26:           0xf09b809ac6799d6e8ae8a31ec1dc057b8e2972b478936da1ea574e3fac48a3c4
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       FeeStreamEscrow#registerFeeGrant
+  Transaction:         0x1273c0ee836569d56acede446b83afd137d001d916db489d7a186200eb7dbf08
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+  Value:               0 ETH
+  Gas used:            151559 of 16777216
+  Block #27:           0xcd04d4c91f94da4a0228f2cdae53851d16f835a8405e22587a944c915a853f2e
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: FeeLockVault
+  Contract address:    0x322813fd9a801c5507c9de605d63cea4f2ce6c44
+  Transaction:         0xf1f6f2951a45d92a3b1d9c1af2061d49907ab619eea6b3efd572bd1c8c7e35d0
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            734540 of 16777216
+  Block #28:           0xae17ef7aa3f765802e7c30b3bc496ac6255752e24e4c839bc6c5a858b4635d50
+
+[32meth_getTransactionByHash[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: FeeLockVault
+  Contract address:    0xa85233c63b9ee964add6f2cffe00fd84eb32338f
+  Transaction:         0x5fe2594bf75f7ce2d275439b1ccac1fc8a339c108dccd90103d2946c14167a74
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            734540 of 16777216
+  Block #29:           0x48214b4e739f0fe527b590721e9e3fee899ad19e19cd4916a14abd4fe2919517
+
+[32meth_getTransactionByHash[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: FeeStreamEscrow
+  Contract address:    0x4a679253410272dd5232b3ff7cf5dbb88f295319
+  Transaction:         0x681e0d843679c3b6bc76c1b4a95dca7f0cdbccf2d30e8f5679884f0b35b45f10
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            1905421 of 16777216
+  Block #30:           0xcabdb7e838407c616b00e800b3d50b3ab8aec80a0895b2bcc54c9ac8630a4d44
+
+[32meth_getTransactionByHash[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: FeeLockVault
+  Contract address:    0x7a2088a1bfc9d81c55368ae168c2c02570cb814f
+  Transaction:         0xff22a7e8afb51a77a2bada43e55d92b545b03135cb3547e81d4c1f4df9b46472
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            734528 of 16777216
+  Block #31:           0x2962a5fb8c858a2da92d8b4693e9e5f9cabbb44454dd508e893b63750ec4216c
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract deployment: MockERC20
-  Contract address:    0x68b1d87f95878fe05b998f19b66f4baba5de1aed
-  Transaction:         0xf72b6c84233608ffd63be0b38cb9eb29b38cf4a2e1dadefa8b3411582bd613d2
+  Contract address:    0x09635f643e140090a9a8dcd712ed6285858cebef
+  Transaction:         0x1077891e2cd56f7e2dff131398533dc0189c814ab85353a3d5ad383b9468f167
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            551558 of 16777216
+  Block #32:           0xf05bc102f04c70933b6143ed9e7ff93722156c06dea66e1f2952c58ee0afd0a5
+
+[32meth_getTransactionByHash[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: FeeLockVault
+  Contract address:    0xc5a5c42992decbae36851359345fe25997f5c42d
+  Transaction:         0xa821992d9b0d40d647fdf63c55112b617cd2e126047ba2d6fce35a83bf882a91
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            734516 of 16777216
+  Block #33:           0xc707f2ebbdba4e2bb4d6451c7cb713485f188b2fe45a0e892b6c914c39b90ab3
+
+[32meth_getTransactionByHash[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: MockFeeClaimSource
+  Contract address:    0x67d269191c92caf3cd7723f116c85e6e9bf55933
+  Transaction:         0x195e8b32b29782bfca407f61e60c45f5fd3515cd4512f26bafa6545b887bd723
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            353762 of 16777216
+  Block #34:           0x2c54db0693ef5cb482bcf5474050427e784d7f619e6a7f6fcc65a937eaeb983f
+
+[32meth_getTransactionByHash[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: FeeLockVault
+  Contract address:    0xe6e340d132b5f46d1e472debcd681b2abc16e57e
+  Transaction:         0xd46551ec03c91c2da13af7337cf663ab174548254f0f2ea8bd8f7bbf1bfd88cb
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            734528 of 16777216
+  Block #35:           0xaace8e9600ceeea5c3a06d3cc8fcc9838a21a83ec94e6485a9d9aaa30f010bf2
+
+[32meth_getTransactionByHash[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: FeeLockVault
+  Contract address:    0xc3e53f4d16ae77db1c982e75a937b9f60fe63690
+  Transaction:         0x0aa4091e7d0564152436131196aeb3753e848a4a0fe3995cb6d83dd6c0b57bef
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            734528 of 16777216
+  Block #36:           0x207556d139a41441afbccdf28229646b74896c6f7dc4e57d6e40bb5a5417f945
+
+[32meth_getTransactionByHash[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: FeeLockVault
+  Contract address:    0x84ea74d481ee0a5332c457a4d796187f6ba67feb
+  Transaction:         0x91e074a4fd7d25fc2041b23d6bfa039bd339f64035dcc7e3eb8ab7eeac045d2a
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            734540 of 16777216
+  Block #37:           0x13b64d3fd38cb3c9d57ca8acb107f88c4383dfbf7fdec4126c300363d312e834
+
+[32meth_getTransactionByHash[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       FeeStreamEscrow#registerFeeGrant
+  Transaction:         0x1a84253d7e997c9bbcb5557caf74de27509497373212fbebe33503ff41dbc016
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+  Value:               0 ETH
+  Gas used:            151559 of 16777216
+  Block #38:           0xf6f4f2b8018b7b6b39ff2a0feb0fd7e116a379603160fcc3752e2a771df831d9
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: MockERC20
+  Contract address:    0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+  Transaction:         0x81fc687b7d0ed19f4605ad032958611db5fd6dbc28e6f1115ffbbba8d6199bef
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #23:           0xc92c410d7385961c5b12070f68456ae30efd68c25b4f6d5757e936af993e2080
+  Block #39:           0x29060622d842d97dbb8dc2064e2d7f1b1e472a9357c02bb2a6b7f3d7081d3156
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract deployment: MockERC20
-  Contract address:    0x3aa5ebb10dc797cac828524e59a333d0a371443c
-  Transaction:         0x5c10e318bb9d9610b7924c6f98c44c468878e977170ce54c3562496263f7c989
+  Contract address:    0x1613beb3b2c4f22ee086b2b38c1476a3ce7f78e8
+  Transaction:         0xcb7a20be2473a5f86a95d5587a3f0bf4e4ac6aed31a2450d89ed41a6f0668315
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #24:           0x6877f9c9bb40da87ceaa60fd64f95e0f3bf0ba32c5efa47fc5f99226ac1daaf4
+  Block #40:           0x23f87eb2bdf2c261fe16f7d4a5050aa58116ecfbaa94f67f1c0be5506caf6b45
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#mint
-  Transaction:         0x5b4bac1244ea14612bade9e6155b75e0c71fab353100f46de36f1b9962c33c14
+  Transaction:         0xa08dc0dcf037a392502579b6476ae38aa247f0c3d386a246228e5935bfbb9d10
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0x68b1d87f95878fe05b998f19b66f4baba5de1aed
+  To:                  0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #25:           0x31c04e1aba53f93b6a3ffa77067c9b7236cf0caa585cbf9e6d6fe69a3298a271
+  Block #41:           0xc0fab059c5f2eb92473b69941ee9d4eb57c72e62cd71cb0800443035a636e835
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -729,12 +927,12 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#mint
-  Transaction:         0x6ec889c0a2e3106ab9f868e22a0972893c83c5504fcd508d0d56899402fe8fd7
+  Transaction:         0xe5be064238d7f91901784d97baaa4e4d16196012485904dfc49f7de51791b5a1
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0x3aa5ebb10dc797cac828524e59a333d0a371443c
+  To:                  0x1613beb3b2c4f22ee086b2b38c1476a3ce7f78e8
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #26:           0xbffbe26808ceb194caad75c51f6c3cac56b9e2c6a00ea6ebc8137bff395ab64b
+  Block #42:           0x5c159e95b4131d65d5e11e1eebb757d98eb48aa2c2e6a5b6b003da13cbab034a
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -742,12 +940,12 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockBankrLaunchRecord#setLaunch
-  Transaction:         0x5a890f236df8310f237836f1a323a6bdae4714460478aeb749bc6cc62ee89cad
+  Transaction:         0xafc8c16ded90e960e7a966894227cc43aa39e91b09abf0a64f0579dc39b4b3b2
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0
   Value:               0 ETH
   Gas used:            160248 of 16777216
-  Block #27:           0x21115d7e2fdb09f97f2d938f72a60a8ddfad569b1a80ae05951d952458b70bb9
+  Block #43:           0x9d671f791053e931faa56411f7cf1a8347b66d8222b02be438070def82e2e974
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -755,12 +953,12 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockBankrLaunchRecord#setLaunch
-  Transaction:         0x1384a155bca37c920836d7a240afea6374f12a7b90d9bc7990acd2b5d91e62fa
+  Transaction:         0xafdf0741015d7f13a3262d7c3c166d491cd0f933683e2313effbfb37c0de25eb
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0
   Value:               0 ETH
   Gas used:            160248 of 16777216
-  Block #28:           0x592819759bb99c7dc84d5398f5398564af93645e902ae37d9f6c7ee573791735
+  Block #44:           0x6c1524f712840f3121da8803c043c9caa4b1484d2b223ecf4e8c83737b3c565a
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -768,16 +966,16 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockBankrLaunchRecord#setLaunch
-  Transaction:         0x9c43be3ef1dd70674f9074ff09ec604184faa50a0ee4936829723ed7df822588
+  Transaction:         0x44ec53098aa3d57666a503cc16348cf2f77b8fb8bac3e837e1b029575b02dfd7
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0
   Value:               0 ETH
   Gas used:            160248 of 16777216
-  Block #29:           0x8cc646884e15dd03d46722e0d79396005de948d5fa903c4e2b5b35e9721a96e4
+  Block #45:           0x17f85bfbf9ee581d4d9b76af7c9dd68fd43b535a083117e1ba6aa20263fcf9b3
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
-GATE_RECOGNITION_STATE {"escrowV2":"0x8A791620dd6260079BF849Dc5567aDC3F2FdC318","feeStreamEscrow":"0x610178dA211FEF7D417bC0e6FeD39F05609AD788","bankrRecord":"0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0","vaultLaunch":"0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82","vaultChain":"0x9A676e781A523b5d0C0e43731313A708CB607508","vaultStale":"0x0B306BF915C4d645ff596e518fAf3F9669b97016","vaultOrder":"0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1","vaultNolock":"0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE","ptk":"0x5FbDB2315678afecb367f032d93F642f64180aa3","ctk":"0x68B1D87F95878fE05B998F19b66F4baba5De1aed","stk":"0x3Aa5ebB10DC797CAC828524e59A333d0A371443c","weth":"0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","deployer":"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266","oracle":"0x70997970C51812dc3A010C7d01b50e0d17dc79C8"}
+GATE_RECOGNITION_STATE {"escrowV2":"0x8A791620dd6260079BF849Dc5567aDC3F2FdC318","feeStreamEscrow":"0x610178dA211FEF7D417bC0e6FeD39F05609AD788","bankrRecord":"0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0","claimSource":"0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e","vaultLaunch":"0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82","vaultChain":"0x9A676e781A523b5d0C0e43731313A708CB607508","vaultStale":"0x0B306BF915C4d645ff596e518fAf3F9669b97016","vaultOrder":"0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1","vaultNolock":"0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE","vaultBindRepo":"0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44","vaultBindLauncher":"0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f","vaultBindEscrow":"0x7a2088a1bFc9d81c55368AE168C2C02570cB814F","vaultBindToken":"0xc5a5C42992dECbae36851359345FE25997F5C42d","vaultBindLedger":"0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E","vaultNogrant":"0xc3e53F4d16Ae77Db1c982e75a937B9f60FE63690","vaultGrantmis":"0x84eA74d481Ee0A5332c457a4d796187F6Ba67fEB","ptk":"0x5FbDB2315678afecb367f032d93F642f64180aa3","ctk":"0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9","stk":"0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8","weth":"0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","deployer":"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266","oracle":"0x70997970C51812dc3A010C7d01b50e0d17dc79C8"}
 feeStreamEscrow=0x610178dA211FEF7D417bC0e6FeD39F05609AD788 vaultLaunch=0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82
 === 4. fixture GitHub API ===
 [fixture] GitHub API fixture listening on http://127.0.0.1:8977
@@ -791,9 +989,9 @@ server up
 server-side repoId (no 0x): 533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
 on-chain repoId matches: true
 grant saved for testowner/testrepo
-linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T02:36:03.766Z","source":"signed"}]
-linked wallets for @testauthor: [{"wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","linkedAt":"2026-11-26T02:36:05.718Z","source":"signed"},{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T02:36:03.766Z","source":"signed"}]
-linked wallets for @gregory: [{"wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","linkedAt":"2026-11-26T02:36:05.770Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T03:29:29.866Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","linkedAt":"2026-11-26T03:29:31.295Z","source":"signed"},{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T03:29:29.866Z","source":"signed"}]
+linked wallets for @gregory: [{"wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","linkedAt":"2026-11-26T03:29:31.318Z","source":"signed"}]
 [31meth_fillTransaction - Method not supported[0m
 [32meth_getTransactionCount[0m
 [32meth_getBlockByNumber[0m
@@ -801,14 +999,14 @@ linked wallets for @gregory: [{"wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e1
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       MockERC20#mint
-  Transaction:         0x127772c38162be63e505f08f6f1aabb1ddf39a7797645a4af3ef05489e61ecdd
+  Transaction:         0x718ac644fffb5d1fc42da2e1c3eb63b39f115114553a0c694ccedd60b0b70bf7
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            51321 of 51321
-  Block #30:           0xacda54ffb6c4e0bb1454590fa4ef1fb001ef168fa81c91dd9a97c3fcf69b0166
+  Block #46:           0x6382c958aba9f2631ecb26689c7b04d636b2831add720225f7c587d40e60aba7
 
-minted 100 PTK -> recipient, tx: 0x127772c38162be63e505f08f6f1aabb1ddf39a7797645a4af3ef05489e61ecdd
+minted 100 PTK -> recipient, tx: 0x718ac644fffb5d1fc42da2e1c3eb63b39f115114553a0c694ccedd60b0b70bf7
 === 7. verify: app NOT installed -> refused, no token ===
 [fixture] GET /repos/testauthor/notinstalled/installation -> 404
 {"ok":false,"error":"GitHub App is not installed on testauthor/notinstalled — install the Proof of Dev GitHub App and select this repository, then verify again","code":"LAUNCH_APP_NOT_INSTALLED","recognition":"No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment."}
@@ -834,7 +1032,7 @@ PASS: unlinked issued no token
 [fixture] GET /repos/testauthor/launchrepo/installation -> 200
 [fixture] GET /repos/testauthor/launchrepo -> 200
 [fixture] GET /repos/testauthor/launchrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9sYXVuY2hyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NjYwNTY2LCJleHAiOjE3OTU2NjE0NjYsIm5vbmNlIjoiYjhiNDBiYzY0Y2VmZWJmNTQ2OTc3YWU4NjVkZjRjNWMifQ.VbbNBRcfyU7LUk6YgGzpQLgTSyZlo1zR0QpbgprsXFg","expiresAt":"2026-11-26T02:51:06.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9sYXVuY2hyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NjYzNzcxLCJleHAiOjE3OTU2NjQ2NzEsIm5vbmNlIjoiODhmNzU1ZWU2OTBmY2I4YmU0NzAxZDkxYmI3OWQyOTkifQ.y0UNmtRjaMV5bTug8AzizVC5bQNN4GvOINnKTnjQj6w","expiresAt":"2026-11-26T03:44:31.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: happy verify ok
 PASS: happy verify has token
 token captured (354 chars)
@@ -908,12 +1106,12 @@ token captured (354 chars)
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#mint
-  Transaction:         0xe1b9ee83f6b6748251fdf1e3196322c782f161dca87547d157566d18215404bc
+  Transaction:         0x4bb0cec053f25304f7b461c321b92dd49cc5e23d2fd9bc815ffb0efddb95e160
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            34209 of 16777216
-  Block #31:           0x4cddaaad6c652259ec969bcf53c99b1f0e3777b671d8c8b96c43016f628d3810
+  Block #47:           0x83c719238e99b95a20639d5c2a06522b78d62925e2cc427555d7c87d6abd59f2
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -921,12 +1119,12 @@ token captured (354 chars)
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#approve
-  Transaction:         0x3ee869e3e3fe1b3747c3feb5b312ac79d2ec3daf53d7bdc3ae504db917873e8c
+  Transaction:         0xb2f7fb5817c9ec72e10b62144b5d97ff4dddb376647a4edfa7f60b4d8223135e
   From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #32:           0x6c2d682781596233d83defb7ea5e1e842fef9d2584f6a6e649cd2b113f0253e3
+  Block #48:           0x55baca447bd307c89eee54d25442470c0498304b9bbc3e886c71e673a8161068
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -934,19 +1132,19 @@ token captured (354 chars)
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       GitEscrow#lock
-  Transaction:         0x6fe3312e02cf2d89cd4439ca13d6107af9b4240d5da72cb16def214f86f28680
+  Transaction:         0xb5efc0202606115e56129552e58946a6e6297915aa910e797792b334861359d7
   From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            234452 of 16777216
-  Block #33:           0x6be0aa1269a2ac9e69f20b8edff2697b106e9cfa3822d444bf64d4fc522ba7ef
+  Block #49:           0xa45e444736a60e3e7b1033058fe63620d975605c7044f7e84defaa00bb2d73c9
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
 [32meth_getBlockByNumber[0m
-repo: testauthor/launchrepo repoId: 0xcff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba blockTimestamp: 1795660595
-LOCK_TX=0x6fe3312e02cf2d89cd4439ca13d6107af9b4240d5da72cb16def214f86f28680
-post-verification lock tx: 0x6fe3312e02cf2d89cd4439ca13d6107af9b4240d5da72cb16def214f86f28680
+repo: testauthor/launchrepo repoId: 0xcff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba blockTimestamp: 1795663814
+LOCK_TX=0xb5efc0202606115e56129552e58946a6e6297915aa910e797792b334861359d7
+post-verification lock tx: 0xb5efc0202606115e56129552e58946a6e6297915aa910e797792b334861359d7
 === 11. prepare-lock: NO token -> refused ===
 {"ok":false,"error":"Launch verification required — no verification token presented. Verify first: POST /api/launch/verify-github (or the MCP verify_github tool). An agent's assertion that the GitHub App is installed is not verification.","code":"LAUNCH_VERIFICATION_REQUIRED","verifyFirst":"POST /api/launch/verify-github { githubLogin, repo, wallet, chain }","recognition":"No verification, no launch recognition: the grant (if any) registers as an ordinary vesting lock — no launchVerified stamp, no verified-launch listing, no ShipRewards launcher enrolment."}
 PASS: no-token prepare refused
@@ -969,12 +1167,12 @@ PASS: expired token refused
 [32meth_accounts (2)[0m
 [32meth_accounts (3)[0m
 [32meth_call[0m
-  Contract call:       MockERC20#decimals
+  Contract call:       MockERC20#symbol
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
 
 [32meth_call[0m
-  Contract call:       MockERC20#symbol
+  Contract call:       MockERC20#decimals
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
 
@@ -1062,7 +1260,12 @@ PASS: garbage token register refused
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x0dcd1bf9a1b36ce34237eeafef220932846bcd82
 
-{"ok":true,"prepared":true,"repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chain":"base","githubLogin":"testauthor","feeLockVault":"0x0dcd1bf9a1b36ce34237eeafef220932846bcd82","launchInput":{"name":"Launch Token","symbol":"LTK","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x0dcd1bf9a1b36ce34237eeafef220932846bcd82","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."}
+[32meth_call[0m
+  Contract call:       FeeStreamEscrow#feeGrants
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+
+{"ok":true,"prepared":true,"repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chain":"base","githubLogin":"testauthor","feeLockVault":"0x0dcd1bf9a1b36ce34237eeafef220932846bcd82","feePushesPerTranche":2,"launchInput":{"name":"Launch Token","symbol":"LTK","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x0dcd1bf9a1b36ce34237eeafef220932846bcd82","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."}
 PASS: step-18 prepare-launch ok
 [32meth_getTransactionReceipt[0m
 [32meth_getTransactionReceipt (2)[0m
@@ -1118,11 +1321,11 @@ PASS: step-18 prepare-launch ok
 [fixture] GET /repos/testauthor/launchrepo -> 200
 [register] New github vesting grant for testauthor/launchrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
 [register] Verified launcher @testauthor enrolled for ShipRewards on testauthor/launchrepo
-{"ok":true,"repoId":"cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba","grant":{"repoId":"cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba","repoFullName":"testauthor/launchrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x6fe3312e02cf2d89cd4439ca13d6107af9b4240d5da72cb16def214f86f28680","installationId":777,"launchVerified":true,"launchVerifiedLogin":"testauthor","launcherRewardEnrolled":true,"feeLockVault":"0x0dcd1bf9a1b36ce34237eeafef220932846bcd82","status":"active","streaming":false,"createdAt":"2026-11-26T02:36:10.801Z","updatedAt":"2026-11-26T02:36:10.801Z"},"lockPath":"/lock/testauthor/launchrepo","lockUrl":"http://localhost:5173/lock/testauthor/launchrepo"}
+{"ok":true,"repoId":"cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba","grant":{"repoId":"cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba","repoFullName":"testauthor/launchrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0xb5efc0202606115e56129552e58946a6e6297915aa910e797792b334861359d7","installationId":777,"launchVerified":true,"launchVerifiedLogin":"testauthor","launcherRewardEnrolled":true,"feeLockVault":"0x0dcd1bf9a1b36ce34237eeafef220932846bcd82","status":"active","streaming":false,"createdAt":"2026-11-26T03:29:35.973Z","updatedAt":"2026-11-26T03:29:35.973Z"},"lockPath":"/lock/testauthor/launchrepo","lockUrl":"http://localhost:5173/lock/testauthor/launchrepo"}
 PASS: verified register ok
 PASS: grant stamped launchVerified
 PASS: grant stamped launcherRewardEnrolled
-{"ok":true,"repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":true,"enrollment":{"repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","githubLogin":"testauthor","verificationNonce":"b8b40bc64cefebf546977ae865df4c5c","chainId":8453,"enrolledAt":"2026-11-26T02:36:10.802Z"}}
+{"ok":true,"repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":true,"enrollment":{"repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","githubLogin":"testauthor","verificationNonce":"88f755ee690fcb8be4701d91bb79d299","chainId":8453,"enrolledAt":"2026-11-26T03:29:35.975Z"}}
 PASS: enrolment record present
 PASS: enrolment ties the login
 PASS: enrolment ties the token id (nonce)
@@ -1133,7 +1336,7 @@ PASS: enrolment ties the token id (nonce)
 [fixture] GET /repos/testauthor/otherrepo/installation -> 200
 [fixture] GET /repos/testauthor/otherrepo -> 200
 [register] New github vesting grant for testauthor/otherrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"18f9441b9c2c234baaaf3859b2ca5eec3d28b9b7b9b8f378868b67bcd6d9ce8d","grant":{"repoId":"18f9441b9c2c234baaaf3859b2ca5eec3d28b9b7b9b8f378868b67bcd6d9ce8d","repoFullName":"testauthor/otherrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T02:36:10.869Z","updatedAt":"2026-11-26T02:36:10.869Z"},"lockPath":"/lock/testauthor/otherrepo","lockUrl":"http://localhost:5173/lock/testauthor/otherrepo"}
+{"ok":true,"repoId":"18f9441b9c2c234baaaf3859b2ca5eec3d28b9b7b9b8f378868b67bcd6d9ce8d","grant":{"repoId":"18f9441b9c2c234baaaf3859b2ca5eec3d28b9b7b9b8f378868b67bcd6d9ce8d","repoFullName":"testauthor/otherrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T03:29:36.065Z","updatedAt":"2026-11-26T03:29:36.065Z"},"lockPath":"/lock/testauthor/otherrepo","lockUrl":"http://localhost:5173/lock/testauthor/otherrepo"}
 PASS: unverified register ok (legacy path)
 PASS: unverified grant NOT stamped enrolled
 {"ok":true,"repo":"testauthor/otherrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":false,"enrollment":null}
@@ -1213,7 +1416,7 @@ PASS: token reuse across calls within TTL ok
 [fixture] GET /repos/testauthor/orderrepo/installation -> 200
 [fixture] GET /repos/testauthor/orderrepo -> 200
 [fixture] GET /repos/testauthor/orderrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/orderrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9vcmRlcnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjA1NzUsImV4cCI6MTc5NTY2MTQ3NSwibm9uY2UiOiIwODk3YWRjNjA2ODE0OTM5OGIwM2QyNjZiMGRiOWEwYyJ9.G2GTzMxk34hrNidsetuQW0ayO33bYB2EszP5aNBhrO0","expiresAt":"2026-11-26T02:51:15.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/orderrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9vcmRlcnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjM3ODAsImV4cCI6MTc5NTY2NDY4MCwibm9uY2UiOiI2YzIxMGE2ZmI1OWI2Mzk3ODlkNjkwOTM5ZmZkNjc5NiJ9.xVFsJVYZ6Y0xyHkG0nzKgpKyFS2IMk2aWKxUr4jsQjc","expiresAt":"2026-11-26T03:44:40.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: orderrepo verify ok
 [32meth_getCode[0m
 [32meth_call[0m
@@ -1241,7 +1444,12 @@ PASS: orderrepo verify ok
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x959922be3caee4b8cd9a407cc3ac1c251c2007b1
 
-{"ok":true,"prepared":true,"repo":"testauthor/orderrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chain":"base","githubLogin":"testauthor","feeLockVault":"0x959922be3caee4b8cd9a407cc3ac1c251c2007b1","launchInput":{"name":"Order Token","symbol":"ORD","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x959922be3caee4b8cd9a407cc3ac1c251c2007b1","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."}
+[32meth_call[0m
+  Contract call:       FeeStreamEscrow#feeGrants
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+
+{"ok":true,"prepared":true,"repo":"testauthor/orderrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chain":"base","githubLogin":"testauthor","feeLockVault":"0x959922be3caee4b8cd9a407cc3ac1c251c2007b1","feePushesPerTranche":2,"launchInput":{"name":"Order Token","symbol":"ORD","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x959922be3caee4b8cd9a407cc3ac1c251c2007b1","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."}
 PASS: orderrepo prepare-launch ok
 [32meth_getTransactionReceipt[0m
 [32meth_getTransactionReceipt (2)[0m
@@ -1251,7 +1459,7 @@ PASS: orderrepo prepare-launch ok
 [fixture] GET /repos/testauthor/orderrepo/installation -> 200
 [fixture] GET /repos/testauthor/orderrepo -> 200
 [register] New github vesting grant for testauthor/orderrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f","grant":{"repoId":"0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f","repoFullName":"testauthor/orderrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f896323600fa15","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T02:36:15.352Z","updatedAt":"2026-11-26T02:36:15.352Z"},"lockPath":"/lock/testauthor/orderrepo","lockUrl":"http://localhost:5173/lock/testauthor/orderrepo","launchVerification":{"stamped":false,"code":"LAUNCH_ORDERING_PREDATES_VERIFICATION","note":"Lock transaction predates the verification — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Verify first, then lock, then register."}}
+{"ok":true,"repoId":"0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f","grant":{"repoId":"0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f","repoFullName":"testauthor/orderrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f896323600fa15","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T03:29:40.660Z","updatedAt":"2026-11-26T03:29:40.660Z"},"lockPath":"/lock/testauthor/orderrepo","lockUrl":"http://localhost:5173/lock/testauthor/orderrepo","launchVerification":{"stamped":false,"code":"LAUNCH_ORDERING_PREDATES_VERIFICATION","note":"Lock transaction predates the verification — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Verify first, then lock, then register."}}
 PASS: predated-lock register ok (ordinary grant)
 PASS: predated-lock register reports unstamped
 PASS: predated-lock carries the ordering code
@@ -1263,7 +1471,7 @@ PASS: predated-lock launch has no enrolment
 [fixture] GET /repos/testauthor/nolockrepo/installation -> 200
 [fixture] GET /repos/testauthor/nolockrepo -> 200
 [fixture] GET /repos/testauthor/nolockrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/nolockrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ub2xvY2tyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NjYwNTc1LCJleHAiOjE3OTU2NjE0NzUsIm5vbmNlIjoiODhiZjRkM2Y0OTQxNDZmMzdhZDFjNjAwZjJlNzk3NGEifQ.VK-pbLBO1l3CTU1LKx_ZhN0iiE3JRyZ9UQYMRQhibSc","expiresAt":"2026-11-26T02:51:15.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/nolockrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ub2xvY2tyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NjYzNzgwLCJleHAiOjE3OTU2NjQ2ODAsIm5vbmNlIjoiMTJjYTI4ZTAzYTE1ZDY3Y2QyZGYwMDkyNmNiYWRiOWEifQ.gt3RkOG5nIdzkoVUfM8WuPxN3z_ewuDUDOydXf-wxFE","expiresAt":"2026-11-26T03:44:40.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: nolockrepo verify ok
 [32meth_getCode[0m
 [32meth_call[0m
@@ -1291,7 +1499,12 @@ PASS: nolockrepo verify ok
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x9a9f2ccfde556a7e9ff0848998aa4a0cfd8863ae
 
-{"ok":true,"prepared":true,"repo":"testauthor/nolockrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chain":"base","githubLogin":"testauthor","feeLockVault":"0x9a9f2ccfde556a7e9ff0848998aa4a0cfd8863ae","launchInput":{"name":"Nolock Token","symbol":"NLK","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x9a9f2ccfde556a7e9ff0848998aa4a0cfd8863ae","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."}
+[32meth_call[0m
+  Contract call:       FeeStreamEscrow#feeGrants
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+
+{"ok":true,"prepared":true,"repo":"testauthor/nolockrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chain":"base","githubLogin":"testauthor","feeLockVault":"0x9a9f2ccfde556a7e9ff0848998aa4a0cfd8863ae","feePushesPerTranche":2,"launchInput":{"name":"Nolock Token","symbol":"NLK","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x9a9f2ccfde556a7e9ff0848998aa4a0cfd8863ae","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."}
 PASS: nolockrepo prepare-launch ok
 [32meth_getTransactionReceipt[0m
 [32meth_getTransactionReceipt (2)[0m
@@ -1300,7 +1513,7 @@ PASS: nolockrepo prepare-launch ok
 [fixture] GET /repos/testauthor/nolockrepo/installation -> 200
 [fixture] GET /repos/testauthor/nolockrepo -> 200
 [register] New github vesting grant for testauthor/nolockrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"aa8677a880a938ed55dcdc446537b9b32290a7cf96a6d16887bd5bfd61a71278","grant":{"repoId":"aa8677a880a938ed55dcdc446537b9b32290a7cf96a6d16887bd5bfd61a71278","repoFullName":"testauthor/nolockrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T02:36:15.529Z","updatedAt":"2026-11-26T02:36:15.529Z"},"lockPath":"/lock/testauthor/nolockrepo","lockUrl":"http://localhost:5173/lock/testauthor/nolockrepo","launchVerification":{"stamped":false,"code":"LAUNCH_ORDERING_UNPROVABLE","note":"Registration transaction carries no provable lock timestamp (no Locked event) — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Register with the lock transaction itself so ordering (verify → lock) can be proven."}}
+{"ok":true,"repoId":"aa8677a880a938ed55dcdc446537b9b32290a7cf96a6d16887bd5bfd61a71278","grant":{"repoId":"aa8677a880a938ed55dcdc446537b9b32290a7cf96a6d16887bd5bfd61a71278","repoFullName":"testauthor/nolockrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T03:29:40.819Z","updatedAt":"2026-11-26T03:29:40.819Z"},"lockPath":"/lock/testauthor/nolockrepo","lockUrl":"http://localhost:5173/lock/testauthor/nolockrepo","launchVerification":{"stamped":false,"code":"LAUNCH_ORDERING_UNPROVABLE","note":"Registration transaction carries no provable lock timestamp (no Locked event) — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Register with the lock transaction itself so ordering (verify → lock) can be proven."}}
 PASS: unprovable-ordering register ok (ordinary grant)
 PASS: unprovable-ordering reports unstamped
 PASS: unprovable-ordering carries the fail-closed code
@@ -1312,7 +1525,7 @@ PASS: unprovable-ordering launch has no enrolment
 [fixture] GET /repos/gregory/platformrepo/installation -> 200
 [fixture] GET /repos/gregory/platformrepo -> 200
 [fixture] GET /repos/gregory/platformrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"gregory","repo":"gregory/platformrepo","wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6ImdyZWdvcnkiLCJyZXBvIjoiZ3JlZ29yeS9wbGF0Zm9ybXJlcG8iLCJ3YWxsZXQiOiIweDM3NGQ5MWE1Njc0ZmE3Y2Y4NmU3MjUwOTNiNTg0OGI5N2UxZTEzYjQiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjA1NzUsImV4cCI6MTc5NTY2MTQ3NSwibm9uY2UiOiJhNmM3MGExNjU4NDY0MWYwNjQ1NzhkMTZmMDkwZGEyMCJ9.hWZMgapLOqdiM33k1OeMGnCBYbvTaJpKdRXgplRSpWI","expiresAt":"2026-11-26T02:51:15.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"gregory","repo":"gregory/platformrepo","wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6ImdyZWdvcnkiLCJyZXBvIjoiZ3JlZ29yeS9wbGF0Zm9ybXJlcG8iLCJ3YWxsZXQiOiIweDM3NGQ5MWE1Njc0ZmE3Y2Y4NmU3MjUwOTNiNTg0OGI5N2UxZTEzYjQiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjM3ODAsImV4cCI6MTc5NTY2NDY4MCwibm9uY2UiOiIxMWE1NzcyZDEyMmJlODAzMjBiYzMwMmU3MGZlM2YxOSJ9.aUIwLjLh28nrS1FgKsoA39mNzgT9t5qRSTUy1kdNl-0","expiresAt":"2026-11-26T03:44:40.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: gregory verify ok
 {"ok":true,"prepared":true,"repo":"gregory/platformrepo","wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","chain":"base","githubLogin":"gregory","feeLockVault":null,"platformLaunch":true,"launchInput":{"name":"Platform Token","symbol":"PLAT","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input for the platform's own launch. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to Gregory's wallet (the platform share — the scoped raw-wallet exception; launcher launches always use a fee-lock vault). Bankr time-vesting explicitly off (vesting.bps = 0)."}
 PASS: gregory prepare-launch without vault succeeds (platform launch)
@@ -1323,14 +1536,14 @@ PASS: treasury still gets its 2500 on the platform launch
 [fixture] GET /repos/testauthor/launchrepo/installation -> 200
 [fixture] GET /repos/testauthor/launchrepo -> 200
 [fixture] GET /repos/testauthor/launchrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9sYXVuY2hyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NjYwNTc1LCJleHAiOjE3OTU2NjE0NzUsIm5vbmNlIjoiNzEyYjAzOWIxZWRkZTQyYTVjYTMyMjFjMTg3OWQ2NzUifQ.OeaweWof4yabY9FWJ0BFMoD15mOP6zkiv9L3L7OebVo","expiresAt":"2026-11-26T02:51:15.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9sYXVuY2hyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NjYzNzgwLCJleHAiOjE3OTU2NjQ2ODAsIm5vbmNlIjoiMjE4OTEzZDdlOTg4MjNmMDVhMGQ2ZWUwYTE0OTFjMGYifQ.dAjBnCUgkMHXV3M0LL0RnJlGJQeADv3NnKwSfh5qg84","expiresAt":"2026-11-26T03:44:40.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 {"ok":false,"error":"feeLockVault required: a platform launch names the project's FeeLockVault as the launcher-share fee recipient so trading fees auto-lock instead of arriving liquid (Gregory's fee-lock rule). Deploy/register the vault first, then prepare the launch.","code":"LAUNCH_FEE_VAULT_REQUIRED"}
 PASS: non-gregory no-vault prepare refused
 === 27. round-3: valid token + lock but NO prepared record -> UNSTAMPED (LAUNCH_NO_PREPARED_RECORD) ===
 [fixture] GET /repos/testauthor/nopreprepo/installation -> 200
 [fixture] GET /repos/testauthor/nopreprepo -> 200
 [fixture] GET /repos/testauthor/nopreprepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/nopreprepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ub3ByZXByZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NjYwNTc1LCJleHAiOjE3OTU2NjE0NzUsIm5vbmNlIjoiZTA4ZTkwNjZjYzY3YWZmZGQzM2NkNTY0ZjNlMGY5M2QifQ.J5FyF-eaKN8aj2QG1WCtcW4jAO5zloFVqRgF_Qqu3hE","expiresAt":"2026-11-26T02:51:15.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/nopreprepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ub3ByZXByZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NjYzNzgxLCJleHAiOjE3OTU2NjQ2ODEsIm5vbmNlIjoiZDM4MTUyNTY4M2QyNjc2YmFmNzFmMzFkYWY0MzkwNTUifQ.FCfS4T6bB1evnyrVRn9Bad_DVYhYW_WAA-l813PB_Rg","expiresAt":"2026-11-26T03:44:41.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: nopreprepo verify ok
 [32meth_chainId[0m
 [32meth_accounts[0m
@@ -1401,12 +1614,12 @@ PASS: nopreprepo verify ok
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#mint
-  Transaction:         0x36126e7ff3df4af717008f55d362dade40fd6f15b9bf7a37572f928a70408de0
+  Transaction:         0xd9df2f5b5b06eeb000f219e95f98332708f71bc287a455cd7f69421a1a326ba6
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            34209 of 16777216
-  Block #34:           0x871fbe9affae246066a94b8d0ac7d1248524826d24f607d970311f5af700bc09
+  Block #50:           0xa7885bc601915304e7098ec56eadb1153956df7850ee0d0647d912d4fe897664
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1414,12 +1627,12 @@ PASS: nopreprepo verify ok
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#approve
-  Transaction:         0x25adfa8cd2f7ed97f38ba07e7c320955dcbcb760668b85e52b48549309acdee1
+  Transaction:         0x797bba89679d1dd9eecbb65ab5d4383a4953c36fdf334ed080d6a221207c593a
   From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #35:           0xe4930fded1a490ec0cd1990d9f924b0750200ac376d7f10df78921d790360d4c
+  Block #51:           0x5ee964837233040b47bbb4f948b3470ec8244a3c6ee3625889b2d861e012afb2
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1427,12 +1640,12 @@ PASS: nopreprepo verify ok
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       GitEscrow#lock
-  Transaction:         0x4ba823d2a1289a79bec5710d0b7ddc108e5e6aa8f90466635315e49c70676e07
+  Transaction:         0x79f47562e75a7d968d422eff4f0b1bbaf4de50b5ebc558e55c31b52f829890cd
   From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            234452 of 16777216
-  Block #36:           0xc866d9f5dd2b29453f860e7c522bf9f1d99861277d2d404bdff4468a93e2d4b9
+  Block #52:           0x80074d3f7a8c23d32b8c3951c0d5e5adec55d94fe6d2348cacce81a4c3fb6fa1
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1445,7 +1658,7 @@ PASS: nopreprepo verify ok
 [fixture] GET /repos/testauthor/nopreprepo/installation -> 200
 [fixture] GET /repos/testauthor/nopreprepo -> 200
 [register] New github vesting grant for testauthor/nopreprepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"c1dee7a7121530355cd19ab6d9656d7b8bf03e2632965efb700575664d3e45c3","grant":{"repoId":"c1dee7a7121530355cd19ab6d9656d7b8bf03e2632965efb700575664d3e45c3","repoFullName":"testauthor/nopreprepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x4ba823d2a1289a79bec5710d0b7ddc108e5e6aa8f90466635315e49c70676e07","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T02:36:18.406Z","updatedAt":"2026-11-26T02:36:18.406Z"},"lockPath":"/lock/testauthor/nopreprepo","lockUrl":"http://localhost:5173/lock/testauthor/nopreprepo","launchVerification":{"stamped":false,"code":"LAUNCH_NO_PREPARED_RECORD","note":"No prepared-launch record exists for this repo+wallet — verified recognition requires the launch to have gone through POST /api/launch/prepare-launch. Grant registered WITHOUT the launchVerified stamp or launcher enrolment (ordinary unstamped grant)."}}
+{"ok":true,"repoId":"c1dee7a7121530355cd19ab6d9656d7b8bf03e2632965efb700575664d3e45c3","grant":{"repoId":"c1dee7a7121530355cd19ab6d9656d7b8bf03e2632965efb700575664d3e45c3","repoFullName":"testauthor/nopreprepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x79f47562e75a7d968d422eff4f0b1bbaf4de50b5ebc558e55c31b52f829890cd","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T03:29:44.489Z","updatedAt":"2026-11-26T03:29:44.489Z"},"lockPath":"/lock/testauthor/nopreprepo","lockUrl":"http://localhost:5173/lock/testauthor/nopreprepo","launchVerification":{"stamped":false,"code":"LAUNCH_NO_PREPARED_RECORD","note":"No prepared-launch record exists for this repo+wallet — verified recognition requires the launch to have gone through POST /api/launch/prepare-launch. Grant registered WITHOUT the launchVerified stamp or launcher enrolment (ordinary unstamped grant)."}}
 PASS: no-prepared register ok (ordinary grant)
 PASS: no-prepared reports unstamped
 PASS: no-prepared carries the code
@@ -1457,7 +1670,7 @@ PASS: no-prepared launch has no enrolment
 [fixture] GET /repos/testauthor/faultrepo/installation -> 200
 [fixture] GET /repos/testauthor/faultrepo -> 200
 [fixture] GET /repos/testauthor/faultrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/faultrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9mYXVsdHJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjA1NzgsImV4cCI6MTc5NTY2MTQ3OCwibm9uY2UiOiI4ZDdjZWNjMjZiYjVmNDFjNWEzYWNlN2RjYTlkN2ZjMCJ9.LHHX74y4dXovtIumKNpKggu_MRp3Expi5YaJbd2auzs","expiresAt":"2026-11-26T02:51:18.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/faultrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9mYXVsdHJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjM3ODQsImV4cCI6MTc5NTY2NDY4NCwibm9uY2UiOiI0MWExMzkxODlkMjEwYTE2MjAwMjU4OWYzNjc0OTU2NCJ9.EYf4lwyZPcQLsLGIgv-e7unc2MsARI4G2l4ityBk-Eg","expiresAt":"2026-11-26T03:44:44.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: faultrepo verify ok
 [32meth_chainId[0m
 [32meth_accounts[0m
@@ -1528,12 +1741,12 @@ PASS: faultrepo verify ok
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#mint
-  Transaction:         0x0b2a7bf3fe3aceb4ec87dda08cbae6ce951d2f7d3e993460b0d5f3091f77baaf
+  Transaction:         0xbfb50cd7f9e61045a824db14bc00954ed5add5761309c16c7526f5cd07f15498
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            34209 of 16777216
-  Block #37:           0x20cfed237fde5e31cba9a0a2979b7fb5b3e6e75911a32ca87439946a12f7ff8b
+  Block #53:           0x34b23fabef1fa5143b342d07d97cc4ed677f945214ec6e1ced2517eb69f011c6
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1541,12 +1754,12 @@ PASS: faultrepo verify ok
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#approve
-  Transaction:         0xecd2c17d6436901baaf12556ea0d870893fc846d0a356f62bc6055dd49f62baa
+  Transaction:         0xc2626ebe0f109d7e7a0350baca83dbc0c9395dd934c8c2e76e6e883c30f3252e
   From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #38:           0xaf2100b767e6df6e48d86b4ad3240d993bc9cd9b5030a2f368e0f6e6aa3f4322
+  Block #54:           0x7e7d97e9201b640f88c2bd10f752620fdf8fcd653be810a6b5adfc98fa908b58
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1554,12 +1767,12 @@ PASS: faultrepo verify ok
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       GitEscrow#lock
-  Transaction:         0xe8efc18ea30b5542e6de3f7e3e23d691da42e35b3fad8fb5e7a1131f52e09ef4
+  Transaction:         0x3a258460d53a90c38d923f9593dd83e6eae941c7fb59dfc979bb3ff02ef63e5a
   From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            234440 of 16777216
-  Block #39:           0x691efa107193204e5be7c1972551ce0ed8953fdc729c92249eb367a8d164143d
+  Block #55:           0x4a40936d80c7fe1e2343a3e110fed434d6da4986541e0f0c7a30e0ea77e64496
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1583,7 +1796,7 @@ FAULT prepared-launch-get on
 [fixture] GET /repos/testauthor/faultrepo/installation -> 200
 [fixture] GET /repos/testauthor/faultrepo -> 200
 [register] New github vesting grant for testauthor/faultrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"bafe0e5fe900ede2359e86c74c90fbb164121cdeedca22bd93386a3c89e77da1","grant":{"repoId":"bafe0e5fe900ede2359e86c74c90fbb164121cdeedca22bd93386a3c89e77da1","repoFullName":"testauthor/faultrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0xe8efc18ea30b5542e6de3f7e3e23d691da42e35b3fad8fb5e7a1131f52e09ef4","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T02:36:22.203Z","updatedAt":"2026-11-26T02:36:22.203Z"},"lockPath":"/lock/testauthor/faultrepo","lockUrl":"http://localhost:5173/lock/testauthor/faultrepo","launchVerification":{"stamped":false,"code":"LAUNCH_PREPARED_LOOKUP_FAILED","note":"The prepared-launch record lookup FAILED (storage error) — fail-closed: grant registered WITHOUT the launchVerified stamp or launcher enrolment. A lookup error is never treated as 'no record'."}}
+{"ok":true,"repoId":"bafe0e5fe900ede2359e86c74c90fbb164121cdeedca22bd93386a3c89e77da1","grant":{"repoId":"bafe0e5fe900ede2359e86c74c90fbb164121cdeedca22bd93386a3c89e77da1","repoFullName":"testauthor/faultrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x3a258460d53a90c38d923f9593dd83e6eae941c7fb59dfc979bb3ff02ef63e5a","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T03:29:48.109Z","updatedAt":"2026-11-26T03:29:48.109Z"},"lockPath":"/lock/testauthor/faultrepo","lockUrl":"http://localhost:5173/lock/testauthor/faultrepo","launchVerification":{"stamped":false,"code":"LAUNCH_PREPARED_LOOKUP_FAILED","note":"The prepared-launch record lookup FAILED (storage error) — fail-closed: grant registered WITHOUT the launchVerified stamp or launcher enrolment. A lookup error is never treated as 'no record'."}}
 FAULT prepared-launch-get off
 PASS: lookup-fault register ok (ordinary grant)
 PASS: lookup-fault reports unstamped
@@ -1595,7 +1808,7 @@ PASS: lookup-fault launch has no enrolment
 [fixture] GET /repos/testauthor/chainrepo/installation -> 200
 [fixture] GET /repos/testauthor/chainrepo -> 200
 [fixture] GET /repos/testauthor/chainrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9jaGFpbnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjA1ODMsImV4cCI6MTc5NTY2MTQ4Mywibm9uY2UiOiIzZGZiMmUwYWI3ZDI3Mjg5Mzc4MGIyMjg4N2UxMTczNiJ9.ZnBaUYjnIBmoFHwdKy-lYMMfRO9YK1i6jAam6QFpM78","expiresAt":"2026-11-26T02:51:23.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9jaGFpbnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjM3ODksImV4cCI6MTc5NTY2NDY4OSwibm9uY2UiOiIxMWRhYWU3ZGUzMjdhNTQ4M2I3MDlkODQ3Y2ZmMzUzMSJ9.ChQpHRCqu7by6cGgBLeZGhFvH7NZL3t0b_nBppMJmpQ","expiresAt":"2026-11-26T03:44:49.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 [32meth_chainId[0m
 [32meth_accounts[0m
 [32mhardhat_metadata[0m
@@ -1665,12 +1878,12 @@ PASS: lookup-fault launch has no enrolment
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#mint
-  Transaction:         0x533b750046b0ad99468ae66b986ca10ef953944ec3609f11e6d9a6efa3aea4f1
+  Transaction:         0xb6fc8c3776b6d9f55793d642dbe22ce17499af1edac0e2e3f769bd043ef47485
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0x68b1d87f95878fe05b998f19b66f4baba5de1aed
+  To:                  0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
   Value:               0 ETH
   Gas used:            34209 of 16777216
-  Block #40:           0x929a408b2e5da117aa5149a8549f008e21112ecffd2812cc91841f1739060cdd
+  Block #56:           0xb52b3f5e9225b4bfd20d430a6b5956db6d14fd9e370f2345a68a60a5a83f68a5
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1678,12 +1891,12 @@ PASS: lookup-fault launch has no enrolment
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#approve
-  Transaction:         0xfe2e1f72bb7b979eec339155207c89bc5342d089a2baba38c26939289d9afaac
+  Transaction:         0xfb6b6a2f6a2e15c5143e794ad4ef15eab1bf4091be3863b07129a2beeeaff11c
   From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
-  To:                  0x68b1d87f95878fe05b998f19b66f4baba5de1aed
+  To:                  0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #41:           0xd81a00616ce791d35ef1dac6334750bda66473712854631a7ed0601a6d09a7ce
+  Block #57:           0xabaf8ccebd325f36a68e88f0fbdf41d8a1b4ba48ce07081e1900da7377f505af
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1691,12 +1904,12 @@ PASS: lookup-fault launch has no enrolment
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       GitEscrow#lock
-  Transaction:         0xdfdcd4602b3686c8abec96d24a48d83afe2fe54cf7c622e075f1e33ea37e9a2e
+  Transaction:         0xf44e71a2f3ab03a7e9b50c8c9f0f11dc2f941d55234d1bae18e675c60afa3c68
   From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            251552 of 16777216
-  Block #42:           0x0cbfb80aee3c148ed7fbd890a4ea6b446d8908f0643907d5968a5d6ff8b660cf
+  Block #58:           0x0bcf8bc7fef776fde5d56271cf2986d12f74ee441b73b7597c8dd11aaa888e81
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1727,12 +1940,17 @@ PASS: lookup-fault launch has no enrolment
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x9a676e781a523b5d0c0e43731313a708cb607508
 
-{"ok":true,"prepared":true,"repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chain":"base","githubLogin":"testauthor","feeLockVault":"0x9a676e781a523b5d0c0e43731313a708cb607508","launchInput":{"name":"Chain Token","symbol":"CTK","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x9a676e781a523b5d0c0e43731313a708cb607508","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."}
+[32meth_call[0m
+  Contract call:       FeeStreamEscrow#feeGrants
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+
+{"ok":true,"prepared":true,"repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chain":"base","githubLogin":"testauthor","feeLockVault":"0x9a676e781a523b5d0c0e43731313a708cb607508","feePushesPerTranche":2,"launchInput":{"name":"Chain Token","symbol":"CTK","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x9a676e781a523b5d0c0e43731313a708cb607508","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."}
 PASS: chainrepo prepare under T1 ok
 [fixture] GET /repos/testauthor/chainrepo/installation -> 200
 [fixture] GET /repos/testauthor/chainrepo -> 200
 [fixture] GET /repos/testauthor/chainrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9jaGFpbnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjA1ODYsImV4cCI6MTc5NTY2MTQ4Niwibm9uY2UiOiJhZWJhYmJkYmM5MzI0ZDYzMTZiZmYzYzhhYTZlZGFjYSJ9.-FLy9HiFcZ0zREb4O93-SwM5JDqGMDO6H7UP2CAvcSo","expiresAt":"2026-11-26T02:51:26.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9jaGFpbnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjM3OTEsImV4cCI6MTc5NTY2NDY5MSwibm9uY2UiOiIzNGM0ZGFhMzllNzJmYzk3MzJhNWFhNTIxZmQxNWVlMiJ9.Wf3WH0Q9yQ0LLTKTvlUPLOGgiZgpiqcTyqpE8rtVObs","expiresAt":"2026-11-26T03:44:51.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 [32meth_getTransactionReceipt[0m
 [32meth_getTransactionReceipt (2)[0m
 [32meth_getTransactionReceipt (3)[0m
@@ -1787,22 +2005,22 @@ PASS: chainrepo prepare under T1 ok
 [fixture] GET /repos/testauthor/chainrepo -> 200
 [register] New github vesting grant for testauthor/chainrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
 [register] Verified launcher @testauthor enrolled for ShipRewards on testauthor/chainrepo
-{"ok":true,"repoId":"b54650b2c6984c2a869b7b8865333896789caa2c1c181d934578fe242414238c","grant":{"repoId":"b54650b2c6984c2a869b7b8865333896789caa2c1c181d934578fe242414238c","repoFullName":"testauthor/chainrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x68B1D87F95878fE05B998F19b66F4baba5De1aed","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0xdfdcd4602b3686c8abec96d24a48d83afe2fe54cf7c622e075f1e33ea37e9a2e","installationId":777,"launchVerified":true,"launchVerifiedLogin":"testauthor","launcherRewardEnrolled":true,"feeLockVault":"0x9a676e781a523b5d0c0e43731313a708cb607508","status":"active","streaming":false,"createdAt":"2026-11-26T02:36:26.293Z","updatedAt":"2026-11-26T02:36:26.293Z"},"lockPath":"/lock/testauthor/chainrepo","lockUrl":"http://localhost:5173/lock/testauthor/chainrepo"}
+{"ok":true,"repoId":"b54650b2c6984c2a869b7b8865333896789caa2c1c181d934578fe242414238c","grant":{"repoId":"b54650b2c6984c2a869b7b8865333896789caa2c1c181d934578fe242414238c","repoFullName":"testauthor/chainrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0xf44e71a2f3ab03a7e9b50c8c9f0f11dc2f941d55234d1bae18e675c60afa3c68","installationId":777,"launchVerified":true,"launchVerifiedLogin":"testauthor","launcherRewardEnrolled":true,"feeLockVault":"0x9a676e781a523b5d0c0e43731313a708cb607508","status":"active","streaming":false,"createdAt":"2026-11-26T03:29:51.725Z","updatedAt":"2026-11-26T03:29:51.725Z"},"lockPath":"/lock/testauthor/chainrepo","lockUrl":"http://localhost:5173/lock/testauthor/chainrepo"}
 PASS: chained-token register ok
 PASS: chained-token grant STAMPED
 PASS: chained-token grant enrolled
 PASS: chained-token register carries no withhold code
-{"ok":true,"repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":true,"enrollment":{"repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","githubLogin":"testauthor","verificationNonce":"aebabbdbc9324d6316bff3c8aa6edaca","chainId":8453,"enrolledAt":"2026-11-26T02:36:26.294Z"}}
+{"ok":true,"repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":true,"enrollment":{"repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","githubLogin":"testauthor","verificationNonce":"34c4daa39e72fc9732a5aa521fd15ee2","chainId":8453,"enrolledAt":"2026-11-26T03:29:51.725Z"}}
 PASS: chained-token enrolment present
 === 30. round-3: token issued BEFORE the preparation cannot chain -> UNSTAMPED (LAUNCH_PREPARED_NONCE_MISMATCH) ===
 [fixture] GET /repos/testauthor/stalerepo/installation -> 200
 [fixture] GET /repos/testauthor/stalerepo -> 200
 [fixture] GET /repos/testauthor/stalerepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/stalerepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9zdGFsZXJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjA1ODYsImV4cCI6MTc5NTY2MTQ4Niwibm9uY2UiOiIxZDU0NTRkMjNiNWUzNzJmZmExMzkxYTlmOGU4ZDQ5ZSJ9.UVijptmWZ-cbTGq0H0G-hATttSZ0mfzIi3bqXqRbj5A","expiresAt":"2026-11-26T02:51:26.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/stalerepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9zdGFsZXJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjM3OTEsImV4cCI6MTc5NTY2NDY5MSwibm9uY2UiOiI4NGNjYjc4ZTExNjVhYTRlOGIyYWRmYzQ2MTlhYWY2MSJ9.zWNIfV26hMl9e3o57R3i5LoHmKMZlGYtLqXOY5zFKiQ","expiresAt":"2026-11-26T03:44:51.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 [fixture] GET /repos/testauthor/stalerepo/installation -> 200
 [fixture] GET /repos/testauthor/stalerepo -> 200
 [fixture] GET /repos/testauthor/stalerepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/stalerepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9zdGFsZXJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjA1ODgsImV4cCI6MTc5NTY2MTQ4OCwibm9uY2UiOiI3NjIyOWM1ZTlkY2UxZmEzOTBmMDYyZWM4MTk3MGRkNCJ9.MjcPa9x5lWcXlCAqoUWcgcQF7yy7xcAVbohZzIlNvhw","expiresAt":"2026-11-26T02:51:28.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/stalerepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9zdGFsZXJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjM3OTMsImV4cCI6MTc5NTY2NDY5Mywibm9uY2UiOiJhYWQ4NjJlOGRhMzhiMWVjOWJhYjI5OTFmZTZhMjhlMSJ9.NZ0VhGLF1yXTcffOzFwWZ46ELMQHrD4o8fWq7rchyWs","expiresAt":"2026-11-26T03:44:53.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 [32meth_getCode[0m
 [32meth_call[0m
   Contract call:       FeeLockVault#escrow
@@ -1829,7 +2047,12 @@ PASS: chained-token enrolment present
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x0b306bf915c4d645ff596e518faf3f9669b97016
 
-{"ok":true,"prepared":true,"repo":"testauthor/stalerepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chain":"base","githubLogin":"testauthor","feeLockVault":"0x0b306bf915c4d645ff596e518faf3f9669b97016","launchInput":{"name":"Stale Token","symbol":"STK","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x0b306bf915c4d645ff596e518faf3f9669b97016","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."}
+[32meth_call[0m
+  Contract call:       FeeStreamEscrow#feeGrants
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+
+{"ok":true,"prepared":true,"repo":"testauthor/stalerepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chain":"base","githubLogin":"testauthor","feeLockVault":"0x0b306bf915c4d645ff596e518faf3f9669b97016","feePushesPerTranche":2,"launchInput":{"name":"Stale Token","symbol":"STK","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x0b306bf915c4d645ff596e518faf3f9669b97016","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."}
 PASS: stalerepo prepare under T2 ok
 [32meth_chainId[0m
 [32meth_accounts[0m
@@ -1900,12 +2123,12 @@ PASS: stalerepo prepare under T2 ok
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#mint
-  Transaction:         0x0274e753d816df6714d17344651c415a2e0cb755379ce6b0c958c48719687cf0
+  Transaction:         0xea567bd6ebdddf8d5632b9e4c0d5cae2f5a5d162aaf6c532e586ed53d4d88aea
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0x3aa5ebb10dc797cac828524e59a333d0a371443c
+  To:                  0x1613beb3b2c4f22ee086b2b38c1476a3ce7f78e8
   Value:               0 ETH
   Gas used:            34209 of 16777216
-  Block #43:           0xf9f190f5dcee5fd5920eacac96a2cece06349c9cbf86627582b48d79cb511311
+  Block #59:           0x4f9c345dde9fa426729ec4b8f721ebc8ba682b86de05d1cb7c3be80ce230e48f
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1913,12 +2136,12 @@ PASS: stalerepo prepare under T2 ok
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#approve
-  Transaction:         0xe9deff5fc4ac0638ef364936edb462fddb4149e8fea28f97aa00e0cb59dfdbed
+  Transaction:         0x5a7e1f5c04028a7a299502cd4fed895955be1c001fce15f7d5cf5eb6df8b4232
   From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
-  To:                  0x3aa5ebb10dc797cac828524e59a333d0a371443c
+  To:                  0x1613beb3b2c4f22ee086b2b38c1476a3ce7f78e8
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #44:           0x8cd2dc99640d418d5e69b8c5a2fa6d9b785e37aaab5c087c689afbf4908be36f
+  Block #60:           0x873add1c4b560aec4c7507e9bf3818be736e0f71075f74ce0b67a86fc1df4a77
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1926,12 +2149,12 @@ PASS: stalerepo prepare under T2 ok
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       GitEscrow#lock
-  Transaction:         0x96e613795513b51a6a6e9bb21a05d08265abe8e075e4b38bb53a5b689e390683
+  Transaction:         0xaf91472a55fb7b956c1940aacc2288cfe582620f547a80348a9d566f7d037cf7
   From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            251552 of 16777216
-  Block #45:           0x7a4ce8d75ab62e37f3538dbfca3f1839e3954f136bb0c8802600fe9c56fa9e90
+  Block #61:           0x825e22348b96cd35df3f474cb855cff0c70d5b812d94cd4ecb4376acf64bb75c
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1944,19 +2167,265 @@ PASS: stalerepo prepare under T2 ok
 [fixture] GET /repos/testauthor/stalerepo/installation -> 200
 [fixture] GET /repos/testauthor/stalerepo -> 200
 [register] New github vesting grant for testauthor/stalerepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"c822e4f148f16aa7a1a90f09664ecd73cd51244a8e70159323aa189d57f1444b","grant":{"repoId":"c822e4f148f16aa7a1a90f09664ecd73cd51244a8e70159323aa189d57f1444b","repoFullName":"testauthor/stalerepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x3Aa5ebB10DC797CAC828524e59A333d0A371443c","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x96e613795513b51a6a6e9bb21a05d08265abe8e075e4b38bb53a5b689e390683","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T02:36:31.173Z","updatedAt":"2026-11-26T02:36:31.173Z"},"lockPath":"/lock/testauthor/stalerepo","lockUrl":"http://localhost:5173/lock/testauthor/stalerepo","launchVerification":{"stamped":false,"code":"LAUNCH_PREPARED_NONCE_MISMATCH","note":"The presented verification token neither matches the prepared record's nonce nor chains to it (it was issued before the preparation) — grant registered WITHOUT the launchVerified stamp or launcher enrolment."}}
+{"ok":true,"repoId":"c822e4f148f16aa7a1a90f09664ecd73cd51244a8e70159323aa189d57f1444b","grant":{"repoId":"c822e4f148f16aa7a1a90f09664ecd73cd51244a8e70159323aa189d57f1444b","repoFullName":"testauthor/stalerepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0xaf91472a55fb7b956c1940aacc2288cfe582620f547a80348a9d566f7d037cf7","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T03:29:56.913Z","updatedAt":"2026-11-26T03:29:56.913Z"},"lockPath":"/lock/testauthor/stalerepo","lockUrl":"http://localhost:5173/lock/testauthor/stalerepo","launchVerification":{"stamped":false,"code":"LAUNCH_PREPARED_NONCE_MISMATCH","note":"The presented verification token neither matches the prepared record's nonce nor chains to it (it was issued before the preparation) — grant registered WITHOUT the launchVerified stamp or launcher enrolment."}}
 PASS: stale-token register ok (ordinary grant)
 PASS: stale-token reports unstamped
 PASS: stale-token carries the nonce-mismatch code
 PASS: stale-token grant NOT launchVerified
 {"ok":true,"repo":"testauthor/stalerepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":false,"enrollment":null}
 PASS: stale-token launch has no enrolment
+=== 31. round-4: prepare-launch validates the vault's BINDINGS + the registered fee grant ===
+[fixture] GET /repos/testauthor/bindingsrepo/installation -> 200
+[fixture] GET /repos/testauthor/bindingsrepo -> 200
+[fixture] GET /repos/testauthor/bindingsrepo -> 200
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/bindingsrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9iaW5kaW5nc3JlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjM3OTYsImV4cCI6MTc5NTY2NDY5Niwibm9uY2UiOiI5NmU3ZmRmODA2NDk2NzVlYWYyNWVhMDI5YTE2NTdmMCJ9._R9FTV-EfqKTXosDF-AyHsC24VEu4XtIE-7_ZE40H2g","expiresAt":"2026-11-26T03:44:56.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+[32meth_getCode[0m
+[32meth_call[0m
+  Contract call:       FeeLockVault#escrow
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x322813fd9a801c5507c9de605d63cea4f2ce6c44
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#repoId
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x322813fd9a801c5507c9de605d63cea4f2ce6c44
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#launcher
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x322813fd9a801c5507c9de605d63cea4f2ce6c44
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#feeToken
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x322813fd9a801c5507c9de605d63cea4f2ce6c44
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#claimLedger
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x322813fd9a801c5507c9de605d63cea4f2ce6c44
+
+{"ok":false,"error":"feeLockVault 0x322813fd9a801c5507c9de605d63cea4f2ce6c44 is bound to repo 58f6b1fb68302d6804e2de438a7b9fd6444e5c6f7041bd79413906dc49904eff, not 7e5254c8ef87799a439f65382cbba3f9d1a870d7987d92e7a700b530e2566df4 (testauthor/bindingsrepo). The vault was deployed for a different project; deploy the vault for THIS repo first.","code":"LAUNCH_VAULT_REPO_MISMATCH"}
+PASS: vault bound to another repo refused at prepare
+PASS: repo-mismatch prepare returned no input
+[32meth_getCode[0m
+[32meth_call[0m
+  Contract call:       FeeLockVault#escrow
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xa85233c63b9ee964add6f2cffe00fd84eb32338f
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#repoId
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xa85233c63b9ee964add6f2cffe00fd84eb32338f
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#launcher
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xa85233c63b9ee964add6f2cffe00fd84eb32338f
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#feeToken
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xa85233c63b9ee964add6f2cffe00fd84eb32338f
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#claimLedger
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xa85233c63b9ee964add6f2cffe00fd84eb32338f
+
+{"ok":false,"error":"feeLockVault 0xa85233c63b9ee964add6f2cffe00fd84eb32338f is bound to launcher 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266, not the verified wallet 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc. Its fee releases would pay a different wallet.","code":"LAUNCH_VAULT_LAUNCHER_MISMATCH"}
+PASS: vault bound to another launcher refused at prepare
+[32meth_getCode[0m
+[32meth_call[0m
+  Contract call:       FeeLockVault#escrow
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x7a2088a1bfc9d81c55368ae168c2c02570cb814f
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#repoId
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x7a2088a1bfc9d81c55368ae168c2c02570cb814f
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#launcher
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x7a2088a1bfc9d81c55368ae168c2c02570cb814f
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#feeToken
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x7a2088a1bfc9d81c55368ae168c2c02570cb814f
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#claimLedger
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x7a2088a1bfc9d81c55368ae168c2c02570cb814f
+
+{"ok":false,"error":"feeLockVault 0x7a2088a1bfc9d81c55368ae168c2c02570cb814f locks into escrow 0x4a679253410272dd5232b3ff7cf5dbb88f295319, not the chain's configured FeeStreamEscrow (0x610178dA211FEF7D417bC0e6FeD39F05609AD788). Tranches locked there are outside the platform's fee-stream grants.","code":"LAUNCH_VAULT_ESCROW_MISMATCH"}
+PASS: vault bound to another escrow refused at prepare
+[32meth_getCode[0m
+[32meth_call[0m
+  Contract call:       FeeLockVault#escrow
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xc5a5c42992decbae36851359345fe25997f5c42d
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#repoId
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xc5a5c42992decbae36851359345fe25997f5c42d
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#launcher
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xc5a5c42992decbae36851359345fe25997f5c42d
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#feeToken
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xc5a5c42992decbae36851359345fe25997f5c42d
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#claimLedger
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xc5a5c42992decbae36851359345fe25997f5c42d
+
+{"ok":false,"error":"feeLockVault 0xc5a5c42992decbae36851359345fe25997f5c42d is bound to fee token 0x09635f643e140090a9a8dcd712ed6285858cebef, not the chain's configured WETH (0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6). Platform fee grants are denominated in WETH.","code":"LAUNCH_VAULT_TOKEN_MISMATCH"}
+PASS: vault bound to a non-WETH token refused at prepare
+[32meth_getCode[0m
+[32meth_call[0m
+  Contract call:       FeeLockVault#escrow
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe6e340d132b5f46d1e472debcd681b2abc16e57e
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#repoId
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe6e340d132b5f46d1e472debcd681b2abc16e57e
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#launcher
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe6e340d132b5f46d1e472debcd681b2abc16e57e
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#feeToken
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe6e340d132b5f46d1e472debcd681b2abc16e57e
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#claimLedger
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe6e340d132b5f46d1e472debcd681b2abc16e57e
+
+{"ok":false,"error":"feeLockVault 0xe6e340d132b5f46d1e472debcd681b2abc16e57e claims from ledger 0x67d269191c92caf3cd7723f116c85e6e9bf55933, not the configured Bankr claim ledger (0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e). Its claims would not execute against the real Bankr fee ledger.","code":"LAUNCH_VAULT_LEDGER_MISMATCH"}
+PASS: vault bound to another claim ledger refused at prepare
+[fixture] GET /repos/testauthor/nograntrepo/installation -> 200
+[fixture] GET /repos/testauthor/nograntrepo -> 200
+[fixture] GET /repos/testauthor/nograntrepo -> 200
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/nograntrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ub2dyYW50cmVwbyIsIndhbGxldCI6IjB4M2M0NGNkZGRiNmE5MDBmYTJiNTg1ZGQyOTllMDNkMTJmYTQyOTNiYyIsImNoYWluSWQiOjg0NTMsImluc3RhbGxhdGlvbklkIjo3NzcsImlhdCI6MTc5NTY2Mzc5NywiZXhwIjoxNzk1NjY0Njk3LCJub25jZSI6IjQxMDFkNDdlNDc2ZGIzNjZmMjMzYmRkYWI4MjRiZWViIn0.lLz9PRNHcb1t-ZImigDu7CCMuOsA8yCugf6D4vCpCJw","expiresAt":"2026-11-26T03:44:57.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+[32meth_getCode[0m
+[32meth_call[0m
+  Contract call:       FeeLockVault#escrow
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xc3e53f4d16ae77db1c982e75a937b9f60fe63690
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#repoId
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xc3e53f4d16ae77db1c982e75a937b9f60fe63690
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#launcher
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xc3e53f4d16ae77db1c982e75a937b9f60fe63690
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#feeToken
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xc3e53f4d16ae77db1c982e75a937b9f60fe63690
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#claimLedger
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xc3e53f4d16ae77db1c982e75a937b9f60fe63690
+
+[32meth_call[0m
+  Contract call:       FeeStreamEscrow#feeGrants
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+
+{"ok":false,"error":"No fee grant is registered in the FeeStreamEscrow for testauthor/nograntrepo — the registrar must register the project's fee grant (recipient, token, vault, pushesPerTranche) before a launch can be prepared.","code":"LAUNCH_FEE_GRANT_NOT_REGISTERED"}
+PASS: correct vault but NO registered fee grant refused at prepare
+[fixture] GET /repos/testauthor/grantmisrepo/installation -> 200
+[fixture] GET /repos/testauthor/grantmisrepo -> 200
+[fixture] GET /repos/testauthor/grantmisrepo -> 200
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/grantmisrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ncmFudG1pc3JlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU2NjM3OTcsImV4cCI6MTc5NTY2NDY5Nywibm9uY2UiOiIzNGQ0OWZhYTAyZTUyYzIxMzViNzY5MTIxNDUxMzc2OSJ9.ExQQx16TijqR2xxRkRIjwTm1pJBnVYxGDx8jtseO2ww","expiresAt":"2026-11-26T03:44:57.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+[32meth_getCode[0m
+[32meth_call[0m
+  Contract call:       FeeLockVault#escrow
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x84ea74d481ee0a5332c457a4d796187f6ba67feb
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#repoId
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x84ea74d481ee0a5332c457a4d796187f6ba67feb
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#launcher
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x84ea74d481ee0a5332c457a4d796187f6ba67feb
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#feeToken
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x84ea74d481ee0a5332c457a4d796187f6ba67feb
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#claimLedger
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x84ea74d481ee0a5332c457a4d796187f6ba67feb
+
+[32meth_call[0m
+  Contract call:       FeeStreamEscrow#feeGrants
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+
+{"ok":false,"error":"The registered fee grant for testauthor/grantmisrepo does not match the prepared configuration: grant recipient=0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc vault=0x84ea74d481ee0a5332c457a4d796187f6ba67feb token=0x2279b7a0a67db372996a5fab50d91eaa73d2ebe6 pushesPerTranche=3; expected recipient=0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc vault=0x84ea74d481ee0a5332c457a4d796187f6ba67feb token=0x2279b7a0a67db372996a5fab50d91eaa73d2ebe6 pushesPerTranche=2. The registrar must fix the grant before the launch is prepared.","code":"LAUNCH_FEE_GRANT_MISMATCH"}
+PASS: fee grant with wrong pushesPerTranche refused at prepare
+[32meth_getCode[0m
+[32meth_call[0m
+  Contract call:       FeeLockVault#escrow
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x84ea74d481ee0a5332c457a4d796187f6ba67feb
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#repoId
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x84ea74d481ee0a5332c457a4d796187f6ba67feb
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#launcher
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x84ea74d481ee0a5332c457a4d796187f6ba67feb
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#feeToken
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x84ea74d481ee0a5332c457a4d796187f6ba67feb
+
+[32meth_call[0m
+  Contract call:       FeeLockVault#claimLedger
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x84ea74d481ee0a5332c457a4d796187f6ba67feb
+
+[32meth_call[0m
+  Contract call:       FeeStreamEscrow#feeGrants
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
+
+{"ok":true,"prepared":true,"repo":"testauthor/grantmisrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chain":"base","githubLogin":"testauthor","feeLockVault":"0x84ea74d481ee0a5332c457a4d796187f6ba67feb","feePushesPerTranche":3,"launchInput":{"name":"Bind","symbol":"BND","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x84ea74d481ee0a5332c457a4d796187f6ba67feb","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."}
+PASS: prepare succeeds when the expectation matches the registered grant (ppt=3)
+PASS: prepare reports the grant's verified pushesPerTranche
 === LAUNCH-GATE DRIVER DONE — failures: 0 ===
-[redis] Error: connect ECONNREFUSED 127.0.0.1:6399
-    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16) {
-  errno: -111,
-  code: 'ECONNREFUSED',
-  syscall: 'connect',
-  address: '127.0.0.1',
-  port: 6399
-}

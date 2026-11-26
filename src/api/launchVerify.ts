@@ -17,8 +17,8 @@ import {
   getLauncherRewardEnrollment,
   validateLaunchToken,
 } from "../lib/launchGate";
-import { parseVestingChain } from "../lib/chains";
-import { normalizeRepoFullName } from "../lib/repoId";
+import { parseVestingChain, getVestingChainConfig } from "../lib/chains";
+import { normalizeRepoFullName, repoIdFromFullName } from "../lib/repoId";
 import { listAllGrants } from "../lib/redis";
 import {
   buildPlatformLaunchInput,
@@ -28,8 +28,10 @@ import {
 import {
   canonicalVaultCodehash,
   readVaultBinding,
+  readFeeGrant,
   recordPreparedLaunch,
 } from "../lib/launchRecognition";
+import { issueCountAttestation } from "../lib/countAttestation";
 
 /**
  * GET /api/launch/projects — the VERIFIED-LAUNCH listing (recognition
@@ -153,6 +155,7 @@ export async function handlePrepareLaunch(req: Request, res: Response): Promise<
   const isPlatformLaunch = walletLc === GREGORY_FEE_RECIPIENT_WALLET.toLowerCase();
   let vaultLc: string | null = null;
   let vaultCodehash: string | null = null;
+  let feeGrantPushesPerTranche: number | null = null;
 
   if (feeLockVault) {
     if (!/^0x[0-9a-fA-F]{40}$/.test(feeLockVault)) {
@@ -198,6 +201,101 @@ export async function handlePrepareLaunch(req: Request, res: Response): Promise<
       return;
     }
     vaultCodehash = canonicalVaultCodehash();
+
+    // Binding validation (Codex round-4, blocker 3): a genuine
+    // instance of the approved implementation can still be bound to
+    // the WRONG project — its immutables are set at deployment.
+    // Round 3 caught that only at registration, after the user may
+    // already have signed a launch routing fees to the vault.
+    // Prepare therefore reads and validates EVERY immutable binding
+    // against this request and the chain's configuration BEFORE any
+    // launch input is built. Any mismatch (or an unreadable binding)
+    // refuses here.
+    const cfg = getVestingChainConfig(chain);
+    const expectedRepoId = repoIdFromFullName(normalizeRepoFullName(repo));
+    const bindingChecks: Array<{
+      ok: boolean;
+      code: string;
+      error: string;
+    }> = [
+      {
+        ok: binding.repoId === expectedRepoId,
+        code: "LAUNCH_VAULT_REPO_MISMATCH",
+        error: `feeLockVault ${vaultLc} is bound to repo ${binding.repoId ?? "unreadable"}, not ${expectedRepoId} (${normalizeRepoFullName(repo)}). The vault was deployed for a different project; deploy the vault for THIS repo first.`,
+      },
+      {
+        ok: binding.launcher === walletLc,
+        code: "LAUNCH_VAULT_LAUNCHER_MISMATCH",
+        error: `feeLockVault ${vaultLc} is bound to launcher ${binding.launcher ?? "unreadable"}, not the verified wallet ${walletLc}. Its fee releases would pay a different wallet.`,
+      },
+      {
+        ok:
+          !!cfg.feeStreamEscrowAddress &&
+          binding.escrow === cfg.feeStreamEscrowAddress.toLowerCase(),
+        code: "LAUNCH_VAULT_ESCROW_MISMATCH",
+        error: `feeLockVault ${vaultLc} locks into escrow ${binding.escrow ?? "unreadable"}, not the chain's configured FeeStreamEscrow (${cfg.feeStreamEscrowAddress ?? "not configured"}). Tranches locked there are outside the platform's fee-stream grants.`,
+      },
+      {
+        ok: !!cfg.wethAddress && binding.feeToken === cfg.wethAddress.toLowerCase(),
+        code: "LAUNCH_VAULT_TOKEN_MISMATCH",
+        error: `feeLockVault ${vaultLc} is bound to fee token ${binding.feeToken ?? "unreadable"}, not the chain's configured WETH (${cfg.wethAddress ?? "not configured"}). Platform fee grants are denominated in WETH.`,
+      },
+      {
+        ok:
+          !!cfg.bankrClaimLedgerAddress &&
+          binding.claimLedger === cfg.bankrClaimLedgerAddress.toLowerCase(),
+        code: "LAUNCH_VAULT_LEDGER_MISMATCH",
+        error: `feeLockVault ${vaultLc} claims from ledger ${binding.claimLedger ?? "unreadable"}, not the configured Bankr claim ledger (${cfg.bankrClaimLedgerAddress ?? "not configured"}). Its claims would not execute against the real Bankr fee ledger.`,
+      },
+    ];
+    for (const c of bindingChecks) {
+      if (!c.ok) {
+        res.status(400).json({ ok: false, error: c.error, code: c.code });
+        return;
+      }
+    }
+
+    // Registrar pre-launch grant check (Codex round-4, blocker 3):
+    // the matching fee grant must ALREADY be registered in the
+    // escrow for this repo — recipient, vault, token, and
+    // pushesPerTranche matching the prepared configuration.
+    // Onboarding order is therefore: platform deploys the vault →
+    // registrar registers the fee grant → prepare verifies grant +
+    // bindings → launch input returned. A launch prepared before
+    // its grant exists would route fees into a grant that may never
+    // be registered; that ordering is refused here, not discovered
+    // at registration.
+    const grant = await readFeeGrant(chain, expectedRepoId);
+    if (!grant || !grant.registered) {
+      res.status(400).json({
+        ok: false,
+        error:
+          `No fee grant is registered in the FeeStreamEscrow for ${normalizeRepoFullName(repo)} — the registrar must register the project's fee grant (recipient, token, vault, pushesPerTranche) before a launch can be prepared.`,
+        code: "LAUNCH_FEE_GRANT_NOT_REGISTERED",
+      });
+      return;
+    }
+    const expectedPptRaw = req.body?.feePushesPerTranche;
+    const expectedPpt =
+      expectedPptRaw === undefined || expectedPptRaw === null
+        ? null
+        : Number(expectedPptRaw);
+    if (
+      grant.recipient !== walletLc ||
+      grant.vault !== vaultLc ||
+      grant.token !== binding.feeToken ||
+      (expectedPpt !== null &&
+        (!Number.isInteger(expectedPpt) || grant.pushesPerTranche !== expectedPpt))
+    ) {
+      res.status(400).json({
+        ok: false,
+        error:
+          `The registered fee grant for ${normalizeRepoFullName(repo)} does not match the prepared configuration: grant recipient=${grant.recipient} vault=${grant.vault} token=${grant.token} pushesPerTranche=${grant.pushesPerTranche}; expected recipient=${walletLc} vault=${vaultLc} token=${binding.feeToken}${expectedPpt !== null ? ` pushesPerTranche=${expectedPpt}` : ""}. The registrar must fix the grant before the launch is prepared.`,
+        code: "LAUNCH_FEE_GRANT_MISMATCH",
+      });
+      return;
+    }
+    feeGrantPushesPerTranche = grant.pushesPerTranche;
   } else if (!isPlatformLaunch) {
     res.status(400).json({
       ok: false,
@@ -241,6 +339,9 @@ export async function handlePrepareLaunch(req: Request, res: Response): Promise<
       shareBps: r.shareBps,
     })),
     vestingBps: 0,
+    ...(feeGrantPushesPerTranche !== null
+      ? { feePushesPerTranche: feeGrantPushesPerTranche }
+      : {}),
     preparedAt: new Date().toISOString(),
   });
 
@@ -252,12 +353,60 @@ export async function handlePrepareLaunch(req: Request, res: Response): Promise<
     chain,
     githubLogin: verdict.claims.githubLogin,
     feeLockVault: vaultLc,
+    ...(feeGrantPushesPerTranche !== null
+      ? { feePushesPerTranche: feeGrantPushesPerTranche }
+      : {}),
     ...(isPlatformLaunch && !vaultLc ? { platformLaunch: true } : {}),
     launchInput,
     note: vaultLc
       ? "PREPARED ONLY — unsigned Bankr SDK launch input. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's fee-lock vault; Bankr time-vesting explicitly off (vesting.bps = 0). The prepared recipients, the vault's approved-implementation hash, and the verification lineage were recorded; registration will compare the actual launch against them."
       : "PREPARED ONLY — unsigned Bankr SDK launch input for the platform's own launch. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to Gregory's wallet (the platform share — the scoped raw-wallet exception; launcher launches always use a fee-lock vault). Bankr time-vesting explicitly off (vesting.bps = 0).",
   });
+}
+
+/**
+ * POST /api/launch/count-attestation — issue an oracle-signed
+ * CountAttestation of the backend's counted-push total for a repo
+ * (Codex round-4, blocker 1). Body: { repoId? | repo?, vault, chain? }.
+ * The fee-lock keeper fetches one immediately before calling
+ * vault.lockAccrued; FeeStreamEscrow verifies the oracle signature
+ * and bindings on-chain. The attested total is read from the
+ * backend's own push counter — the request cannot name a count.
+ */
+export async function handleCountAttestation(req: Request, res: Response): Promise<void> {
+  const vault = String(req.body?.vault ?? "").trim();
+  const chain = parseVestingChain(String(req.body?.chain ?? "base"));
+  const repoRaw = String(req.body?.repo ?? req.body?.repoFullName ?? "").trim();
+  const repoIdRaw = String(req.body?.repoId ?? "").trim().toLowerCase().replace(/^0x/, "");
+  const repoId = repoRaw.includes("/")
+    ? repoIdFromFullName(normalizeRepoFullName(repoRaw))
+    : repoIdRaw;
+
+  if (!/^[0-9a-f]{64}$/.test(repoId) || !/^0x[0-9a-fA-F]{40}$/.test(vault)) {
+    res.status(400).json({
+      ok: false,
+      error: "repo (owner/name) or repoId (bytes32 hex), and vault (address) required",
+      code: "COUNT_ATTESTATION_BAD_INPUT",
+    });
+    return;
+  }
+
+  try {
+    const issued = await issueCountAttestation({ repoId, vault, chain });
+    res.json({
+      ok: true,
+      chain,
+      signer: issued.signer,
+      attestation: issued.attestation,
+      signature: issued.signature,
+    });
+  } catch (err) {
+    res.status(503).json({
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+      code: "COUNT_ATTESTATION_UNAVAILABLE",
+    });
+  }
 }
 
 export async function handleLaunchVerifyGithub(req: Request, res: Response): Promise<void> {

@@ -19,12 +19,27 @@ interface IBankrFeeLedger {
     function setClaimRestricted(bool restricted) external;
 }
 
+/// @notice Mirror of FeeStreamEscrow.CountAttestation — the
+///         oracle-signed backend counted-push total (EIP-712). The
+///         vault passes it through verbatim; the escrow verifies
+///         the oracle's signature and the bindings itself.
+struct CountAttestation {
+    address escrow;
+    bytes32 repoId;
+    address vault;
+    uint256 countedTotal;
+    uint256 issuedAt;
+    uint256 expiry;
+    uint256 nonce;
+}
+
 interface IFeeStreamEscrow {
     function addFeeTranche(
         bytes32 repoId,
         uint256 amount,
         uint256 expectedBaseline,
-        uint256 backendCountAtLock
+        CountAttestation calldata att,
+        bytes calldata signature
     ) external;
 }
 
@@ -152,21 +167,28 @@ contract FeeLockVault is ReentrancyGuard {
      *         outbound path. `expectedBaseline` binds the tranche to
      *         the escrow's current on-chain counted-push total: the
      *         escrow reverts if its total has moved since the keeper
-     *         read it. `backendCountAtLock` is the backend's own
-     *         counted total at lock time, which can be AHEAD of the
-     *         on-chain total when a fee report is pending retry; the
-     *         escrow stamps the tranche with max(the two), so the
-     *         tranche can never vest against a push counted before
-     *         the fees locked, in either counter.
+     *         read it. The backend counted total is NO LONGER a bare
+     *         parameter (round 4): it arrives as an EIP-712
+     *         CountAttestation signed by the escrow's oracle, which
+     *         the escrow verifies itself (signer, escrow/repo/vault
+     *         bindings, expiry, monotone nonce + total). This vault
+     *         verifies nothing about it — it passes the attestation
+     *         and signature through verbatim, so no caller of this
+     *         function can inject a count the oracle never signed.
+     *         The escrow stamps the tranche with max(on-chain total,
+     *         attested total), so the tranche can never vest against
+     *         a push counted before the fees locked, in either
+     *         counter.
      */
     function lockAccrued(
         uint256 expectedBaseline,
-        uint256 backendCountAtLock
+        CountAttestation calldata att,
+        bytes calldata signature
     ) external nonReentrant returns (uint256 amount) {
         amount = IERC20(feeToken).balanceOf(address(this));
         require(amount > 0, "FeeLockVault: nothing accrued");
         IERC20(feeToken).forceApprove(escrow, amount);
-        IFeeStreamEscrow(escrow).addFeeTranche(repoId, amount, expectedBaseline, backendCountAtLock);
+        IFeeStreamEscrow(escrow).addFeeTranche(repoId, amount, expectedBaseline, att, signature);
         emit FeesLocked(amount);
     }
 

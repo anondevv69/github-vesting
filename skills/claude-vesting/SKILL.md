@@ -2,7 +2,7 @@
 name: claude-vesting
 description: Proof of Dev — GitHub-gated token vesting (proofofdev.xyz). Lock any ERC-20 on Base so verified pushes and merged PRs release it on a milestone schedule, check vesting progress for a wallet or repo, link a GitHub account to a wallet, and earn the per-counted-merge ShipRewards payout as a PR author. Use when the user mentions Proof of Dev, proofofdev, github vesting, locking tokens against a repo, vesting progress / verified pushes / milestones, linking a wallet to GitHub, merge rewards, reporting a ship (attestation) or checking a ship report's state, or asks what a Claude Ship / /ship merge earned. Works entirely over the agent API at https://api.proofofdev.xyz — no website required.
 tags: [github, vesting, claude, base, defi, proofofdev, rewards]
-version: 1
+version: 2
 ---
 
 # Proof of Dev — Claude skill (GitHub-gated token vesting)
@@ -166,9 +166,12 @@ Hard rules for this step:
   schedule; that is vesting, not launch recognition. (The Bankr SDK
   itself is permissionless; a launch done entirely outside Proof of
   Dev cannot be stopped on-chain — it simply earns none of that
-  recognition.) Note: no platform launch-prep surface builds SDK
-  launch inputs yet — the gate today enforces on lock preparation
-  and on recognition, not on an SDK launch itself.
+  recognition.) A platform launch-prep surface
+  (`POST /api/launch/prepare-launch`, MCP `prepare_launch`) DOES
+  build SDK launch inputs — it is built and tested locally, but the
+  production API does not have these endpoints until the platform
+  redeploys; until then the gate enforces on lock preparation and
+  on recognition, not on an SDK launch itself.
 
 ### Launcher enrolment (what verification records)
 
@@ -189,12 +192,22 @@ fee-lock vault** (a claim-capable smart account; not the raw wallet,
 not the escrow contract, which cannot claim), and a keeper cycle
 claims accrued fees and locks them into a **fee-stream grant** whose
 tranches unlock over subsequent counted pushes, like the supply
-lock — denomination still open (lock as WETH, or swap to the project
-token via PodSettler); (c) this is **BUILT locally** (E2E-proven, not deployed), not
+lock — denomination DECIDED: WETH for the first launch (a swap to
+the project token via PodSettler stays deferred); (c) this is **BUILT locally** (E2E-proven, not deployed), not
 existing behavior — describe it as the decided design, never as
-live. The fee-recycling loop that would refill the reward pool is
-likewise designed, not operating (treasury wallet and production
-reward token still pending). Check enrolment any time:
+live. Two mechanics inside it are backend/keeper concerns — never
+yours: a tranche's vesting baseline is set from an **oracle-signed
+count attestation** the keeper fetches from the backend at lock
+time (you never supply, estimate, or relay a push count for a fee
+lock), and a fee release settles in **capped batches** — one release
+call may pay only part of what has vested, with the remainder kept
+queued and drained by the platform's sweep even if pushing stops.
+If a launcher asks where their fees are mid-settlement, the honest
+answer is "fees are still settling", not "released". The
+fee-recycling loop that would refill the reward pool is likewise
+designed, not operating (the reward treasury wallet is designated
+and claim-proven in a live dust launch; the production reward
+token's name/ticker is still open). Check enrolment any time:
 `GET /api/launch/enrollment?repo=owner/repo&wallet=0xWALLET`.
 
 ### Platform launch fee split (locked — do not improvise)
@@ -229,16 +242,27 @@ Rules when you build or describe a platform launch:
   to a 15% Bankr time-vest — never omit it. Unlocking on this
   platform is by verified pushes (GitEscrow), not by calendar.
 
-**Launcher flow, end to end:** Step 0 verify → prepare the launch
+**Launcher flow, end to end (round-4 order):** Step 0 verify → the
+**platform deploys your per-project fee-lock vault** from the
+approved implementation (you never deploy or supply a vault) → the
+**platform registrar registers the fee grant** for your repo in the
+FeeStreamEscrow → **prepare the launch**
 (`POST /api/launch/prepare-launch` or MCP `prepare_launch` — gate
-token required; returns the SDK input with the 25/75 split and the
-fee-lock vault as your fee recipient) → launch → supply auto-lock →
+token required; before returning anything signable it validates
+**every vault binding on-chain** — repo, launcher, escrow, WETH fee
+token, Bankr claim ledger — **and** that the matching fee grant is
+registered; any mismatch refuses with a specific `LAUNCH_VAULT_*` /
+`LAUNCH_FEE_GRANT_*` code and no input is returned) → launch with
+the returned input (25/75 split, the fee-lock vault as your fee
+recipient, vesting `{ bps: 0 }`) → supply auto-lock → register →
 ship → unlock yours at milestones. Counted merges pay the platform
 reward token to the **merge author** (separate, already working).
 Your own trading-fee share auto-locks into a fee-stream grant
-unlocking by counted pushes — the fee-lock vault is **BUILT locally
-and E2E-proven, but not deployed**; until the platform redeploys,
-fee recipients on live SDK launches still claim liquid WETH.
+unlocking by counted pushes — the whole launch-prep surface is
+**BUILT locally and E2E-proven, but not deployed**; the production
+API does not have these endpoints until the platform redeploys,
+and until then fee recipients on live SDK launches still claim
+liquid WETH.
 
 ---
 
@@ -845,7 +869,7 @@ and say so — past forwards are never re-routed.
 | "vesting on owner/repo" | `GET /api/agent/status?repo=owner/repo` |
 | "what can I lock?" | `GET /api/agent/fee-tokens` (wallet header) |
 | "lock 500 TOKEN on owner/repo for 10 pushes" | **Step 0 verify** → prepare → confirm with user → sign → confirm-lock → verify |
-| "launch a token through Proof of Dev" | **Step 0 verify** (`POST /api/launch/verify-github` or MCP `verify_github`) → launch → auto-lock → ship; launcher earns milestone unlocks of their own token and is **enrolled** for ShipRewards (per-merge platform-token payouts today go to the PR author; the launcher's trading-fee share is decided to auto-lock into a fee-stream grant unlocking by counted pushes, but that fee-lock vault is BUILT locally (FeeLockVault + FeeStreamEscrow, E2E-proven) but NOT deployed — until the platform redeploys and a launch names a vault, fee recipients still claim liquid WETH) |
+| "launch a token through Proof of Dev" | **Step 0 verify** (`POST /api/launch/verify-github` or MCP `verify_github`) → platform deploys the fee-lock vault + registrar registers the fee grant → **prepare** (`prepare_launch` validates all vault bindings + the registered grant, then returns the input) → launch → auto-lock → register → ship; launcher earns milestone unlocks of their own token and is **enrolled** for ShipRewards (per-merge platform-token payouts today go to the PR author; the launcher's trading-fee share auto-locks into a fee-stream grant unlocking by counted pushes — FeeLockVault + FeeStreamEscrow + the launch-prep surface are BUILT locally, E2E-proven, NOT deployed — until the platform redeploys, the production API has no prepare-launch endpoint and fee recipients still claim liquid WETH) |
 | "link my wallet to my GitHub" | Flow B magic link (agent) or Flow A (if they have a site session) |
 | "did that merge earn anything?" | repo status + author's link state; answer per the counting rules |
 | "I just shipped / merged — what's happening with it?" | `POST /api/agent/report-ship` for the head SHA (or the MCP `report_ship` tool), then poll `GET /api/agent/ship-report` and narrate the state exactly (`reported` ≠ `paid`) |

@@ -13,30 +13,37 @@
  * beneficiary-originated; the vault is the beneficiary, the keeper
  * only triggers, and the vault's selector allowlist refuses anything
  * that is not a claim call). Then, if the vault holds a balance, call
- * vault.lockAccrued(expectedBaseline, backendCountAtLock) with the
- * on-chain baseline read from the vault's escrow (knownPushCount —
+ * vault.lockAccrued(expectedBaseline, attestation, signature) with
+ * the on-chain baseline read from the vault's escrow (knownPushCount —
  * the authoritative on-chain counted total; the escrow reverts if
  * it moved between the read and the lock, and the keeper simply
- * retries next cycle) and the backend counted total read from the
- * backend's own counter. The keeper key needs no funds
- * relationship to the project and can never receive or redirect
- * fees: the vault's only outbound path is into its escrow grant
- * (see contracts/FeeLockVault.sol).
+ * retries next cycle) and an ORACLE-SIGNED CountAttestation of the
+ * backend's counted total, fetched from the backend
+ * (POST /api/launch/count-attestation) immediately before the lock.
+ * The keeper key needs no funds relationship to the project and
+ * can never receive or redirect fees: the vault's only outbound
+ * path is into its escrow grant (see contracts/FeeLockVault.sol).
  *
- * PENDING-REPORT GATE (Codex round-3, blocker 3): the backend
- * counter can be AHEAD of the on-chain counter — a push counted in
- * the backend whose fee report is still pending retry. Locking in
- * that gap would let the already-counted push vest the new tranche
- * once the report lands. So while the backend store is configured,
- * the keeper REFUSES to touch a vault whose grant has a pending
- * fee-release entry — the gate runs before the claim leg, so a
- * deferred cycle moves no funds at all: it defers (logs, cycle
- * stays clean) and the pending-report sweep retries the report
- * first. If the store is
+ * ATTESTED BASELINE (Codex round-4, blocker 1): round 3 passed the
+ * backend count as a bare number; the escrow could not verify it
+ * and anyone can call lockAccrued directly. The bare-count path is
+ * deleted on-chain — the escrow verifies the oracle's EIP-712
+ * signature over (escrow, repoId, vault, countedTotal, issuedAt,
+ * expiry, nonce) itself. This keeper therefore CANNOT lock without
+ * a backend to issue attestations: with no BACKEND_URL/SERVER_URL
+ * configured, or an unreachable/failed issuance, it defers
+ * (fail-closed) rather than locking blind.
+ *
+ * PENDING-REPORT GATE (Codex round-3, blocker 3 — retained as a
+ * courtesy layer; the attested baseline is now the load-bearing
+ * fix): the backend counter can be AHEAD of the on-chain counter —
+ * a push counted in the backend whose fee report is still pending
+ * retry. While the backend store is configured, the keeper REFUSES
+ * to touch a vault whose grant has a pending fee-release entry —
+ * the gate runs before the claim leg, so a deferred cycle moves no
+ * funds at all: it defers (logs, cycle stays clean) and the
+ * pending-report sweep retries the report first. If the store is
  * configured but UNREACHABLE, the keeper also defers (fail-closed).
- * Only with REDIS_URL unset entirely (standalone local mode) does
- * it lock with backendCountAtLock = the on-chain baseline, and it
- * says so in the output.
  *
  * Releases out of the escrow are NOT the keeper's job — they happen
  * on the webhook path via the oracle (src/oracle/feeLock.ts) when
@@ -53,15 +60,47 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 import { getPendingFeeRelease } from "../src/oracle/feeLock";
-import { getRedis, KEYS } from "../src/lib/redis";
 
 const VAULT_ABI = parseAbi([
   "function claimFees(bytes calldata data) external returns (uint256 amount)",
-  "function lockAccrued(uint256 expectedBaseline, uint256 backendCountAtLock) external returns (uint256 amount)",
+  "function lockAccrued(uint256 expectedBaseline, (address escrow, bytes32 repoId, address vault, uint256 countedTotal, uint256 issuedAt, uint256 expiry, uint256 nonce) attestation, bytes signature) external returns (uint256 amount)",
   "function accrued() view returns (uint256)",
   "function escrow() view returns (address)",
   "function repoId() view returns (bytes32)",
 ]);
+
+type CountAttestationWire = {
+  attestation: {
+    escrow: string;
+    repoId: string;
+    vault: string;
+    countedTotal: string;
+    issuedAt: string;
+    expiry: string;
+    nonce: string;
+  };
+  signature: string;
+};
+
+/** Fetch a fresh oracle CountAttestation from the backend. The
+ *  attested total is the backend's own counter — the keeper cannot
+ *  name a count, only ask for the signed true one. */
+async function fetchCountAttestation(
+  backendUrl: string,
+  repoIdHex: string,
+  vault: Address,
+): Promise<CountAttestationWire> {
+  const resp = await fetch(`${backendUrl}/api/launch/count-attestation`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ repoId: repoIdHex, vault, chain: "base" }),
+  });
+  const body = (await resp.json()) as CountAttestationWire & { ok?: boolean; error?: string };
+  if (!resp.ok || !body.attestation || !body.signature) {
+    throw new Error(`count-attestation issuance failed (${resp.status}): ${body.error ?? "no attestation in response"}`);
+  }
+  return body;
+}
 const ESCROW_ABI = parseAbi([
   "function knownPushCount(bytes32 repoId) view returns (uint256)",
 ]);
@@ -103,7 +142,6 @@ async function main() {
     // repoId keys in the backend store are lowercase hex without
     // the 0x prefix (src/lib/redis.ts KEYS).
     const repoIdHex = String(repoId).slice(2).toLowerCase();
-    let backendCount: bigint | null = null;
     if (process.env.REDIS_URL) {
       try {
         const pending = await getPendingFeeRelease(repoIdHex);
@@ -114,15 +152,34 @@ async function main() {
           console.log(`KEEPER ${JSON.stringify(out)}`);
           continue;
         }
-        const raw = await getRedis().get(KEYS.pushCount(repoIdHex));
-        const parsed = raw === null ? NaN : Number(raw);
-        backendCount = Number.isFinite(parsed) ? BigInt(parsed) : null;
       } catch (err) {
         out.lockDeferred = `backend store check failed (${err instanceof Error ? err.message : String(err)}) — fail-closed, deferring rather than locking blind.`;
         console.log(`KEEPER ${JSON.stringify(out)}`);
         continue;
       }
     }
+
+    // Attestation (round-4, blocker 1): fetch the oracle-signed
+    // backend count BEFORE moving any funds — the escrow accepts
+    // no other baseline evidence, so without an attestation there
+    // is nothing to lock with. Fail-closed on any issuance problem.
+    const backendUrl = process.env.BACKEND_URL ?? process.env.SERVER_URL;
+    if (!backendUrl) {
+      out.lockDeferred =
+        "no BACKEND_URL/SERVER_URL configured — cannot obtain an oracle count attestation; the escrow accepts no bare counts (round-4). Deferring before any fund movement.";
+      console.log(`KEEPER ${JSON.stringify(out)}`);
+      continue;
+    }
+    let attestation: CountAttestationWire;
+    try {
+      attestation = await fetchCountAttestation(backendUrl, repoIdHex, vault);
+    } catch (err) {
+      out.lockDeferred = `count attestation unavailable (${err instanceof Error ? err.message : String(err)}) — fail-closed, deferring rather than locking blind.`;
+      console.log(`KEEPER ${JSON.stringify(out)}`);
+      continue;
+    }
+    out.attestedCountAtLock = attestation.attestation.countedTotal;
+    out.attestationNonce = attestation.attestation.nonce;
 
     // Claim leg: execute the ledger claim calldata through the vault.
     const claimData =
@@ -167,24 +224,29 @@ async function main() {
       });
       out.expectedBaseline = baseline.toString();
 
-      // backendCountAtLock (round-3, blocker 3): the backend's own
-      // counted total, read at the gate above. It can be AHEAD of
-      // the on-chain baseline; the escrow stamps the tranche with
-      // max(the two). Unavailable (standalone mode) → the on-chain
-      // baseline, with the note recorded.
-      if (backendCount === null) {
-        backendCount = baseline;
-        out.backendCountNote =
-          "REDIS_URL unset (standalone mode): backend counter unavailable — locking with backendCountAtLock = the on-chain baseline.";
-      } else if (backendCount < baseline) {
-        backendCount = baseline;
-      }
-      out.backendCountAtLock = backendCount.toString();
+      // The attested backend count (round-4): signed by the oracle,
+      // fetched above before any funds moved. It can be AHEAD of
+      // the on-chain baseline (a counted push whose fee report is
+      // pending); the escrow verifies the signature and stamps the
+      // tranche with max(on-chain, attested).
+      const att = attestation.attestation;
       const hash = await walletClient.writeContract({
         address: vault,
         abi: VAULT_ABI,
         functionName: "lockAccrued",
-        args: [baseline, backendCount],
+        args: [
+          baseline,
+          {
+            escrow: att.escrow as Address,
+            repoId: att.repoId as `0x${string}`,
+            vault: att.vault as Address,
+            countedTotal: BigInt(att.countedTotal),
+            issuedAt: BigInt(att.issuedAt),
+            expiry: BigInt(att.expiry),
+            nonce: BigInt(att.nonce),
+          },
+          attestation.signature as `0x${string}`,
+        ],
         account,
       });
       await publicClient.waitForTransactionReceipt({ hash });

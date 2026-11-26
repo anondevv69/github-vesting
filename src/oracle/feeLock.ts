@@ -27,6 +27,18 @@
  * (sweepPendingFeeReleases / scripts/fee-release-sweep.ts). The
  * supply release is never re-run by a fee retry: it has its own
  * milestone idempotency on-chain and this module never calls it.
+ *
+ * PARTIAL SETTLEMENT (Codex round-4, blocker 2): releaseFee is
+ * work-capped on-chain (MAX_TRANCHES_PER_RELEASE), so a SUCCESSFUL
+ * release transaction can still leave vested fees unpaid at the
+ * target count. Settlement is therefore never inferred from the
+ * receipt: after every successful release this module reads the
+ * escrow's releasableAt(repoId, count) and clears the pending
+ * entry ONLY when it reports zero due. While a remainder is due,
+ * the entry stays (updated with the remaining amount) and the
+ * sweep drains it with repeated releaseFee calls — no new pushes
+ * required, so a launcher who stops shipping still receives every
+ * vested wei.
  */
 
 import {
@@ -44,12 +56,20 @@ import { getGrant, getRedis, KEYS, type GrantRecord } from "../lib/redis";
 import { repoIdToBytes32 } from "../lib/repoId";
 
 const FEE_STREAM_ABI = parseAbi([
-  "function releaseFee(bytes32 repoId, uint256 totalVerifiedPushes) external",
+  "function releaseFee(bytes32 repoId, uint256 totalVerifiedPushes) external returns (uint256 paidNow)",
+  "function releasableAt(bytes32 repoId, uint256 atPushCount) view returns (uint256)",
   "event FeeReleased(bytes32 indexed repoId, address indexed recipient, uint256 amount, uint256 totalVerifiedPushes, uint256 totalFeeReleasedSoFar)",
 ]);
 
 export type FeeReleaseResult =
-  | { triggered: true; txHash: string; payout: string }
+  | {
+      triggered: true;
+      txHash: string;
+      payout: string;
+      /** Vested-and-unpaid amount still due at the target count
+       *  after this call (round-4): "0" means fully settled. */
+      remainingDue: string;
+    }
   | { triggered: false; reason: string };
 
 export type PendingFeeRelease = {
@@ -142,9 +162,34 @@ export async function triggerFeeReleaseIfDue(
     }
     const events = parseEventLogs({ abi: FEE_STREAM_ABI, logs: receipt.logs, eventName: "FeeReleased" });
     const payout = events.reduce((acc, e) => acc + (e.args.amount ?? 0n), 0n);
-    // Any successful releaseFee call settles everything vested up to
-    // newPushCount — a pending entry from an earlier failure is
-    // resolved by definition, whether or not this call paid out.
+    // Settlement check (round-4): releaseFee is work-capped, so a
+    // successful tx may leave vested fees unpaid at this count.
+    // Read what is still due; the pending entry is cleared ONLY at
+    // zero due. While a remainder exists the entry stays queued —
+    // the sweep drains it with repeat calls, no new push needed.
+    const remainingDue = await publicClient.readContract({
+      address: escrowAddress as Address,
+      abi: FEE_STREAM_ABI,
+      functionName: "releasableAt",
+      args: [repoIdToBytes32(repoId), BigInt(newPushCount)],
+    });
+    if (remainingDue > 0n) {
+      await recordPendingFeeRelease(
+        repoId,
+        grant,
+        newPushCount,
+        `release partially settled at count ${newPushCount}: ${remainingDue} wei still vested-and-unpaid (per-call tranche cap) — sweep will drain`,
+      );
+      console.log(
+        `[fee-lock] Released ${payout} fee tokens to ${grant.recipient} for ${grant.repoFullName} (tx: ${hash}); ${remainingDue} wei still due at count ${newPushCount} — release stays queued`,
+      );
+      return {
+        triggered: true,
+        txHash: hash,
+        payout: payout.toString(),
+        remainingDue: remainingDue.toString(),
+      };
+    }
     await clearPendingFeeRelease(repoId);
     if (payout === 0n) {
       return { triggered: false, reason: `Push ${newPushCount}: no fee tranche vested yet` };
@@ -152,7 +197,7 @@ export async function triggerFeeReleaseIfDue(
     console.log(
       `[fee-lock] Released ${payout} fee tokens to ${grant.recipient} for ${grant.repoFullName} (tx: ${hash})`,
     );
-    return { triggered: true, txHash: hash, payout: payout.toString() };
+    return { triggered: true, txHash: hash, payout: payout.toString(), remainingDue: "0" };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error(`[fee-lock] Fee release failed for ${grant.repoFullName}:`, msg);
@@ -161,11 +206,22 @@ export async function triggerFeeReleaseIfDue(
   }
 }
 
+/** Max releaseFee calls per repo per sweep run (round-4): each call
+ *  settles up to MAX_TRANCHES_PER_RELEASE tranches on-chain, so 25
+ *  calls drain a 400-tranche backlog; anything beyond that stays
+ *  queued for the next sweep run — the entry persists until the
+ *  contract reports zero due. */
+export const MAX_SWEEP_CALLS_PER_REPO = 25;
+
 /**
  * Keeper sweep: retry every durable pending fee release at the
- * repo's CURRENT counted total. Each successful retry clears its
- * entry; failures stay pending with an incremented attempt counter.
- * Supply releases are never touched here.
+ * repo's CURRENT counted total, looping until the escrow reports
+ * zero vested-and-unpaid at that count (round-4: a work-capped
+ * release can need several calls; the sweep supplies them with NO
+ * new pushes). Each fully-settled repo's entry is cleared by the
+ * release path itself; failures and partial remainders stay
+ * pending with an incremented attempt counter. Supply releases are
+ * never touched here.
  */
 export async function sweepPendingFeeReleases(): Promise<
   Array<{ repoId: string; repoFullName: string; result: FeeReleaseResult }>
@@ -189,7 +245,19 @@ export async function sweepPendingFeeReleases(): Promise<
       continue;
     }
     const liveCount = parseInt((await redis.get(KEYS.pushCount(repoId))) ?? "0", 10);
-    const result = await triggerFeeReleaseIfDue(repoId, grant, Math.max(liveCount, pending.pushCount));
+    const targetCount = Math.max(liveCount, pending.pushCount);
+    let result = await triggerFeeReleaseIfDue(repoId, grant, targetCount);
+    // Drain loop: while the last call landed and the contract still
+    // reports vested-and-unpaid at the target count, call again.
+    for (
+      let calls = 1;
+      calls < MAX_SWEEP_CALLS_PER_REPO &&
+      result.triggered &&
+      result.remainingDue !== "0";
+      calls++
+    ) {
+      result = await triggerFeeReleaseIfDue(repoId, grant, targetCount);
+    }
     out.push({ repoId, repoFullName: grant.repoFullName, result });
   }
   return out;

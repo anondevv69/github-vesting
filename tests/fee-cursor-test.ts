@@ -23,6 +23,18 @@
  *     the end) and pays nothing, so its cost is the fixed call
  *     overhead — under the old full scan it would instead iterate
  *     all 60 settled tranches and cost several times the early call.
+ *     (Round 4: the 60-tranche vesting is drained over several
+ *     work-capped calls — see 4 — instead of one.)
+ *  4. Work cap (Codex round-4, blocker 2): with 40 tranches vesting
+ *     at ONE count and MAX_TRANCHES_PER_RELEASE = 16, the first
+ *     releaseFee call pays exactly 16 tranches' worth, its gas is
+ *     bounded (same order as the 2-tranche early call, NOT 20× it),
+ *     releasableAt reports the exact remainder, repeat calls drain
+ *     the rest with no new pushes, and the lifetime total is exact
+ *     to the wei.
+ *
+ * All locks go through oracle-signed CountAttestations (round 4,
+ * blocker 1) — the bare backend-count parameter no longer exists.
  */
 import { ethers } from "hardhat";
 
@@ -62,8 +74,10 @@ async function main() {
     return { repoId, vault, vaultAddr };
   }
 
+  let attNonce = 0;
   /** Accrue → claim → lock one tranche of `amount` WETH at the
-   *  current counters (backend count == on-chain count here). */
+   *  current counters, under an oracle-signed CountAttestation
+   *  (backend count == on-chain count here). */
   async function lockTranche(
     vault: Awaited<ReturnType<typeof Vault.deploy>>,
     vaultAddr: string,
@@ -73,7 +87,35 @@ async function main() {
     await (await source.accrue(vaultAddr, amount)).wait();
     await (await vault.connect(deployer).claimFees(claimData)).wait();
     const known = await feeEscrow.knownPushCount(repoId);
-    await (await vault.connect(deployer).lockAccrued(known, known)).wait();
+    // Sign against the CHAIN's clock: the in-process network's block
+    // timestamps drift ahead of wall time over hundreds of test txs.
+    const now = (await ethers.provider.getBlock("latest"))!.timestamp;
+    const att = {
+      escrow: feeEscrowAddr,
+      repoId,
+      vault: vaultAddr,
+      countedTotal: known,
+      issuedAt: BigInt(now),
+      expiry: BigInt(now + 300),
+      nonce: BigInt(++attNonce),
+    };
+    const chainId = Number((await ethers.provider.getNetwork()).chainId);
+    const sig = await oracle.signTypedData(
+      { name: "ProofOfDev FeeStreamEscrow", version: "1", chainId, verifyingContract: feeEscrowAddr },
+      {
+        CountAttestation: [
+          { name: "escrow", type: "address" },
+          { name: "repoId", type: "bytes32" },
+          { name: "vault", type: "address" },
+          { name: "countedTotal", type: "uint256" },
+          { name: "issuedAt", type: "uint256" },
+          { name: "expiry", type: "uint256" },
+          { name: "nonce", type: "uint256" },
+        ],
+      },
+      att,
+    );
+    await (await vault.connect(deployer).lockAccrued(known, att, sig)).wait();
   }
 
   // ── 1+2. Cursor semantics on a small grant (ppt=2, 3 tranches) ──
@@ -125,16 +167,20 @@ async function main() {
   check("early grant paid both tranches in full", (await feeEscrow.settledCursor(early.repoId)) === 2n);
 
   // ── 3. Long-lived grant: 60 tranches, all vested, then re-call ──
+  // Round 4: one call can no longer pay all 60 (work cap 16) — the
+  // grant drains over repeat calls at the same count, which is the
+  // sweep's job in production. Lifetime total must be identical.
   const long = await setupGrant("testowner/cursor-long", 1);
   for (let i = 0; i < 60; i++) {
     await lockTranche(long.vault, long.vaultAddr, long.repoId, ethers.parseUnits("0.1", 18));
   }
   check("long grant has 60 tranches", (await feeEscrow.trancheCount(long.repoId)) === 60n);
   const longBefore = await weth.balanceOf(recipient.address);
-  const longTx = await feeEscrow.connect(oracle).releaseFee(long.repoId, 1);
-  await longTx.wait();
+  for (let k = 0; k < 4; k++) {
+    await (await feeEscrow.connect(oracle).releaseFee(long.repoId, 1)).wait();
+  }
   check(
-    "long grant paid all 60 tranches exactly (6 WETH)",
+    "long grant paid all 60 tranches exactly over capped calls (6 WETH)",
     (await weth.balanceOf(recipient.address)) - longBefore === ethers.parseUnits("6", 18),
   );
   check("long grant cursor at the end (60)", (await feeEscrow.settledCursor(long.repoId)) === 60n);
@@ -151,6 +197,46 @@ async function main() {
   check(
     "final call paid nothing further",
     (await weth.balanceOf(recipient.address)) - longBefore === ethers.parseUnits("6", 18),
+  );
+
+  // ── 4. Work cap: 40 tranches vesting at ONE count (round 4) ────
+  const cap = await setupGrant("testowner/cursor-cap", 1);
+  for (let i = 0; i < 40; i++) {
+    await lockTranche(cap.vault, cap.vaultAddr, cap.repoId, ethers.parseUnits("1", 18));
+  }
+  check("cap grant has 40 tranches", (await feeEscrow.trancheCount(cap.repoId)) === 40n);
+  const capBefore = await weth.balanceOf(recipient.address);
+  const capTx1 = await feeEscrow.connect(oracle).releaseFee(cap.repoId, 1);
+  const capReceipt1 = await capTx1.wait();
+  const gCap = capReceipt1!.gasUsed;
+  check(
+    "first capped call pays exactly 16 tranches (16 WETH)",
+    (await weth.balanceOf(recipient.address)) - capBefore === ethers.parseUnits("16", 18),
+  );
+  console.log(`gas: capped call (16 tranches) = ${gCap}, early call (2 tranches) = ${gEarly}`);
+  check(
+    "capped call gas is bounded (< 4x the 2-tranche early call and < 750k absolute, regardless of the 40-tranche backlog)",
+    gCap < gEarly * 4n && gCap < 750_000n,
+    `gCap=${gCap} gEarly=${gEarly}`,
+  );
+  check(
+    "releasableAt reports the exact remainder after the capped call (24 WETH)",
+    (await feeEscrow.releasableAt(cap.repoId, 1)) === ethers.parseUnits("24", 18),
+  );
+  await (await feeEscrow.connect(oracle).releaseFee(cap.repoId, 1)).wait();
+  check(
+    "second call at the same count pays the next 16 (32 WETH cumulative)",
+    (await weth.balanceOf(recipient.address)) - capBefore === ethers.parseUnits("32", 18),
+  );
+  await (await feeEscrow.connect(oracle).releaseFee(cap.repoId, 1)).wait();
+  check(
+    "third call drains the final 8 — lifetime total exact (40 WETH)",
+    (await weth.balanceOf(recipient.address)) - capBefore === ethers.parseUnits("40", 18),
+  );
+  check(
+    "releasableAt is zero once drained; cursor at the end (40)",
+    (await feeEscrow.releasableAt(cap.repoId, 1)) === 0n &&
+      (await feeEscrow.settledCursor(cap.repoId)) === 40n,
   );
 
   console.log(`\nfee-cursor: ${failures === 0 ? "ALL PASS" : `${failures} FAILURES`}`);

@@ -135,7 +135,7 @@ author: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551594 of 16777216
-  Block #1:            0xeee145cd158e1ca30ac9356ebb0cc57a113ddb72d3d853e1d474f8c226a95ddc
+  Block #1:            0xa75f254a13d1b217a7345f84ffd09a46e9e8442ca7fb2626553cd2bf422b15fc
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -149,7 +149,7 @@ PTK: 0x5FbDB2315678afecb367f032d93F642f64180aa3 deployTx: 0x5bebf31074097527093a
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #2:            0xcecf96bd69add48f3624ec896b3360e347bf3bc59a1ccd57e7b08f10d2e0e0cb
+  Block #2:            0xceec72331c49404f11ccacfbfcad2e4f77cef749fbd1c239efdcec8671c7dcf5
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -184,7 +184,7 @@ RWD: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 deployTx: 0x5b7587e8cafecb4cb875
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1869326 of 16777216
-  Block #3:            0x4bc17fd18796998bda03fc0798bf557018186c1cbf9e6a9a296575968c096c01
+  Block #3:            0x90b31109be97e09222afa2ac81084de6c46e74c9628320a30809c4c635d004fc
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -219,7 +219,7 @@ GitEscrow: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 deployTx: 0x970c5e6d3b0825
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            793530 of 16777216
-  Block #4:            0xdee29f86fea59c6aba3aea2bde6cd58b37bb2d0cca6e16f799e0b7aba5ac696b
+  Block #4:            0x517f700b0d2a39a127f12b69e75cfb41d2b584334566bcd62f3e53d4ffbc2687
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -233,7 +233,7 @@ ShipRewards: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9 deployTx: 0xf9bda7b950d8
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #5:            0x4ff876b255cfb6502949021fa1a238b4fdcc8cf972bda1b81e76fab95ad7e8dd
+  Block #5:            0x78786c4090e08b3d8e831d094429c03c71d0c8cd687efe30cba6176a6a41e462
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -247,7 +247,7 @@ mint PTK→recipient tx: 0xee6c2808b4002778359d77436ae2d40bdd47bebc0aaf03ad12e28
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            68445 of 16777216
-  Block #6:            0xdf78ae011b1ec2dc61549d41071bd01527337833b92d078a2054dc3a111995d9
+  Block #6:            0xdd6cf90e30c898caa6d70c07ca889e0f373fb4fa4b1b6a3475d678c959ec87b7
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -262,7 +262,7 @@ repoId: 0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46383 of 16777216
-  Block #7:            0x172d9ca673a2f8235e8cfec7af9404148f377e3a1bdf9913e7c8ce93b495ae0d
+  Block #7:            0xd4b951b393c2089461f4a286743e2fa00c7578477d61bb6f6869b0314d742662
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -276,7 +276,7 @@ approve tx: 0xf6b889b8b1e548e9c34d69b02d4f882bbd1d0ebdfc622d4e28e35c7e030eab43
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            263864 of 16777216
-  Block #8:            0xff2c844612b51466f5603bd40ede0be6c079316592e08e514ea22c1dc8943cc8
+  Block #8:            0xbcf1bd3fd6187035a069def866fe1bfd01b22f4aaa0cdda9952d79e8d4478d7f
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -296,7 +296,7 @@ on-chain grant: recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC totalLocked
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            46844 of 16777216
-  Block #9:            0xfadbd2c9e1a14f905a070893590e2613633f0b45ea4c32dd8b0bedc6fab6d219
+  Block #9:            0x201e98e3c22f7347e371fa3883b03945579435e3f1d13009d2bb9474967fdc29
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -322,7 +322,7 @@ server up
 server-side repoId (no 0x): 533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
 on-chain repoId matches: true
 grant saved for testowner/testrepo
-linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T02:46:29.534Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T03:36:59.037Z","source":"signed"}]
 === 7. balances before ===
 [32meth_accounts[0m
 [32meth_accounts (2)[0m
@@ -353,10 +353,11 @@ PASS: before: author RWD 0
 PASS: before: recipient PTK 0
 === 8. fire the SAME prhuman webhook twice IN PARALLEL ===
 [webhook] push to testowner/testrepo — evaluating
-[fixture] GET /repos/testowner/testrepo/installation -> 200
 [webhook] push to testowner/testrepo — evaluating
-[fixture] POST /app/installations/777/access_tokens -> 201
 [fixture] GET /repos/testowner/testrepo/installation -> 200
+[fixture] GET /repos/testowner/testrepo/installation -> 200
+[fixture] POST /app/installations/777/access_tokens -> 201
+[fixture] POST /app/installations/777/access_tokens -> 201
 [fixture] GET /repos/testowner/testrepo/pulls/42 -> 200
 [fixture] GET /repos/testowner/testrepo/pulls/42 -> 200
 [fixture] GET /repos/testowner/testrepo/pulls/42/files -> 200
@@ -375,7 +376,7 @@ PASS: before: recipient PTK 0
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            120284 of 125922
-  Block #10:           0x64a67f0e533b3cb26c832b96a8767bd26c4827ab757decaa4bde53627dd744b7
+  Block #10:           0x7ce9c5417c0d7e043250f04779dad7303081357fb8e9c90ed47656efd226b9a7
 
 [32meth_getTransactionReceipt[0m
 [oracle] Release tx confirmed: 0x5850aab37c1e8c63ec34e4239ce7bd1d7317d58b793a3ea8186e1369bab0d6b6 (milestone 1)
@@ -396,16 +397,16 @@ PASS: before: recipient PTK 0
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
   Gas used:            109580 of 114716
-  Block #11:           0xb91a50a51582fddcec8d63eb55303ef4971618bd8df12d88714f80457c6f3f6d
+  Block #11:           0xb1eaec6ee0287a8e17e3447036f1bedf3f13aa8e210012f78f39207946c8ab98
 
 [32meth_getTransactionReceipt[0m
 [ship-rewards] Paid 10000000000000000000 to 0x90f79bf6eb2c4f870365e785982e1f101e93b906 for merge c0ffee0 (tx: 0x8dc5110265c8149d8ec51fe6a1923f5dc357506bc79a387b7ae9316440c1cee8)
 [webhook] push accepted for testowner/testrepo: total verified pushes = 1
 --- delivery A ---
-[webhook:prhuman] HTTP 200 in 184ms
+[webhook:prhuman] HTTP 200 in 161ms
 {"ok":true,"accepted":false,"reason":"Duplicate push — already counted by a concurrent delivery"}
 --- delivery B ---
-[webhook:prhuman] HTTP 200 in 529ms
+[webhook:prhuman] HTTP 200 in 532ms
 {"ok":true,"accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main","verifiedPushCount":1,"release":{"triggered":true,"txHash":"0x5850aab37c1e8c63ec34e4239ce7bd1d7317d58b793a3ea8186e1369bab0d6b6","milestone":1,"payout":"500000000000000000000"},"prCredit":{"prNumber":42,"authorLogin":"testauthor"},"reward":{"paid":true,"txHash":"0x8dc5110265c8149d8ec51fe6a1923f5dc357506bc79a387b7ae9316440c1cee8","recipient":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","amount":"10000000000000000000"}}
 === 9. balances after: exactly ONE count settled ===
 [32meth_call[0m
@@ -433,18 +434,18 @@ PASS: author paid exactly one reward (+10 RWD)
 PASS: recipient got exactly one milestone (+500 PTK)
 PASS: escrow kept the other half (500 PTK)
 === 10. push counter incremented by exactly 1 ===
-{"ok":true,"grant":{"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","repoFullName":"testowner/testrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"1000000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"500000000000000000000","verifiedPushCount":1,"lastPaidMilestone":1,"onChainTxHash":"0xfe263c957fd15909e0547b0e6d4bae81a0c859072c77640d307c37064f4e5291","installationId":0,"status":"active","streaming":false,"createdAt":"2026-11-26T02:46:29.506Z","updatedAt":"2026-11-26T02:46:31.672Z"},"progress":{"verifiedPushCount":1,"totalPushesRequired":2,"progressPct":50,"nextMilestoneAt":2,"milestonesCompleted":1,"totalMilestones":2,"pushesUntilNextRelease":1,"singleRelease":false,"releaseEvery":1,"summary":"1 verified pushes per release · 2 payouts total"},"recentPushes":[{"ts":1795661191373,"sha":"c0ffee0000000000000000000000000000000042","branch":"main","pusher":"testauthor","reason":"1 commit(s), ~55 lines in 11 code file(s) on main","linesEstimate":55,"commitCount":1,"accepted":true},{"ts":1795661191373,"sha":"c0ffee0000000000000000000000000000000042","branch":"main","pusher":"testauthor","reason":"Duplicate push — already counted by a concurrent delivery","accepted":false,"commitCount":1,"linesEstimate":55}]}
+{"ok":true,"grant":{"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","repoFullName":"testowner/testrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"1000000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"500000000000000000000","verifiedPushCount":1,"lastPaidMilestone":1,"onChainTxHash":"0xfe263c957fd15909e0547b0e6d4bae81a0c859072c77640d307c37064f4e5291","installationId":0,"status":"active","streaming":false,"createdAt":"2026-11-26T03:36:58.999Z","updatedAt":"2026-11-26T03:37:01.063Z"},"progress":{"verifiedPushCount":1,"totalPushesRequired":2,"progressPct":50,"nextMilestoneAt":2,"milestonesCompleted":1,"totalMilestones":2,"pushesUntilNextRelease":1,"singleRelease":false,"releaseEvery":1,"summary":"1 verified pushes per release · 2 payouts total"},"recentPushes":[{"ts":1795664220722,"sha":"c0ffee0000000000000000000000000000000042","branch":"main","pusher":"testauthor","reason":"1 commit(s), ~55 lines in 11 code file(s) on main","linesEstimate":55,"commitCount":1,"accepted":true},{"ts":1795664220723,"sha":"c0ffee0000000000000000000000000000000042","branch":"main","pusher":"testauthor","reason":"Duplicate push — already counted by a concurrent delivery","accepted":false,"commitCount":1,"linesEstimate":55}]}
 PASS: verifiedPushCount is 1
 === 11. different SHAs, cooldown race (round-2): two small pushes in parallel on a fresh repo -> exactly one counts ===
 [webhook] push to testowner/nogrant — evaluating (grant-less: rewards only)
-[webhook] grant-less push accepted for testowner/nogrant: total verified pushes = 1
 [webhook] push to testowner/nogrant — evaluating (grant-less: rewards only)
-[webhook] grant-less push rejected: Only 0.0 min since last counted push (minimum 30 min, or ~50+ estimated lines for a substantial fix)
-[webhook:small] HTTP 200 in 76ms
+[webhook] grant-less push rejected: Cooldown window claimed by a concurrent push (atomic claim)
+[webhook] grant-less push accepted for testowner/nogrant: total verified pushes = 1
+[webhook:small] HTTP 200 in 77ms
 {"ok":true,"accepted":true,"grantless":true,"reason":"1 commit(s), ~5 lines in 1 code file(s) on main","verifiedPushCount":1}
-[webhook:small2] HTTP 200 in 75ms
-{"ok":true,"accepted":false,"grantless":true,"reason":"Only 0.0 min since last counted push (minimum 30 min, or ~50+ estimated lines for a substantial fix)"}
-{"repo":"testowner/nogrant","pushCount":1,"log":[{"sha":"d44ce00","accepted":true,"reason":"1 commit(s), ~5 lines in 1 code file(s) on main"},{"sha":"e55ce00","accepted":false,"reason":"Only 0.0 min since last counted push (minimum 30 min, or ~50+ estimated lines for a substantial fix)"}]}
+[webhook:small2] HTTP 200 in 34ms
+{"ok":true,"accepted":false,"grantless":true,"reason":"Cooldown window claimed by a concurrent push (atomic claim)"}
+{"repo":"testowner/nogrant","pushCount":1,"log":[{"sha":"d44ce00","accepted":true,"reason":"1 commit(s), ~5 lines in 1 code file(s) on main"},{"sha":"e55ce00","accepted":false,"reason":"Cooldown window claimed by a concurrent push (atomic claim)"}]}
 PASS: cooldown race: exactly one of the two different SHAs counted
 PASS: cooldown race loser rejected by the cooldown (atomic claim or pre-check)
 === 12. different SHAs, daily-cap race (round-2): one slot left, two big pushes in parallel -> exactly one counts ===
@@ -462,7 +463,7 @@ PASS: cooldown race loser rejected by the cooldown (atomic claim or pre-check)
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            69537 of 79316
-  Block #12:           0xe9948212d2c08e8f4e18ddb3dc8da9b821b09e646a956ba49f626f60e1465e6c
+  Block #12:           0x34d8282b716ea99e8781dbf4f9f10771624ad233302789599ccc339fbcc67145
 
 [32meth_getTransactionReceipt[0m
 [oracle] Release tx confirmed: 0x3779f4a92e49205c259bb319e646008898c8fccc7fcfa2d6efa5bf992b6099ce (milestone 2)
@@ -475,9 +476,9 @@ PASS: setup: plain counted (2 total, 2 of 3 daily slots used)
 [webhook] grant-less push accepted for testowner/testrepo: total verified pushes = 3
 [webhook] push to testowner/testrepo — evaluating (grant-less: rewards only)
 [webhook] grant-less push rejected: Daily cap of 3 counted pushes already reached for 2026-11-26
-[webhook:plain2] HTTP 200 in 80ms
+[webhook:plain2] HTTP 200 in 32ms
 {"ok":true,"accepted":false,"grantless":true,"reason":"Daily cap of 3 counted pushes already reached for 2026-11-26"}
-[webhook:plain3] HTTP 200 in 79ms
+[webhook:plain3] HTTP 200 in 34ms
 {"ok":true,"accepted":true,"grantless":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)","verifiedPushCount":3}
 {"repo":"testowner/testrepo","pushCount":3,"log":[{"sha":"c0ffee0","accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main"},{"sha":"c0ffee0","accepted":false,"reason":"Duplicate push — already counted by a concurrent delivery"},{"sha":"a11ce00","accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)"},{"sha":"c33ce00","accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)"},{"sha":"b22ce00","accepted":false,"reason":"Daily cap of 3 counted pushes already reached for 2026-11-26"}]}
 PASS: cap race: exactly one racer counted (3 total = the daily cap)

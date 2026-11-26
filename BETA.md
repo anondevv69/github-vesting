@@ -29,15 +29,17 @@ Request a launch verification for the exact repo + wallet + chain. You receive a
 
 ## Step 4 — Prepare the launch
 
-Call prepare-launch (web or the MCP `prepare_launch` tool) with your verification token and your launch parameters. Two pieces of infrastructure are the platform's job, not yours:
+Call prepare-launch (web or the MCP `prepare_launch` tool) with your verification token and your launch parameters. The onboarding order is fixed, and every step before yours is the platform's job:
 
-- **Your fee-lock vault is deployed for you.** During onboarding the platform deploys your project's FeeLockVault from the platform's one approved vault implementation, bound to your repo and your claim wallet, and the platform's backend registrar registers the fee grant on the fee escrow. You never deploy the vault and never register the grant yourself — and a vault that is not an instance of the approved implementation is refused at prepare-launch, whoever deployed it.
-- **You get back the exact launch input the platform approves:**
-  - **Fee split (of the creator fee slice):** 25% to the platform reward treasury, 75% to your project's fee-lock vault. Never to your raw wallet — that is what makes your fees lock instead of arriving liquid.
-  - **Bankr time-vesting: explicitly zero.** Your unlock schedule is the push schedule, not a calendar.
-  - Your token name, ticker, and supply terms are yours.
+1. **The platform deploys your fee-lock vault** from the platform's one approved vault implementation, bound to your repo, your claim wallet, the platform's fee escrow, the chain's WETH, and the Bankr claim ledger. You never deploy the vault yourself.
+2. **The platform registrar registers your fee grant** on the fee escrow (recipient, vault, fee token, pushes-per-tranche). You never register the grant yourself.
+3. **Prepare-launch verifies, then answers.** Before it returns anything signable, prepare-launch re-reads the vault on-chain and checks **every binding** (repo, launcher, escrow, WETH fee token, Bankr claim ledger) plus the approved-implementation codehash, and confirms the **matching fee grant is registered** with the same recipient, vault, token, and schedule. Any mismatch refuses with a specific code (`LAUNCH_VAULT_REPO_MISMATCH`, `LAUNCH_VAULT_LAUNCHER_MISMATCH`, `LAUNCH_VAULT_ESCROW_MISMATCH`, `LAUNCH_VAULT_TOKEN_MISMATCH`, `LAUNCH_VAULT_LEDGER_MISMATCH`, `LAUNCH_FEE_GRANT_NOT_REGISTERED`, `LAUNCH_FEE_GRANT_MISMATCH`) — no input is returned for a wrongly-bound vault or a missing grant, so a bad configuration is caught **before** you launch, not after.
+4. **You get back the exact launch input the platform approves:**
+   - **Fee split (of the creator fee slice):** 25% to the platform reward treasury, 75% to your project's fee-lock vault. Never to your raw wallet — that is what makes your fees lock instead of arriving liquid.
+   - **Bankr time-vesting: explicitly zero.** Your unlock schedule is the push schedule, not a calendar.
+   - Your token name, ticker, and supply terms are yours.
 
-If the treasury is not yet designated or the token check fails, prepare-launch refuses — closed doors are deliberate; nothing half-launches.
+If the reward treasury is not configured on the platform or any check above fails, prepare-launch refuses — closed doors are deliberate; nothing half-launches. One more thing to expect later, when your fees vest: a fee release settles in capped batches, so vested fees may show as **still settling** until the platform's sweep finishes the batch — that is the release working as designed, not a stuck payment, and it completes even if you stop pushing.
 
 **If your verification token expires mid-flow:** the 15-minute token covers the interactive steps, and a launch can outlast it. If it expires between launch and registration, re-run Step 3 to get a fresh token and register with the fresh token — do NOT re-prepare. Registration binds to your ORIGINAL prepared record: the fresh token must chain to the same GitHub login, repo, wallet, and chain, issued at or after the original verification, and the lock's ordering is judged against the ORIGINAL verification time, so a lock you made in good order is never failed for predating the fresh token. If your registration already landed, repeating it changes nothing — the platform refuses a duplicate active grant and the original stands.
 

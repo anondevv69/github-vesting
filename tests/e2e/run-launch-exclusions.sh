@@ -153,6 +153,8 @@ BANKR_RECORD_ADDRESS="$(python3 -c "import json;print(json.load(open('tests/e2e/
 export FEE_STREAM_ESCROW_ADDRESS
 export BANKR_FACTORY_ADDRESS="$BANKR_RECORD_ADDRESS"
 export BANKR_FEE_LEDGER_ADDRESS="$BANKR_RECORD_ADDRESS"
+export WETH_ADDRESS="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['weth'])")"
+export BANKR_CLAIM_LEDGER_ADDRESS="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['claimSource'])")"
 VAULT_LAUNCH="$(python3 -c "import json;print(json.load(open('tests/e2e/state-gate.json'))['vaultLaunch'])")"
 echo "feeStreamEscrow=$FEE_STREAM_ESCROW_ADDRESS vaultLaunch=$VAULT_LAUNCH"
 

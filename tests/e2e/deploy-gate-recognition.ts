@@ -70,6 +70,66 @@ async function main() {
   const vaultOrder = await deployVault("testauthor/orderrepo");
   const vaultNolock = await deployVault("testauthor/nolockrepo");
 
+  // Round-4 (blocker 3): prepare-launch now requires the matching
+  // fee grant to be REGISTERED before it returns an input, so the
+  // registrar registers each suite repo's grant here (ppt=2).
+  const registerGrant = async (repoFullName: string, vaultAddr: string, ppt = 2) => {
+    const repoId = ethers.keccak256(ethers.toUtf8Bytes(repoFullName));
+    await (
+      await feeEscrow
+        .connect(deployer)
+        .registerFeeGrant(repoId, recipient.address, wethAddr, vaultAddr, ppt)
+    ).wait();
+  };
+  await registerGrant("testauthor/launchrepo", vaultLaunch);
+  await registerGrant("testauthor/chainrepo", vaultChain);
+  await registerGrant("testauthor/stalerepo", vaultStale);
+  await registerGrant("testauthor/orderrepo", vaultOrder);
+  await registerGrant("testauthor/nolockrepo", vaultNolock);
+
+  // Round-4 wrong-binding vaults for the prepare-launch refusal
+  // steps: each is a GENUINE instance of the approved implementation
+  // with exactly ONE binding wrong (the codehash check passes; the
+  // binding check must refuse with the field's code).
+  const bindRepoId = ethers.keccak256(ethers.toUtf8Bytes("testauthor/bindingsrepo"));
+  // repo: bound to a different repo's id
+  const vaultBindRepo = await (
+    await Vault.deploy(
+      feeEscrowAddr,
+      wethAddr,
+      ethers.keccak256(ethers.toUtf8Bytes("testauthor/notbindingsrepo")),
+      recipient.address,
+      sourceAddr,
+    )
+  ).getAddress();
+  // launcher: bound to the deployer, not the verified wallet
+  const vaultBindLauncher = await (
+    await Vault.deploy(feeEscrowAddr, wethAddr, bindRepoId, deployer.address, sourceAddr)
+  ).getAddress();
+  // escrow: bound to a second FeeStreamEscrow instance
+  const feeEscrowWrong = await FeeEscrow.deploy(oracle.address);
+  const vaultBindEscrow = await (
+    await Vault.deploy(await feeEscrowWrong.getAddress(), wethAddr, bindRepoId, recipient.address, sourceAddr)
+  ).getAddress();
+  // token: bound to a non-WETH fee token
+  const notWeth = await Mock.deploy("Not WETH", "NWETH", 18);
+  const vaultBindToken = await (
+    await Vault.deploy(feeEscrowAddr, await notWeth.getAddress(), bindRepoId, recipient.address, sourceAddr)
+  ).getAddress();
+  // ledger: bound to a second claim-source instance, not the
+  // configured Bankr claim ledger
+  const source2 = await Source.deploy(wethAddr);
+  const vaultBindLedger = await (
+    await Vault.deploy(feeEscrowAddr, wethAddr, bindRepoId, recipient.address, await source2.getAddress())
+  ).getAddress();
+  // grantless: bindings fully correct for its repo, but NO fee
+  // grant is ever registered for it
+  const vaultNogrant = await deployVault("testauthor/nograntrepo");
+  // grant-mismatch: bindings correct; its grant IS registered but
+  // with pushesPerTranche=3, so a prepare expecting 2 must refuse
+  const vaultGrantmis = await deployVault("testauthor/grantmisrepo");
+  await registerGrant("testauthor/grantmisrepo", vaultGrantmis, 3);
+
   // Per-repo tokens for the round-3 chaining steps (29/30): each
   // repo's registration must present the token its lock actually
   // locked, and the mock record carries that token's fee config.
@@ -105,11 +165,19 @@ async function main() {
     escrowV2: escrowAddr,
     feeStreamEscrow: feeEscrowAddr,
     bankrRecord: recordAddr,
+    claimSource: sourceAddr,
     vaultLaunch,
     vaultChain,
     vaultStale,
     vaultOrder,
     vaultNolock,
+    vaultBindRepo,
+    vaultBindLauncher,
+    vaultBindEscrow,
+    vaultBindToken,
+    vaultBindLedger,
+    vaultNogrant,
+    vaultGrantmis,
     ptk: ptkAddr,
     ctk: ctkAddr,
     stk: stkAddr,

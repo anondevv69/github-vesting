@@ -59,6 +59,7 @@ check() { # name, haystack, needle
     FAILURES=$((FAILURES + 1))
   fi
 }
+check_absent_fee() { if printf '%s' "$2" | grep -qF "$3"; then echo "FAIL: $1 (unexpectedly present: $3)"; FAILURES=$((FAILURES + 1)); else echo "PASS: $1"; fi; }
 
 PIDS=()
 kill_port() {
@@ -147,6 +148,12 @@ JR() { python3 -c "import json,sys;print(json.load(open('tests/e2e/state-recogni
 # reads; exported BEFORE the server starts (env is read at boot).
 export BANKR_FACTORY_ADDRESS="$(JR record)"
 export BANKR_FEE_LEDGER_ADDRESS="$(JR record)"
+# Round-4 prepare-launch binding config: the chain's WETH and the
+# Bankr CLAIM ledger (the fee suite's claim source — the launch-
+# record ledger above is a different mock of the same production
+# contract).
+export WETH_ADDRESS="$(J weth)"
+export BANKR_CLAIM_LEDGER_ADDRESS="$(J feeClaimSource)"
 echo "bankr record double: $BANKR_FACTORY_ADDRESS"
 
 echo "=== 4. fixture GitHub API ==="
@@ -211,7 +218,7 @@ echo "=== 13. keeper cycle 1: claim 40 WETH -> lock tranche 1 ==="
 OUT="$(KEEPER_PRIVATE_KEY="$KEEPER_KEY" FEE_CLAIM_SOURCE="$SOURCE" npx tsx scripts/fee-lock-keeper.ts "$VAULT")"; echo "$OUT"
 check "keeper locked 40 WETH" "$OUT" '"lockedAmount":"40000000000000000000"'
 check "keeper tranche 1 baseline = 0 counted pushes (provenance)" "$OUT" '"expectedBaseline":"0"'
-check "keeper tranche 1 backendCountAtLock = 0 (round-3)" "$OUT" '"backendCountAtLock":"0"'
+check "keeper tranche 1 attestedCountAtLock = 0 (round-4 oracle attestation)" "$OUT" '"attestedCountAtLock":"0"'
 OUT="$(npx tsx tests/e2e/balances-fee.ts after-lock1)"; echo "$OUT"
 check "fee escrow holds the locked 40" "$OUT" "feeEscrow WETH=40"
 check "vault drained after lock" "$OUT" "vault WETH=0"
@@ -227,7 +234,7 @@ AMOUNT=30 npx hardhat run --config hardhat.local.config.ts --network localhost t
 OUT="$(KEEPER_PRIVATE_KEY="$KEEPER_KEY" FEE_CLAIM_SOURCE="$SOURCE" npx tsx scripts/fee-lock-keeper.ts "$VAULT")"; echo "$OUT"
 check "keeper locked 30 WETH (tranche 2)" "$OUT" '"lockedAmount":"30000000000000000000"'
 check "keeper tranche 2 baseline = 1 counted push (provenance)" "$OUT" '"expectedBaseline":"1"'
-check "keeper tranche 2 backendCountAtLock = 1 (round-3)" "$OUT" '"backendCountAtLock":"1"'
+check "keeper tranche 2 attestedCountAtLock = 1 (round-4)" "$OUT" '"attestedCountAtLock":"1"'
 OUT="$(npx tsx tests/e2e/balances-fee.ts after-lock2)"; echo "$OUT"
 check "fee escrow holds 20 unreleased tranche-1 + 30 tranche-2" "$OUT" "feeEscrow WETH=50"
 check "tranche 2 not released before its pushes" "$OUT" "recipient PTK=0 WETH=20"
@@ -302,15 +309,22 @@ OUT="$(register_for testowner/feeproj2 "$T" "$IMPOSTOR" "$LTX")"; echo "$OUT"
 check "feeproj2 unstamped" "$OUT" '"stamped":false'
 check "feeproj2 codehash mismatch code" "$OUT" '"code":"LAUNCH_VAULT_CODEHASH_MISMATCH"'
 
-echo "=== 21. recognition: vault bound to another repo -> UNSTAMPED ==="
+echo "=== 21. round-4: vault bound to another repo -> refused at PREPARE (was: unstamped at registration) ==="
+# Round 3 caught this binding only at registration — after the user
+# may already have launched. Round 4 validates bindings at prepare:
+# no launch input is ever returned for a wrongly-bound vault. The
+# registration-side check remains as the second line of defence;
+# with no prepared record, registration withholds the stamp as
+# LAUNCH_NO_PREPARED_RECORD.
 set_record "[[\"$DEPLOYER\",2500],[\"$VAULT3\",7500]]"
 T="$(verify_for testowner/feeproj3)"
 OUT="$(prepare_for testowner/feeproj3 "$T" "$VAULT3")"; echo "$OUT"
-check "feeproj3 prepare ok" "$OUT" '"prepared":true'
+check "feeproj3 prepare REFUSED (vault bound to another repo)" "$OUT" '"code":"LAUNCH_VAULT_REPO_MISMATCH"'
+check_absent_fee "feeproj3 prepare returned no input" "$OUT" '"prepared":true'
 LTX="$(lock_for testowner/feeproj3 | grep -o 'LOCK_TX=0x[0-9a-f]*' | cut -d= -f2)"
 OUT="$(register_for testowner/feeproj3 "$T" "$VAULT3" "$LTX")"; echo "$OUT"
 check "feeproj3 unstamped" "$OUT" '"stamped":false'
-check "feeproj3 repo mismatch code" "$OUT" '"code":"LAUNCH_VAULT_REPO_MISMATCH"'
+check "feeproj3 no-prepared-record code at registration" "$OUT" '"code":"LAUNCH_NO_PREPARED_RECORD"'
 
 echo "=== 22. recognition: actual launch recipients != prepared -> UNSTAMPED ==="
 set_record "[[\"$DEPLOYER\",2500],[\"$RECIPIENT\",7500]]"
@@ -348,7 +362,7 @@ AMOUNT=20 npx hardhat run --config hardhat.local.config.ts --network localhost t
 OUT="$(KEEPER_PRIVATE_KEY="$KEEPER_KEY" FEE_CLAIM_SOURCE="$SOURCE" npx tsx scripts/fee-lock-keeper.ts "$VAULT")"; echo "$OUT"
 check "keeper locked 20 WETH (tranche 3)" "$OUT" '"lockedAmount":"20000000000000000000"'
 check "keeper tranche 3 baseline = 3 counted pushes" "$OUT" '"expectedBaseline":"3"'
-check "keeper tranche 3 backendCountAtLock = 3 (round-3)" "$OUT" '"backendCountAtLock":"3"'
+check "keeper tranche 3 attestedCountAtLock = 3 (round-4)" "$OUT" '"attestedCountAtLock":"3"'
 
 echo "=== 26. push 4 with a BROKEN fee leg: supply milestone pays, fee release fails -> pending ==="
 OUT="$(FEE_STREAM_ESCROW_ADDRESS="$GIT_ESCROW_ADDR" npx tsx tests/e2e/fee-retry.ts push fee4000000000000000000000000000000000001)"; echo "$OUT"
@@ -401,7 +415,6 @@ echo "=== 30. round-3: keeper attempts to lock in the gap -> DEFERRED, no funds 
 OUT="$(KEEPER_PRIVATE_KEY="$KEEPER_KEY" FEE_CLAIM_SOURCE="$SOURCE" npx tsx scripts/fee-lock-keeper.ts "$VAULT")"; echo "$OUT"
 check "keeper deferred on the pending report" "$OUT" '"lockDeferred"'
 check "keeper deferral names the pending total 7" "$OUT" "pending fee release for total 7"
-check_absent_fee() { if printf '%s' "$2" | grep -qF "$3"; then echo "FAIL: $1 (unexpectedly present: $3)"; FAILURES=$((FAILURES + 1)); else echo "PASS: $1"; fi; }
 check_absent_fee "keeper did NOT lock while deferred" "$OUT" '"lockedAmount"'
 OUT="$(npx tsx tests/e2e/balances-fee.ts after-deferred-keeper)"; echo "$OUT"
 check "vault still holds 0 (deferral precedes the claim leg)" "$OUT" "vault WETH=0"
@@ -419,11 +432,11 @@ check "on-chain counter now 7" "$OUT" "knownPushCount=7"
 OUT="$(npx tsx tests/e2e/balances-fee.ts after-gap-sweep)"; echo "$OUT"
 check "the landed report vested nothing new (all tranches already full, 90 WETH)" "$OUT" "WETH=90"
 
-echo "=== 32. round-3: keeper locks tranche 4 with backendCountAtLock = 7 ==="
+echo "=== 32. round-3 scenario, round-4 path: keeper locks tranche 4 with attested count 7 ==="
 OUT="$(KEEPER_PRIVATE_KEY="$KEEPER_KEY" FEE_CLAIM_SOURCE="$SOURCE" npx tsx scripts/fee-lock-keeper.ts "$VAULT")"; echo "$OUT"
 check "keeper locked 20 WETH (tranche 4)" "$OUT" '"lockedAmount":"20000000000000000000"'
 check "keeper tranche 4 on-chain baseline = 7" "$OUT" '"expectedBaseline":"7"'
-check "keeper tranche 4 backendCountAtLock = 7" "$OUT" '"backendCountAtLock":"7"'
+check "keeper tranche 4 attestedCountAtLock = 7" "$OUT" '"attestedCountAtLock":"7"'
 OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/fee-state.ts)"; echo "$OUT"
 check "tranche 4 stamped baseline 7 with backendCountAtLock 7" "$OUT" "tranche3 amount=20000000000000000000 baseline=7 backend=7 released=0"
 
@@ -470,6 +483,30 @@ OUT="$(register_for testowner/feeproj8 "$T" "$VAULT8" "$LTX")"; echo "$OUT"
 check "feeproj8 unstamped" "$OUT" '"stamped":false'
 check "feeproj8 lock-token mismatch code" "$OUT" '"code":"LAUNCH_LOCK_TOKEN_MISMATCH"'
 check_absent_fee "feeproj8 grant NOT launchVerified" "$OUT" '"launchVerified":true'
+
+# ─── Round-4, blocker 2: capped release stays QUEUED until settled ───
+# A separate grant (testowner/caprepo) holds 40 tranches of 1 WETH
+# all vesting at counted total 1 — one releaseFee call settles only
+# MAX_TRANCHES_PER_RELEASE (16). The backend must keep the release
+# queued after the successful capped tx and the sweep must drain
+# the rest with NO new pushes, to the exact wei.
+
+echo "=== 37. round-4: 40 tranches vest at one count -> capped release stays queued -> sweep drains ==="
+OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/deploy-cap.ts)" || exit 1; echo "$OUT"
+CAP_ESCROW="$(python3 -c "import json;print(json.load(open('tests/e2e/state-cap.json'))['feeStreamEscrow'])")"
+OUT="$OUT
+$(FEE_STREAM_ESCROW_ADDRESS="$CAP_ESCROW" npx tsx tests/e2e/fee-cap.ts)"; echo "$OUT"
+check "cap: 40 tranches deployed at baseline 0" "$OUT" "CAP_DEPLOY tranches=40"
+check "cap: first release pays exactly the capped subset (16 WETH)" "$OUT" '"payout":"16000000000000000000"'
+check "cap: first release reports the remainder still due (24 WETH)" "$OUT" '"remainingDue":"24000000000000000000"'
+check "cap: recipient holds exactly 16 WETH after the capped release" "$OUT" "CAP_CHECK recipient after first release: 16 WETH"
+check "cap: pending entry SURVIVES the successful capped tx" "$OUT" '"pushCount":1'
+check "cap: pending entry names the partial settlement" "$OUT" "release partially settled at count 1"
+check "cap: sweep drains the remainder (final call pays 8 WETH)" "$OUT" '"payout":"8000000000000000000"'
+check "cap: pending cleared only at zero due" "$OUT" "CAP_CHECK pending after sweep: null"
+check "cap: recipient lifetime total exact (40 WETH)" "$OUT" "CAP_CHECK recipient after sweep: 40 WETH"
+check "cap: second sweep finds nothing queued" "$OUT" "CAP_CHECK second sweep entries: 0"
+check "cap: second sweep pays nothing extra (still 40 WETH)" "$OUT" "CAP_CHECK recipient after second sweep: 40 WETH"
 
 echo "=== FEE-LOCK DRIVER DONE — failures: $FAILURES ==="
 [ "$FAILURES" -eq 0 ] || exit 1

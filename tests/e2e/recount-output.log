@@ -129,7 +129,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551594 of 16777216
-  Block #1:            0x212e558336ddf17a19193b495a339404e400d125a1cb75920a6c4d603f65e02c
+  Block #1:            0x3a9179ee779cf910208dfc4ef159bc67a4fdf48904ec837963512aebf272f97f
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -141,7 +141,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #2:            0x8235e0f1f31fe8435f89f17bd5910893e21b841851e02ce1b4a5c97aa47d1712
+  Block #2:            0xbcecb301899482369bf0e14206d731f885d6bc3411a6183e84e010dea36b1151
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -174,7 +174,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1792931 of 16777216
-  Block #3:            0x278d5d7ec94db281167c90f4db9920fa2a9f33346cea69fc20fa3093b95f5837
+  Block #3:            0xeb866e97c4d15f828836f9979cf895d8141fd5b8ef19f7221d0770d81a34605f
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -207,7 +207,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            793530 of 16777216
-  Block #4:            0x0546da22b87284e4256d0341290f3f482bb1f29fbbff1f3a83e7dc95e4fa39f0
+  Block #4:            0x49293fb9405bf08d8541eb641992603659171f427f2f4315988c5d624433d116
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -219,7 +219,7 @@ node up
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #5:            0x22bd3e1aa637c16c2bb0f5970d82f92c5d203eb56f516521af8d8cfd546479ce
+  Block #5:            0xf44496548befeabfbe3d936c3b5159cd73a240abcb343104034236864e00b015
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -232,7 +232,7 @@ node up
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            68445 of 16777216
-  Block #6:            0xb164bca0e26fcafae23730efec1213c6a1d57b5a77f575b42fab720214ba9855
+  Block #6:            0x82bf355371c4d4190be0a5614ff11589b3c0ad8f7af46ca2b63f717c9af2dd92
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -245,7 +245,7 @@ node up
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46383 of 16777216
-  Block #7:            0x9d3045db2a77dd1355580cddb6672046e1e3cfb0b7049ab7ed57bf7eff018cb5
+  Block #7:            0x5ba427f668fa9b9c15f295706f449393ae79cae92d8317464f3a9e1f67ceba0f
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -258,7 +258,7 @@ node up
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            263864 of 16777216
-  Block #8:            0x6e8037fcb9322b15e17ddf57e0ff87351f18b27b87c915472a38726ad0e1ade2
+  Block #8:            0xc3044d2208c4ea95901108b02f52e2f8e2e3df2b125dfe4482dcc7918e059b14
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -271,7 +271,7 @@ node up
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            46844 of 16777216
-  Block #9:            0x095130bacc051a5dd4e1d6cbb7fce49e943a5c6d3691bbab835aaeab5d65a21f
+  Block #9:            0x0c316d114973ef0d3a6500fc69242372cd9a81e7fb3bca390cf7a46a9d72ecd4
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -303,7 +303,7 @@ state written (recount deploy): {
 server up
 === 6. seed grant + linked wallet ===
 grant saved for testowner/testrepo
-linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T02:45:54.620Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T03:36:23.502Z","source":"signed"}]
 === 7. history: counted #1 (plain) ===
 [webhook] push to testowner/testrepo — evaluating
 [oracle] Milestone 1 reached for testowner/testrepo — triggering release
@@ -319,12 +319,12 @@ linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            120284 of 125922
-  Block #10:           0x97e881cb76747d50647cd8f966861d371bd34341fabced18aedede11aa7cf627
+  Block #10:           0x312bd61ef4cffec122578fdb62c85da9b17eacb29612c7a6b49c10072329f57b
 
 [32meth_getTransactionReceipt[0m
 [oracle] Release tx confirmed: 0x7e4a58083d6b28553f1f61be4afa3032953c004ac0c1ca61e702a950d88ecd41 (milestone 1)
 [webhook] push accepted for testowner/testrepo: total verified pushes = 1
-[webhook:plain] HTTP 200 in 306ms
+[webhook:plain] HTTP 200 in 308ms
 {"ok":true,"accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main","verifiedPushCount":1,"release":{"triggered":true,"txHash":"0x7e4a58083d6b28553f1f61be4afa3032953c004ac0c1ca61e702a950d88ecd41","milestone":1,"payout":"300000000000000000000"}}
 [32meth_accounts[0m
 [32meth_accounts (2)[0m
@@ -354,7 +354,7 @@ PASS: milestone 1 paid by live oracle (300 PTK)
 === 8. history: rejected mix (cooldown / bot / duplicate / docs) ===
 [webhook] push to testowner/testrepo — evaluating
 [webhook] push rejected: Only 0.0 min since last counted push (minimum 30 min, or ~50+ estimated lines for a substantial fix)
-[webhook:small] HTTP 200 in 49ms
+[webhook:small] HTTP 200 in 30ms
 {"ok":true,"accepted":false,"reason":"Only 0.0 min since last counted push (minimum 30 min, or ~50+ estimated lines for a substantial fix)"}
 [webhook] push to testowner/testrepo — evaluating
 [fixture] GET /repos/testowner/testrepo/installation -> 200
@@ -362,15 +362,15 @@ PASS: milestone 1 paid by live oracle (300 PTK)
 [fixture] GET /repos/testowner/testrepo/pulls/43 -> 200
 [fixture] GET /repos/testowner/testrepo/pulls/43/files -> 200
 [webhook] push rejected: Bot/App-authored push — not counted
-[webhook:prbot] HTTP 200 in 95ms
+[webhook:prbot] HTTP 200 in 65ms
 {"ok":true,"accepted":false,"reason":"Bot/App-authored push — not counted"}
 [webhook] push to testowner/testrepo — evaluating
 [webhook] push rejected: Commit a11ce00 already counted — duplicate push ignored
-[webhook:plain] HTTP 200 in 31ms
+[webhook:plain] HTTP 200 in 29ms
 {"ok":true,"accepted":false,"reason":"Commit a11ce00 already counted — duplicate push ignored"}
 [webhook] push to testowner/testrepo — evaluating
 [webhook] push rejected: Only docs/lockfiles changed — not counted
-[webhook:docs] HTTP 200 in 75ms
+[webhook:docs] HTTP 200 in 31ms
 {"ok":true,"accepted":false,"reason":"Only docs/lockfiles changed — not counted"}
 [32meth_call[0m
   Contract call:       MockERC20#balanceOf
@@ -412,7 +412,7 @@ PASS: rejected mix moved nothing (still 300)
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            68984 of 74104
-  Block #11:           0xe4a32a50d1545756897dbfc45d3f8588c4a52141d6d88a18b9c5ca0293f637df
+  Block #11:           0x54a94d9b5d4f886347d8664c0f06268085bf20b30e567a5d55b547d0f9054728
 
 [32meth_getTransactionReceipt[0m
 [oracle] Release tx confirmed: 0xb47339f90c58a0f989397ccd0dd4d6b4431bb52cf4225c386386adfec87c3c1f (milestone 2)
@@ -433,12 +433,12 @@ PASS: rejected mix moved nothing (still 300)
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
   Gas used:            109580 of 114716
-  Block #12:           0x49db96dbafeb66110ffd8ea698c740fa63eed01ba404e7120479af4bfc88386a
+  Block #12:           0x00d1ade817d0f712c427214b4de5551611c6e1e0c733900e29d6cedd41f37ec8
 
 [32meth_getTransactionReceipt[0m
 [ship-rewards] Paid 10000000000000000000 to 0x90f79bf6eb2c4f870365e785982e1f101e93b906 for merge c0ffee0 (tx: 0xb647fbae119887b8db5485cd8455556975a46d8809e3aa0dd9b2d5c13e946f42)
 [webhook] push accepted for testowner/testrepo: total verified pushes = 2
-[webhook:prhuman] HTTP 200 in 156ms
+[webhook:prhuman] HTTP 200 in 125ms
 {"ok":true,"accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)","verifiedPushCount":2,"release":{"triggered":true,"txHash":"0xb47339f90c58a0f989397ccd0dd4d6b4431bb52cf4225c386386adfec87c3c1f","milestone":2,"payout":"300000000000000000000"},"prCredit":{"prNumber":42,"authorLogin":"testauthor"},"reward":{"paid":true,"txHash":"0xb647fbae119887b8db5485cd8455556975a46d8809e3aa0dd9b2d5c13e946f42","recipient":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","amount":"10000000000000000000"}}
 [32meth_call[0m
   Contract call:       MockERC20#balanceOf
@@ -516,7 +516,7 @@ PASS: milestone 2 paid by live oracle (600 PTK)
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            30723 of 16777216
-  Block #13:           0x355557d14390799cf8fc545f8606faf4ab8da78c94337558de1d231aac49868a
+  Block #13:           0x2376daf50d0019aaaf7d6c155c3fb734b4b58b9445d31a10436445972cb52aa7
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -580,7 +580,7 @@ Docs: https://viem.sh/docs/contract/writeContract
 Details: Error: VM Exception while processing transaction: reverted with reason string 'GitEscrowV2: not oracle'
 Version: viem@2.52.2
 [webhook] push accepted for testowner/testrepo: total verified pushes = 3
-[webhook:plain2] HTTP 200 in 1147ms
+[webhook:plain2] HTTP 200 in 1190ms
 {"ok":true,"accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)","verifiedPushCount":3,"release":{"triggered":false,"reason":"Oracle tx failed: The contract function \"release\" reverted with the following reason:\nGitEscrowV2: not oracle\n\nContract Call:\n  address:   0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0\n  function:  release(bytes32 repoId, uint256 totalVerifiedPushes)\n  args:             (0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3, 3)\n  sender:    0x70997970C51812dc3A010C7d01b50e0d17dc79C8\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: Error: VM Exception while processing transaction: reverted with reason string 'GitEscrowV2: not oracle'\nVersion: viem@2.52.2"}}
 [32meth_call[0m
   Contract call:       MockERC20#balanceOf
@@ -607,7 +607,7 @@ PASS: counted #3 paid nothing under the dead oracle (still 600)
 === 12. over-cap push (plain3): rejected by the daily cap ===
 [webhook] push to testowner/testrepo — evaluating
 [webhook] push rejected: Daily cap of 3 counted pushes already reached for 2026-11-26
-[webhook:plain3] HTTP 200 in 39ms
+[webhook:plain3] HTTP 200 in 28ms
 {"ok":true,"accepted":false,"reason":"Daily cap of 3 counted pushes already reached for 2026-11-26"}
 [32meth_call[0m
   Contract call:       MockERC20#balanceOf
@@ -644,7 +644,7 @@ PASS: daily-cap rejection moved nothing (still 600)
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            69537 of 79316
-  Block #14:           0x120770ffc2a20bc07a0ba539e3ec691f194d6365f01851ea2f1b3c5a4d6f5317
+  Block #14:           0x14e4e143fc63f8f96d775f6b3daa6ab7cd6b012eede7e6a530f694cd439fce74
 
 [32meth_getTransactionReceipt[0m
 RECOUNT repo=testowner/testrepo entries=8 recounted=3 recorded=3 status=certified checkpointUsed=false

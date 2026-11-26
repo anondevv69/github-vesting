@@ -32,6 +32,20 @@
  *     2 and the backend counter at 5 (fee report pending), a tranche
  *     locked with backendCountAtLock=5 is stamped baseline 5; the
  *     report landing at 5 vests NOTHING for it; push 6 vests half.
+ *
+ * Codex round-4 (blocker 1): the backend count is no longer a bare
+ * caller-supplied number — every lockAccrued carries an EIP-712
+ * CountAttestation signed by the escrow's ORACLE, verified on-chain
+ * (signer, escrow/repo/vault bindings, expiry, monotone nonce and
+ * attested-total floors). Items 1-4 and 9 below now lock through
+ * genuine oracle attestations, and a new attack battery proves:
+ *  10. A self-signed (non-oracle) attestation reverts.
+ *  11. Attestations bound to a different repo / vault / escrow
+ *      revert.
+ *  12. An expired attestation reverts.
+ *  13. A replayed attestation (consumed nonce) reverts.
+ *  14. A stale LOWER attested total after a higher tranche reverts
+ *      (monotone floor).
  */
 import { ethers } from "hardhat";
 
@@ -48,6 +62,48 @@ async function expectRevert(name: string, p: Promise<unknown>, needle?: string) 
     const msg = e instanceof Error ? e.message : String(e);
     check(name, !needle || msg.includes(needle), needle ? msg.slice(0, 140) : undefined);
   }
+}
+
+const ATTESTATION_TYPES = {
+  CountAttestation: [
+    { name: "escrow", type: "address" },
+    { name: "repoId", type: "bytes32" },
+    { name: "vault", type: "address" },
+    { name: "countedTotal", type: "uint256" },
+    { name: "issuedAt", type: "uint256" },
+    { name: "expiry", type: "uint256" },
+    { name: "nonce", type: "uint256" },
+  ],
+};
+let attNonce = 0;
+/** Sign a CountAttestation the way the backend does (oracle key). */
+async function attest(
+  signer: Awaited<ReturnType<typeof ethers.getSigners>>[number],
+  escrowAddr: string,
+  repoIdArg: string,
+  vaultAddr: string,
+  countedTotal: number,
+  opts?: { nonce?: number; issuedAt?: number; expiry?: number; attEscrow?: string },
+) {
+  // Sign against the CHAIN's clock (block timestamps can drift
+  // ahead of wall time on the in-process network).
+  const now = (await ethers.provider.getBlock("latest"))!.timestamp;
+  const att = {
+    escrow: opts?.attEscrow ?? escrowAddr,
+    repoId: repoIdArg,
+    vault: vaultAddr,
+    countedTotal: BigInt(countedTotal),
+    issuedAt: BigInt(opts?.issuedAt ?? now),
+    expiry: BigInt(opts?.expiry ?? now + 300),
+    nonce: BigInt(opts?.nonce ?? ++attNonce),
+  };
+  const chainId = Number((await ethers.provider.getNetwork()).chainId);
+  const sig = await signer.signTypedData(
+    { name: "ProofOfDev FeeStreamEscrow", version: "1", chainId, verifyingContract: escrowAddr },
+    ATTESTATION_TYPES,
+    att,
+  );
+  return { att, sig };
 }
 
 async function main() {
@@ -137,8 +193,9 @@ async function main() {
   check("vault balance is 40 WETH after the claim", (await weth.balanceOf(vaultAddr)) === ethers.parseUnits("40", 18));
 
   // 1. Lock tranche 1 with the current baseline (0 counted pushes,
-  // backend counter also 0).
-  await (await vault.connect(deployer).lockAccrued(0n, 0n)).wait();
+  // backend counter also 0, oracle-attested).
+  const a1 = await attest(oracle, feeEscrowAddr, repoId, vaultAddr, 0);
+  await (await vault.connect(deployer).lockAccrued(0n, a1.att, a1.sig)).wait();
   const t0 = await feeEscrow.getTranche(repoId, 0);
   check("tranche 1 stamped with baseline 0", t0.baselinePushCount === 0n && t0.amount === ethers.parseUnits("40", 18), `baseline=${t0.baselinePushCount}`);
 
@@ -152,16 +209,18 @@ async function main() {
   await (await vault.connect(deployer).claimFees(claimData)).wait();
 
   // 3. STALE baseline (0) reverts; nothing moves.
+  const aStale = await attest(oracle, feeEscrowAddr, repoId, vaultAddr, 0);
   await expectRevert(
     "lockAccrued with a stale baseline reverts",
-    vault.connect(deployer).lockAccrued(0n, 0n),
+    vault.connect(deployer).lockAccrued(0n, aStale.att, aStale.sig),
     "stale baseline",
   );
   check("vault still holds the 30 WETH after the stale attempt", (await weth.balanceOf(vaultAddr)) === ethers.parseUnits("30", 18));
   check("no second tranche was created by the stale attempt", (await feeEscrow.trancheCount(repoId)) === 1n);
 
   // 4. CURRENT baseline (2) succeeds; the tranche is stamped 2.
-  await (await vault.connect(deployer).lockAccrued(2n, 2n)).wait();
+  const a2 = await attest(oracle, feeEscrowAddr, repoId, vaultAddr, 2);
+  await (await vault.connect(deployer).lockAccrued(2n, a2.att, a2.sig)).wait();
   const t1 = await feeEscrow.getTranche(repoId, 1);
   check("tranche 2 stamped with baseline 2", t1.baselinePushCount === 2n && t1.amount === ethers.parseUnits("30", 18), `baseline=${t1.baselinePushCount}`);
   check("tranche 2 has released nothing yet", t1.released === 0n);
@@ -174,7 +233,8 @@ async function main() {
   // backendCountAtLock=5. The tranche must be stamped baseline 5.
   await (await source.accrue(vaultAddr, ethers.parseUnits("10", 18))).wait();
   await (await vault.connect(deployer).claimFees(claimData)).wait();
-  await (await vault.connect(deployer).lockAccrued(2n, 5n)).wait();
+  const a5 = await attest(oracle, feeEscrowAddr, repoId, vaultAddr, 5);
+  await (await vault.connect(deployer).lockAccrued(2n, a5.att, a5.sig)).wait();
   const t2 = await feeEscrow.getTranche(repoId, 2);
   check(
     "tranche 3 stamped baseline = max(on-chain 2, backend 5) = 5, backendCountAtLock recorded",
@@ -198,6 +258,89 @@ async function main() {
   await (await feeEscrow.connect(oracle).releaseFee(repoId, 6)).wait();
   const t2after6 = await feeEscrow.getTranche(repoId, 2);
   check("push 6 vests half of tranche 3 (5 WETH)", t2after6.released === ethers.parseUnits("5", 18), `released=${t2after6.released}`);
+
+  // ── Round-4 attack battery (blocker 1) ──────────────────────────
+  // On-chain counter is now 6; the highest attested total accepted
+  // so far is 5. Fresh fees sit in the vault for the attempts.
+  await (await source.accrue(vaultAddr, ethers.parseUnits("10", 18))).wait();
+  await (await vault.connect(deployer).claimFees(claimData)).wait();
+
+  // 10. Self-signed count: the recipient signs an attestation for
+  // the true total — the escrow accepts only its ORACLE's signature.
+  const forged = await attest(recipient, feeEscrowAddr, repoId, vaultAddr, 6);
+  await expectRevert(
+    "lockAccrued with a self-signed (non-oracle) attestation reverts",
+    vault.connect(deployer).lockAccrued(6n, forged.att, forged.sig),
+    "attestation signer is not the oracle",
+  );
+
+  // 11a. Attestation bound to a different repo.
+  const wrongRepo = await attest(oracle, feeEscrowAddr, otherRepoId, vaultAddr, 6);
+  await expectRevert(
+    "attestation for a different repo reverts",
+    vault.connect(deployer).lockAccrued(6n, wrongRepo.att, wrongRepo.sig),
+    "different repo",
+  );
+
+  // 11b. Attestation bound to a different vault.
+  const wrongVault = await attest(oracle, feeEscrowAddr, repoId, await wrongLauncherVault.getAddress(), 6);
+  await expectRevert(
+    "attestation for a different vault reverts",
+    vault.connect(deployer).lockAccrued(6n, wrongVault.att, wrongVault.sig),
+    "different vault",
+  );
+
+  // 11c. Attestation bound to a different escrow.
+  const wrongEscrow = await attest(oracle, feeEscrowAddr, repoId, vaultAddr, 6, { attEscrow: wethAddr });
+  await expectRevert(
+    "attestation for a different escrow reverts",
+    vault.connect(deployer).lockAccrued(6n, wrongEscrow.att, wrongEscrow.sig),
+    "different escrow",
+  );
+
+  // 12. Expired attestation (genuine oracle signature, past expiry).
+  const nowSec = Math.floor(Date.now() / 1000);
+  const expired = await attest(oracle, feeEscrowAddr, repoId, vaultAddr, 6, {
+    issuedAt: nowSec - 400,
+    expiry: nowSec - 10,
+  });
+  await expectRevert(
+    "expired attestation reverts",
+    vault.connect(deployer).lockAccrued(6n, expired.att, expired.sig),
+    "attestation expired",
+  );
+
+  // 14. Stale LOWER attested total (3) after the floor reached 5:
+  // a once-genuine attestation can never lower a later baseline.
+  const staleTotal = await attest(oracle, feeEscrowAddr, repoId, vaultAddr, 3);
+  await expectRevert(
+    "attested total below the accepted floor reverts",
+    vault.connect(deployer).lockAccrued(6n, staleTotal.att, staleTotal.sig),
+    "below the accepted floor",
+  );
+  check("no tranche was created by any rejected attestation", (await feeEscrow.trancheCount(repoId)) === 3n);
+  check("vault still holds the 10 WETH after the rejected attempts", (await weth.balanceOf(vaultAddr)) === ethers.parseUnits("10", 18));
+
+  // Happy path under the new regime: a genuine attestation at the
+  // current total (6) locks tranche 4 at baseline 6.
+  const a6 = await attest(oracle, feeEscrowAddr, repoId, vaultAddr, 6);
+  await (await vault.connect(deployer).lockAccrued(6n, a6.att, a6.sig)).wait();
+  const t3 = await feeEscrow.getTranche(repoId, 3);
+  check(
+    "tranche 4 locked under a genuine attestation at baseline 6",
+    t3.baselinePushCount === 6n && t3.backendCountAtLock === 6n && t3.amount === ethers.parseUnits("10", 18),
+    `baseline=${t3.baselinePushCount}`,
+  );
+
+  // 13. Replay of the consumed attestation reverts (nonce spent),
+  // even with fresh fees waiting and a correct baseline.
+  await (await source.accrue(vaultAddr, ethers.parseUnits("5", 18))).wait();
+  await (await vault.connect(deployer).claimFees(claimData)).wait();
+  await expectRevert(
+    "replayed attestation (consumed nonce) reverts",
+    vault.connect(deployer).lockAccrued(6n, a6.att, a6.sig),
+    "nonce already consumed",
+  );
 
   console.log(`\nfee-baseline: ${failures === 0 ? "ALL PASS" : `${failures} FAILURES`}`);
   if (failures > 0) process.exitCode = 1;

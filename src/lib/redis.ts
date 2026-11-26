@@ -74,6 +74,11 @@ export const KEYS = {
    *  keeper sweep. */
   pendingFeeRelease: (repoId: string) => `vesting:pending_fee_release:${repoId}`,
   pendingFeeReleaseIndex: () => `vesting:pending_fee_release_index`,
+  /** Count-attestation nonce counter (Codex round-4): INCR'd per
+   *  issued oracle CountAttestation for a repo; the escrow enforces
+   *  a strictly-increasing nonce per repo, so every issued nonce is
+   *  unique and a consumed attestation can never be replayed. */
+  countAttestationNonce: (repoId: string) => `vesting:count_attestation_nonce:${repoId}`,
   /** Reviewer swarm: enrolment record per reviewer GitHub login. */
   swarmReviewer: (githubLogin: string) => `vesting:swarm_reviewer:${githubLogin.toLowerCase()}`,
   /** Reviewer swarm: review attestations for one push (repo + head SHA). */

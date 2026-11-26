@@ -4,11 +4,13 @@
 # the CURRENT (round-3) code paths — the legs the earlier suites
 # proved separately, stitched on a single repo (testowner/testrepo):
 #
-#   verify -> prepare -> [launch stand-in] -> lock -> register
-#   (stamped) -> fee-grant registration -> counted pushes ->
-#   supply milestones + author reward + replay safety -> keeper
-#   fee lock -> GITHUB DEATH (oracle rotation) -> recount ->
-#   backup-oracle supply release + fee sweep -> negative checks.
+#   verify -> fee-grant registration (registrar) -> prepare
+#   (round-4 order: the grant must exist before prepare verifies
+#   it) -> [launch stand-in] -> lock -> register (stamped) ->
+#   counted pushes -> supply milestones + author reward + replay
+#   safety -> keeper fee lock -> GITHUB DEATH (oracle rotation) ->
+#   recount -> backup-oracle supply release + fee sweep ->
+#   negative checks.
 #
 # Same local stack as the other drivers (fake redis + Hardhat node
 # chainId 8453 + fixture GitHub API + the real vesting server).
@@ -141,6 +143,8 @@ export SHIP_REWARDS_ADDRESS="$(J shipRewards)"
 export FEE_STREAM_ESCROW_ADDRESS="$(J feeStreamEscrow)"
 export BANKR_FACTORY_ADDRESS="$(J bankrRecord)"
 export BANKR_FEE_LEDGER_ADDRESS="$(J bankrRecord)"
+export WETH_ADDRESS="$(J weth)"
+export BANKR_CLAIM_LEDGER_ADDRESS="$(J feeClaimSource)"
 export SHIP_REWARD_PER_MERGE="10000000000000000000"
 echo "recipient=$RECIPIENT vault=$VAULT treasury(stand-in)=$DEPLOYER"
 check "stage 1: vault deployed from the approved implementation (address present)" "$VAULT" "0x"
@@ -149,7 +153,8 @@ PIDS+=($!)
 sleep 1
 set_test_env
 npx tsx src/index.ts &
-PIDS+=($!)
+SERVER_PID=$!
+PIDS+=($SERVER_PID)
 wait_http "$API/health" 30 || exit 1
 echo "server up"
 npx tsx tests/e2e/seed-stitched.ts || exit 1
@@ -161,11 +166,16 @@ check "stage 2: verify ok" "$OUT" '"verified":true'
 check "stage 2: gate token issued (issuance record written)" "$OUT" '"verificationToken":"'
 TOKEN="$(printf '%s' "$OUT" | python3 -c "import sys,json;print(json.load(sys.stdin)['verificationToken'])")"
 
-echo "=== STAGE 3. PREPARE: prepare-launch -> production template ==="
+echo "=== STAGE 3. PREPARE: registrar fee grant FIRST, then prepare-launch -> production template ==="
+# Round-4 order: platform deploys the vault -> registrar registers
+# the fee grant -> prepare verifies bindings + grant -> input.
+OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/register-fee-grant-stitched.ts)"; echo "$OUT"
+check "stage 3: fee grant registered via the registrar path (before prepare)" "$OUT" "FEE_GRANT_REGISTERED"
+check "stage 3: fee grant fields exact (recipient/token/vault/ppt)" "$OUT" "FEE_GRANT recipient=$RECIPIENT token=$WETH vault=$VAULT pushesPerTranche=2 registered=true"
 OUT="$(curl -s -X POST "$API/api/launch/prepare-launch" -H 'content-type: application/json' \
   -H "x-wallet-address: $RECIPIENT" \
   -d "{\"repo\":\"$REPO\",\"verificationToken\":\"$TOKEN\",\"feeLockVault\":\"$VAULT\",\"launch\":{\"name\":\"Stitched Token\",\"symbol\":\"STK\"}}")"; echo "$OUT"
-check "stage 3: prepare-launch ok (vault passed the canonical masked-template codehash check)" "$OUT" '"prepared":true'
+check "stage 3: prepare-launch ok (vault passed the canonical codehash check AND every binding + grant check)" "$OUT" '"prepared":true'
 check "stage 3: treasury (stand-in) gets exactly 2500" "$OUT" "\"recipient\":\"$(printf '%s' "$DEPLOYER" | tr 'A-F' 'a-f')\",\"shareBps\":2500"
 check "stage 3: vault gets exactly 7500 (never the raw wallet)" "$OUT" "\"recipient\":\"$(printf '%s' "$VAULT" | tr 'A-F' 'a-f')\",\"shareBps\":7500"
 check "stage 3: vesting explicitly {bps:0}" "$OUT" '"bps":0'
@@ -176,7 +186,7 @@ echo "=== STAGE 4. LAUNCH (LOCAL STAND-IN for the SDK launch proven on mainnet i
 echo "STAND-IN: token launch record set locally to exactly the prepared split — no SDK launch is executed in this run."
 check "stage 4: launch record carries the prepared recipients exactly" "$DEPLOY_OUT" "RECORD_SET token=$PTK recipients=[[\"$DEPLOYER\",2500],[\"$VAULT\",7500]]"
 
-echo "=== STAGE 5. LOCK + REGISTER: v2 lock, stamped registration, registrar fee grant ==="
+echo "=== STAGE 5. LOCK + REGISTER: v2 lock, stamped registration (fee grant registered in stage 3) ==="
 LOCK_OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/lock-stitched.ts)" || exit 1
 echo "$LOCK_OUT"
 LOCK_TX="$(printf '%s' "$LOCK_OUT" | grep -o 'LOCK_TX=0x[0-9a-f]*' | cut -d= -f2)"
@@ -189,9 +199,6 @@ ENR="$(curl -s "$API/api/launch/enrollment?repo=$REPO&wallet=$RECIPIENT")"; echo
 check "stage 5: enrolment record present" "$ENR" '"enrolled":true'
 PROJ="$(curl -s "$API/api/launch/projects")"; echo "$PROJ"
 check "stage 5: verified launch listed" "$PROJ" "\"repoFullName\":\"$REPO\""
-OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/register-fee-grant-stitched.ts)"; echo "$OUT"
-check "stage 5: fee grant registered via the registrar path" "$OUT" "FEE_GRANT_REGISTERED"
-check "stage 5: fee grant fields exact (recipient/token/vault/ppt)" "$OUT" "FEE_GRANT recipient=$RECIPIENT token=$WETH vault=$VAULT pushesPerTranche=2 registered=true"
 
 echo "=== STAGE 6. PUSHES + RELEASES: milestones, author reward, replay safety ==="
 node tests/e2e/send-webhook.mjs plain
@@ -212,7 +219,7 @@ echo "=== STAGE 7. FEE STREAM: keeper claim+lock at the current counts ==="
 OUT="$(KEEPER_PRIVATE_KEY="$KEEPER_KEY" FEE_CLAIM_SOURCE="$SOURCE" npx tsx scripts/fee-lock-keeper.ts "$VAULT")"; echo "$OUT"
 check "stage 7: keeper claimed + locked 40 WETH" "$OUT" '"lockedAmount":"40000000000000000000"'
 check "stage 7: tranche 1 on-chain baseline == 2" "$OUT" '"expectedBaseline":"2"'
-check "stage 7: tranche 1 backendCountAtLock == 2 (baseline == backend == on-chain)" "$OUT" '"backendCountAtLock":"2"'
+check "stage 7: tranche 1 attestedCountAtLock == 2 (baseline == attested == on-chain)" "$OUT" '"attestedCountAtLock":"2"'
 OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/fee-state.ts)"; echo "$OUT"
 check "stage 7: on-chain counter is 2" "$OUT" "knownPushCount=2"
 check "stage 7: tranche 0 stamped baseline=2 backend=2, nothing released" "$OUT" "tranche0 amount=40000000000000000000 baseline=2 backend=2 released=0"
@@ -285,10 +292,22 @@ echo "--- (b) recipient cancel attempt on v2 ---"
 OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/cancel-attempt-stitched.ts)"; echo "$OUT"
 check "stage 9b: recipient cancel attempt on v2 reverts (no-cancel)" "$OUT" "CANCEL_ATTEMPT: REVERTED"
 echo "--- (c) keeper gate cleared once the pending entry is gone (deferral itself asserted in stage 8) ---"
+# Round-4 wrinkle the death stage now exercises: the count
+# attestation is signed by the escrow's CURRENT oracle — the same
+# trust role that signs release counts. Stage 8 rotated that role
+# to the backup, so attestation issuance moves with it: the
+# backup operator's backend (same code, backup oracle key) takes
+# over the API for the keeper's attestation fetch.
+kill "$SERVER_PID" 2>/dev/null; pkill -f "tsx src/index.ts" 2>/dev/null; sleep 1
+ORACLE_PRIVATE_KEY="$BACKUP_KEY" npx tsx src/index.ts &
+SERVER_PID=$!
+PIDS+=($SERVER_PID)
+wait_http "$API/health" 30 || exit 1
+echo "backend restarted under the backup oracle key (attestation issuer == current oracle)"
 OUT="$(KEEPER_PRIVATE_KEY="$KEEPER_KEY" FEE_CLAIM_SOURCE="$SOURCE" npx tsx scripts/fee-lock-keeper.ts "$VAULT")"; echo "$OUT"
 check_absent "stage 9c: keeper no longer deferred" "$OUT" '"lockDeferred"'
 check "stage 9c: keeper locked the 20 WETH accrued during the death window (tranche 2)" "$OUT" '"lockedAmount":"20000000000000000000"'
-check "stage 9c: tranche 2 backendCountAtLock == 3" "$OUT" '"backendCountAtLock":"3"'
+check "stage 9c: tranche 2 attestedCountAtLock == 3" "$OUT" '"attestedCountAtLock":"3"'
 OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/fee-state.ts)"; echo "$OUT"
 check "stage 9c: tranche 1 stamped baseline=3 backend=3" "$OUT" "tranche1 amount=20000000000000000000 baseline=3 backend=3 released=0"
 

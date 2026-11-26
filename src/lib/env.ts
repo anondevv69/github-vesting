@@ -89,6 +89,17 @@ export const env = {
    *  views (poolOf / beneficiariesOf / creatorShareOf). */
   BANKR_FACTORY_ADDRESS: get("BANKR_FACTORY_ADDRESS"),
   BANKR_FEE_LEDGER_ADDRESS: get("BANKR_FEE_LEDGER_ADDRESS"),
+  /** The Bankr fee ledger a FeeLockVault CLAIMS from (its immutable
+   *  claimLedger binding, validated at prepare-launch — Codex
+   *  round-4). In production this is the same Bankr ledger contract
+   *  as BANKR_FEE_LEDGER_ADDRESS; it is a separate knob so test
+   *  fixtures can model the claim source and the launch-record
+   *  ledger with two mocks. Unset → the chain's fee-ledger default. */
+  BANKR_CLAIM_LEDGER_ADDRESS: get("BANKR_CLAIM_LEDGER_ADDRESS"),
+  /** The chain's canonical WETH — the fee token every platform
+   *  FeeLockVault must be bound to (validated at prepare-launch).
+   *  Unset → the chain default (Base/Base Sepolia canonical WETH). */
+  WETH_ADDRESS: get("WETH_ADDRESS"),
   /** GitEscrow on Robinhood Chain mainnet (4663) */
   GIT_ESCROW_ROBINHOOD_ADDRESS: get("GIT_ESCROW_ROBINHOOD_ADDRESS"),
   /** Optional — protects POST /api/admin/delete-grant */

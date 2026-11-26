@@ -62,12 +62,24 @@ async function main() {
     return r;
   }));
 
-  await expectRevert("lockAccrued with nothing accrued", vault.connect(author).lockAccrued(0n, 0n));
+  // Round-4: lockAccrued carries an oracle CountAttestation. The
+  // dummy attestation below is never verified — the vault reverts
+  // on its empty balance before the escrow is ever called.
+  const dummyAtt = {
+    escrow: state.feeStreamEscrow,
+    repoId: state.repoId,
+    vault: state.feeLockVault,
+    countedTotal: 0n,
+    issuedAt: 0n,
+    expiry: 0n,
+    nonce: 0n,
+  };
+  await expectRevert("lockAccrued with nothing accrued", vault.connect(author).lockAccrued(0n, dummyAtt, "0x"));
 
   const feeEscrow = await ethers.getContractAt("FeeStreamEscrow", state.feeStreamEscrow);
   await expectRevert(
     "addFeeTranche from non-vault",
-    feeEscrow.connect(recipient).addFeeTranche(state.repoId, 1n, 0n, 0n),
+    feeEscrow.connect(recipient).addFeeTranche(state.repoId, 1n, 0n, dummyAtt, "0x"),
   );
   await expectRevert(
     "registerFeeGrant from non-owner (registrar-only, round-3)",
