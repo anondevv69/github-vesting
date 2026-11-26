@@ -19,9 +19,11 @@
     "deploy:ship-rewards:base-sepolia": "hardhat run contracts/deploy/deployShipRewards.ts --network baseSepolia",
     "deploy:ship-rewards:robinhood": "hardhat run contracts/deploy/deployShipRewards.ts --network robinhood",
     "oracle:recover": "tsx scripts/recover-stuck-tokens.ts",
+    "treasury:recycle": "tsx scripts/treasury-recycle.mts",
     "register:from-lock": "tsx scripts/register-from-lock.ts"
   },
   "dependencies": {
+    "@bankr/launch-sdk": "^1.0.0",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@octokit/app": "^13.1.8",
     "@octokit/rest": "^20.1.2",
@@ -33,7 +35,7 @@
     "express": "^4.19.2",
     "ioredis": "^5.4.1",
     "tsx": "^4.15.0",
-    "viem": "^2.21.0",
+    "viem": "^2.58.7",
     "zod": "^3.25.76"
   },
   "devDependencies": {
