@@ -708,3 +708,17 @@ Investigated against production (backend API + on-chain reads), 2026-11-26:
 **Recognition note (what this grant is and is not).** The lock was created and registered entirely through the gated path — prepare-lock and confirm-lock both refuse without a valid verification token, and both consumed one. It does **not** carry the `launchVerified` stamp or ShipRewards launcher enrolment: since the round-3 fix, that stamp requires a prepared-launch record from the launch pipeline (prepare-launch lineage), and this was a lock of purchased tokens, not a pipeline launch — so `GET /api/launch/projects` does not list it and the enrollment lookup returns `enrolled: false`. The escrow, the grant, and push counting are unaffected by the distinction.
 
 **Records note (same day).** The swarm push (`27e1dc0a`) was built from a checkout whose copy of this report ended at §21, so it landed its section as §22 and displaced the §22 POD-launch record and the §23 OAuth-fix record that existed at head `99097412`. Both records are restored verbatim above as §22 and §23, the swarm section follows as §24, and this lock record closes the sequence as §25. No content was rewritten in the restoration — headings were renumbered only.
+
+## 26. POD FEE CLAIMS — both halves of the accrued trading fees claimed (2026-11-26)
+
+**The order.** Gregory asked whether Proof of Dev had fees it could claim and, on the numbers, approved in chat in his own words: "Claim both halves now" — one claim per POD fee beneficiary (his personal Bankr wallet and the platform treasury, the 50/50 creator split set at the §22 launch).
+
+**Claimable, re-read immediately before each claim.** 282,529,085 ANTc base units (**2.82529085 ANTc**) for EACH beneficiary (ANTc is the POD pool's quote asset, 8 decimals), up slightly from 281,160,055 at the earlier read the same day; claimable POD (token side) was 0 for both. ANTc balances of both wallets were 0 before the claims.
+
+**Mechanics.** Each claim was built from chain state with the Bankr launch SDK (`fees.buildClaim` for POD + the beneficiary) and decodes to one call: the Bankr claim ledger `0x7C836e937831Cd5931A1ACbB9117dF9714D7d1F7`, `collectFees(bytes32)` with fee key `0x1ad7a5c6874b46f9faec5d061a99b70b5a7c05fefd97bd60f4ec304dc01316e2`, zero value. The ledger pays `msg.sender`, so the beneficiary is bound by who signs — each claim was signed by its own beneficiary, and a simulation from each beneficiary address passed before anything was submitted.
+
+**Gregory's half.** Signed and submitted through Gregory's own Bankr API (`/wallet/submit`, connector `custom.bankr-personal`, after re-verifying the connected account controls `0x374d91a5674fa7cf86e725093b5848b97e1e13b4`): **tx `0x456592ea7910d64a34220c14c683385294e4356914231337cc9a7e320a6f8033`**, block 62648508.
+
+**Treasury half.** Signed with the treasury's own key and broadcast directly, the same route as the proven PODT treasury claim (§18): **tx `0x3c1b814a30dcbeebbe5d464ad7ede4dfd4e1080e8caf2f82a77eac2aad7c3def`**, block 62648560. Gas spent 2,434,411,429,898 wei from the treasury's ETH.
+
+**Verification (chain reads after both claims, not submission responses).** Claimable for both beneficiaries reads **0** (quote and token). ANTc balances: Gregory's Bankr wallet **282,529,085** base units and the treasury **282,529,085** base units — each wallet's increase is exactly its claimed amount, 2.82529085 ANTc per half, **5.6505817 ANTc claimed in total**. The 50/50 fee split accrued and claimed to the base unit, as launched.
