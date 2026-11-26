@@ -6,8 +6,30 @@ import { CopyButton } from "../components/CopyButton";
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const SKILL_URL = "https://github.com/anondevv69/github-vesting/tree/main/skills/bankr-vesting";
 const SKILL_INSTALL = "install GitHub Vesting skill at https://github.com/anondevv69/github-vesting/tree/main/skills/bankr-vesting";
+const SKILL_INSTALL_MIRROR = "install the github-vesting skill from https://github.com/BankrBot/skills/tree/main/github-vesting";
+const CLAUDE_SKILL_URL = "https://github.com/anondevv69/github-vesting/tree/main/skills/claude-vesting";
+const CLAUDE_SKILL_INSTALL = "install the Proof of Dev skill from https://github.com/anondevv69/github-vesting/tree/main/skills/claude-vesting";
 
 const CURL_EXAMPLE = `curl -H "x-wallet-address: 0x…" "${API_BASE}/api/agent/briefing"`;
+
+const ASKS = [
+  {
+    label: "Launch a token",
+    text: "Install the Proof of Dev skill and launch my token for github.com/<owner>/<repo> through Proof of Dev.",
+  },
+  {
+    label: "Lock an existing token",
+    text: "Lock 100,000 of my token against my repo so it unlocks as I ship.",
+  },
+  {
+    label: "Status & rewards",
+    text: "Check my vesting progress and what my last merge earned.",
+  },
+  {
+    label: "Earn by reviewing",
+    text: "Join the Proof of Dev reviewer swarm and verify other builders' pushes so I earn reviewer rewards.",
+  },
+];
 
 export function AgentsPage() {
   return (
@@ -35,6 +57,13 @@ export function AgentsPage() {
             <code>{SKILL_INSTALL}</code>
             <CopyButton text={SKILL_INSTALL} icon />
           </div>
+          <p className="muted agents-note">
+            Also mirrored in Bankr&apos;s own skill registry:
+          </p>
+          <div className="agents-code-block">
+            <code>{SKILL_INSTALL_MIRROR}</code>
+            <CopyButton text={SKILL_INSTALL_MIRROR} icon />
+          </div>
 
           <h3>What the skill provides</h3>
           <ul className="help-list">
@@ -55,12 +84,50 @@ export function AgentsPage() {
           </div>
         </section>
 
-        <section className="vesting-card agents-card">
+        <section className="vesting-card agents-card agents-card--claude">
+          <div className="agents-card__badge agents-card__badge--claude">Claude</div>
+          <h2>Claude Code &amp; Muse agents</h2>
+          <p className="muted">
+            The Proof of Dev skill for Claude agents — the full gated launch flow, vesting status,
+            and merge rewards over the same Agent API. Claude has no built-in wallet; the skill
+            routes signing through your wallet tooling, Bankr, or a hand-off to you.
+          </p>
+
+          <h3>Install</h3>
+          <div className="agents-code-block">
+            <code>{CLAUDE_SKILL_INSTALL}</code>
+            <CopyButton text={CLAUDE_SKILL_INSTALL} icon />
+          </div>
+
+          <h3>What the skill provides</h3>
+          <ul className="help-list">
+            <li>Step 0 GitHub App verification — required before any launch or lock prep</li>
+            <li>Platform launch: verify → prepare → launch → auto-lock → register</li>
+            <li>Lock flow: prepare txs → sign → confirm-lock</li>
+            <li>ShipRewards: what a counted merge earned, pending rewards on link</li>
+            <li>Ship reports (attestation) and reviewer-swarm enrolment</li>
+          </ul>
+
+          <div className="agents-card__actions">
+            <a href={CLAUDE_SKILL_URL} target="_blank" rel="noreferrer" className="btn btn-sm">
+              Skill folder on GitHub
+            </a>
+            <a href={`${API_BASE}/agent.md`} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm">
+              agent.md (raw)
+            </a>
+          </div>
+        </section>
+
+        <section className="vesting-card agents-card agents-card--wide">
           <div className="agents-card__badge agents-card__badge--generic">Any agent</div>
           <h2>Regular agents &amp; custom bots</h2>
           <p className="muted">
             No skill required — call the public REST Agent API directly. Works with OpenClaw, Cursor,
-            custom scripts, or any HTTP client.
+            custom scripts, or any HTTP client. The canonical protocol guide is{" "}
+            <a href={`${API_BASE}/agent.md`} target="_blank" rel="noreferrer">
+              agent.md
+            </a>{" "}
+            — an agent should fetch it before its first session.
           </p>
 
           <h3>Base URL</h3>
@@ -98,6 +165,25 @@ export function AgentsPage() {
             <Link to="/help" className="btn btn-ghost btn-sm">Human help</Link>
           </div>
         </section>
+      </div>
+
+      <h2 id="asks">Deploy with the ask</h2>
+      <p className="search-hints muted">
+        Once a skill is installed, you don&apos;t run the steps yourself — you ask. Paste one of
+        these prompts to your own agent and it does the work end to end: verification, preparation,
+        signing, and confirmation. Platform launches open with the beta; locks, status, and rewards
+        work today.
+      </p>
+      <div className="asks-list">
+        {ASKS.map((a) => (
+          <div key={a.label} className="ask-item">
+            <span className="ask-item__label">{a.label}</span>
+            <div className="agents-code-block">
+              <code>{a.text}</code>
+              <CopyButton text={a.text} icon label={`Copy ask: ${a.label}`} />
+            </div>
+          </div>
+        ))}
       </div>
 
       <VestingFooter />
