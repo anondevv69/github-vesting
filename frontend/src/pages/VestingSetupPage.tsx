@@ -28,6 +28,7 @@ import {
   type PublicClient,
 } from "viem";
 import { base, baseSepolia } from "viem/chains";
+import { BUILDER_DATA_SUFFIX } from "../lib/builderCode";
 
 const IS_TESTNET = import.meta.env.VITE_CHAIN === "base-sepolia";
 const activeChain = IS_TESTNET ? baseSepolia : base;
@@ -419,6 +420,7 @@ export function VestingSetupPage() {
       chain: activeChain,
       transport: custom(provider),
       account: wallet!,
+      dataSuffix: BUILDER_DATA_SUFFIX,
     });
     const amount = parseUnits(form.lockAmount, form.tokenDecimals);
     const tokenAddr = form.tokenAddress as Address;
