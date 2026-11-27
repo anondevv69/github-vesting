@@ -202,7 +202,7 @@ export function LockPage() {
   const timeline = [...recentPushes].reverse();
   const pushSummary = summarizePushes(recentPushes);
   const pct = progress.totalPushesRequired > 0
-    ? Math.floor((progress.verifiedPushCount / progress.totalPushesRequired) * 100)
+    ? Math.min(100, Math.floor((progress.verifiedPushCount / progress.totalPushesRequired) * 100))
     : 0;
 
   return (
@@ -363,7 +363,7 @@ export function LockPage() {
           <div className="grant-cards">
             {data.grants.map((g) => {
               const gPct = g.totalPushesRequired > 0
-                ? Math.floor((g.verifiedPushCount / g.totalPushesRequired) * 100)
+                ? Math.min(100, Math.floor((g.verifiedPushCount / g.totalPushesRequired) * 100))
                 : 0;
               const released = g.totalReleased
                 ?? (BigInt(g.tokensPerMilestone || "0") * BigInt(g.lastPaidMilestone)).toString();
