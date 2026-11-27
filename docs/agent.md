@@ -283,14 +283,26 @@ table above — never proceed unverified.
 holdings; `amount` is human units (`3490000`, `3.49M` parse);
 `totalPushes` must be an exact multiple of `pushesPerMilestone`
 (default `pushesPerMilestone` = `totalPushes`, one release at the
-end). Before signing, decode and check the returned `transactions[]`:
+end). The milestone field is exactly `pushesPerMilestone` — there is
+no `releasesPerMilestone` request field (that name exists only in
+the on-chain `Locked` event) and sending it is silently ignored.
+Before signing, decode and check the returned `transactions[]`:
 the lock item's `to` is the escrow; the approve item (if present)
 must target the token contract with calldata
 `approve(spender == the lock item's to, amount == amountWei)`; the
 lock calldata must carry the intended token, `amountWei`, and push
 counts; every `chainId` must match the verified chain and every
-`value` must be `"0x0"`. Any mismatch → stop, report, re-prepare —
-never edit calldata yourself.
+`value` must be `"0x0"`. Then compare the decoded escrow against the
+pin: for Base the current escrow is GitEscrowV2,
+`0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3` (superseded v1 escrows
+`0x3625F879C678306E92E2C27F61b9BcD8015E81A7` and
+`0x76dd4C6ea986684CDf822eC0832e142A2D5C8165` serve legacy grants
+only — never valid for a new lock). No endpoint publishes the
+current escrow; the pin plus spender == lock `to` consistency is
+the check. Any mismatch → stop and report **both** addresses; if
+the platform rotated its escrow, an older installed skill still
+pins the previous one, so tell the user reinstalling the skill is
+the remedy. Never edit calldata yourself.
 
 **Step 3 — SIGN.** Confirm token, amount, repo, chain, and schedule
 with the user, then submit `transactions[]` in order via

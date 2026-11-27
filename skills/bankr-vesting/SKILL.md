@@ -2,7 +2,7 @@
 name: github-vesting
 description: GitHub-gated token vesting on proofofdev.xyz — lock ANY ERC-20 on Base or Robinhood Chain (4663) via api.proofofdev.xyz, link GitHub, repo claims. Use for github vesting, lock tokens, vesting progress, link github, proofofdev, robinhood, RHAGENT. NEVER use github-vesting.vercel.app for API.
 tags: [github, vesting, bankr, base, robinhood, defi, proofofdev]
-version: 5
+version: 5.1
 ---
 
 # GitHub Vesting — Bankr agent skill
@@ -70,7 +70,7 @@ Lock **any ERC-20 on Base or Robinhood Chain (4663)** for GitHub-gated vesting. 
 
 ## CRITICAL — not an allowlist
 
-- `known-escrow.json` and `streaming-hints.json` are **streaming detection hints only** (Space → `lockAllowance`).
+- `known-escrow.json` pins the escrow address per chain (the TX-VALIDATION escrow identity check compares prepared transactions against it) and, like `streaming-hints.json`, carries **streaming detection hints** (Space → `lockAllowance`). Neither file is a token allowlist.
 - **Ignore `supportedTokens` for gating.** Never refuse a token without calling `POST https://api.proofofdev.xyz/api/agent/lock`.
 - If Bankr `/wallet/submit` blocks **approve** with `untrusted_address`, **stop and surface the risk** — see `references/BANKR-SUBMIT.md`. **Do not** route users to the web UI to bypass the scanner.
 
@@ -206,10 +206,11 @@ You **can** lock **any ERC-20 on Base or Robinhood Chain (4663)** from terminal 
    - `chain`: `"base"` (default), `"robinhood"`, or `"base-sepolia"`
    - `token` = symbol from **wallet holdings on that chain**, fee-recipient name, or **`0x` contract address**
    - `amount` = human units (`855000000`, `855M`, `3.49M`)
+   - **Milestone field is exactly `pushesPerMilestone`** (`1` = release after each push). There is **no** `releasesPerMilestone` request field — that name exists only in the on-chain `Locked` event, and sending it is silently ignored, leaving a single end-of-schedule release. After preparing, confirm the response's `pushesPerMilestone` matches the user's cadence before signing.
 
 2. If response has **`installUrl`** → allowlist-check, then tell user to install GitHub App, then retry.
 
-3. **`references/TX-VALIDATION.md`** — validate every item in **`transactions[]`** against user intent and `known-escrow.json`. **Abort if any check fails.**
+3. **`references/TX-VALIDATION.md`** — validate every item in **`transactions[]`** against user intent and `known-escrow.json`, starting with its **escrow identity check** (decoded approve spender == lock `to` == the pinned escrow for the chain). **Abort if any check fails.** On an escrow mismatch, report **both** addresses — and if the decoded escrow is the platform's newer contract while the pin is the older one, tell the user the installed skill's pin is stale after a platform escrow rotation and that reinstalling this skill (same install command) is the remedy, then stop.
 
 4. Submit validated txs via Bankr on the response `chainId` (**8453** Base or **4663** Robinhood):
    - `POST https://api.bankr.bot/wallet/submit` with `{ "transaction": { to, data, value, chainId }, "waitForConfirmation": true }`

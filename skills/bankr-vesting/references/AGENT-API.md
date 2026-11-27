@@ -158,7 +158,7 @@ x-wallet-address: 0x…
 | `token` | yes | Symbol from wallet on target chain, or any `0x` ERC-20 |
 | `amount` | yes | Human units: `3490000`, `3.49M`, `614029187` |
 | `totalPushes` | no | Default `10` |
-| `pushesPerMilestone` | no | Default = `totalPushes` (single release) |
+| `pushesPerMilestone` | no | Default = `totalPushes` (single release). **This exact field name is the only milestone control** — `releasesPerMilestone` is not a request field (it is only the on-chain `Locked` event's parameter name) and is silently ignored if sent |
 | `verificationToken` | **yes** | From `POST /api/launch/verify-github` in this session; without it the call returns 403 `LAUNCH_VERIFICATION_REQUIRED` |
 
 **Response (200):**
@@ -171,7 +171,7 @@ x-wallet-address: 0x…
   "lockFunction": "lockAllowance",
   "transactions": [
     { "step": "approve", "to": "0x…", "data": "0x…", "value": "0x0", "chainId": 8453 },
-    { "step": "lock", "to": "0x76dd…", "data": "0x…", "value": "0x0", "chainId": 8453 }
+    { "step": "lock", "to": "0x894e…", "data": "0x…", "value": "0x0", "chainId": 8453 }
   ],
   "confirmUrl": "https://api.proofofdev.xyz/api/agent/confirm-lock",
   "statusUrl": "https://www.proofofdev.xyz/lock/owner/repo"
