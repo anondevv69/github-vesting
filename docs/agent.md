@@ -293,10 +293,11 @@ must target the token contract with calldata
 lock calldata must carry the intended token, `amountWei`, and push
 counts; every `chainId` must match the verified chain and every
 `value` must be `"0x0"`. Then compare the decoded escrow against the
-pin: for Base the current escrow is GitEscrowV2,
-`0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3` (superseded v1 escrows
-`0x3625F879C678306E92E2C27F61b9BcD8015E81A7` and
-`0x76dd4C6ea986684CDf822eC0832e142A2D5C8165` serve legacy grants
+pin: for Base the current escrow is GitEscrowV3,
+`0x71A9848e7Cbd70cB7B660e61B4cAEDd224a16eC5` (the superseded
+GitEscrowV2 `0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3` and the
+v1 escrows `0x3625F879C678306E92E2C27F61b9BcD8015E81A7` and
+`0x76dd4C6ea986684CDf822eC0832e142A2D5C8165` serve existing grants
 only — never valid for a new lock). No endpoint publishes the
 current escrow; the pin plus spender == lock `to` consistency is
 the check. Any mismatch → stop and report **both** addresses; if
@@ -304,21 +305,29 @@ the platform rotated its escrow, an older installed skill still
 pins the previous one, so tell the user reinstalling the skill is
 the remedy. Never edit calldata yourself. The escrow's source is
 publicly verified — Basescan
-([address/0x894e…69c3#code](https://basescan.org/address/0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3#code),
+([address/0x71A9…16eC5#code](https://basescan.org/address/0x71A9848e7Cbd70cB7B660e61B4cAEDd224a16eC5#code),
 "Pass - Verified") and Sourcify
-([repo.sourcify.dev/8453/0x894e…69c3](https://repo.sourcify.dev/8453/0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3),
+([repo.sourcify.dev/8453/0x71A9…16eC5](https://repo.sourcify.dev/8453/0x71A9848e7Cbd70cB7B660e61B4cAEDd224a16eC5),
 exact match) — so any agent can independently verify the contract
 that will custody the tokens before approving.
 
-**One active grant per repo.** GitEscrowV2 keys grants by repoId
-alone: while a grant for the repo is active, every new lock for
-that repo reverts with `GitEscrowV2: repoId already active` —
-any token, any amount, any wallet. If prepare, a simulation, or
-the lock transaction surfaces an existing active grant, **do not
-retry**: read the grant (`GET /api/vesting/lock/{owner}/{repo}`),
-report its progress, and explain that a second concurrent lock on
-the same repo is not possible in this escrow — a new lock needs a
-different repo, or the active grant to complete.
+**Multiple locks per repo (GitEscrowV3, the current escrow).**
+A repo may carry up to 10 concurrent grants — different tokens,
+amounts, recipients, schedules. Each lock has its own `grantId`:
+prepare-lock returns `escrowVersion` and an advisory
+`expectedGrantId`, confirm-lock returns the recorded `grantId`,
+per-grant status is `GET /api/vesting/grant/{grantId}`, and the
+status / lock responses list every grant on the repo in a `grants`
+array beside the primary grant. Each grant vests only on pushes
+counted after its own lock landed. **Legacy escrows only
+(GitEscrowV2 / V1):** those key grants by repoId alone, so while a
+grant is active every new lock reverts with `GitEscrowV2: repoId
+already active` — any token, any amount, any wallet. That refusal
+applies only when the prepared transactions point at a legacy
+escrow: then **do not retry** — read the grant
+(`GET /api/vesting/lock/{owner}/{repo}`), report its progress, and
+explain the options (lock on the current V3 escrow, a different
+repo, or the active grant completing).
 
 **Step 3 — SIGN.** Confirm token, amount, repo, chain, and schedule
 with the user. **Immediately before submitting, re-read the

@@ -171,7 +171,7 @@ x-wallet-address: 0x…
   "lockFunction": "lockAllowance",
   "transactions": [
     { "step": "approve", "to": "0x…", "data": "0x…", "value": "0x0", "chainId": 8453 },
-    { "step": "lock", "to": "0x894e…", "data": "0x…", "value": "0x0", "chainId": 8453 }
+    { "step": "lock", "to": "0x71A9…", "data": "0x…", "value": "0x0", "chainId": 8453 }
   ],
   "confirmUrl": "https://api.proofofdev.xyz/api/agent/confirm-lock",
   "statusUrl": "https://www.proofofdev.xyz/lock/owner/repo"
@@ -187,6 +187,8 @@ x-wallet-address: 0x…
 ## POST /api/agent/prepare-lock
 
 Same as `/api/agent/lock` without the extra `steps` wrapper. Use when you already know the Bankr submit flow.
+
+The response also carries `escrowVersion` (the escrow the prepared transactions target — `3` is the current multi-grant escrow) and `expectedGrantId` (advisory: the grantId the lock will receive if no other lock for the repo lands first).
 
 ---
 
@@ -207,9 +209,9 @@ x-wallet-address: 0x…
 }
 ```
 
-Parses the `Locked` event from the tx, verifies recipient matches wallet, registers push tracking.
+Parses the `Locked` event from the tx, verifies recipient matches wallet, registers push tracking. An optional `grantId` in the body is cross-checked against the event — a mismatch is a hard error.
 
-**Response:** `grant`, `statusUrl` — format reply locally; ignore `tweetReply`.
+**Response:** `grant` (including the recorded `grantId` for V3 locks), `grantId`, `statusUrl` — format reply locally; ignore `tweetReply`. Per-grant status: `GET {API}/api/vesting/grant/{grantId}`.
 
 ---
 

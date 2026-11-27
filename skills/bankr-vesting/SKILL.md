@@ -2,7 +2,7 @@
 name: github-vesting
 description: GitHub-gated token vesting on proofofdev.xyz — lock ANY ERC-20 on Base or Robinhood Chain (4663) via api.proofofdev.xyz, link GitHub, repo claims. Use for github vesting, lock tokens, vesting progress, link github, proofofdev, robinhood, RHAGENT. NEVER use github-vesting.vercel.app for API.
 tags: [github, vesting, bankr, base, robinhood, defi, proofofdev]
-version: 5.2
+version: 5.3
 ---
 
 # GitHub Vesting — Bankr agent skill
@@ -208,20 +208,31 @@ You **can** lock **any ERC-20 on Base or Robinhood Chain (4663)** from terminal 
    - `amount` = human units (`855000000`, `855M`, `3.49M`)
    - **Milestone field is exactly `pushesPerMilestone`** (`1` = release after each push). There is **no** `releasesPerMilestone` request field — that name exists only in the on-chain `Locked` event, and sending it is silently ignored, leaving a single end-of-schedule release. After preparing, confirm the response's `pushesPerMilestone` matches the user's cadence before signing.
 
-   **One active grant per repo — an escrow rule, NOT a retryable error.**
-   GitEscrowV2 keys grants by repo alone: while a grant for the repo
-   is active, every new lock for that repo reverts on-chain with
-   `GitEscrowV2: repoId already active` — regardless of token, amount,
-   or which wallet locks. If step 1's response, a wallet simulation,
-   or the submit surfaces an existing active grant for the repo (or
-   that revert string), **do not retry and do not treat it as
+   **Multiple locks per repo (GitEscrowV3, the current escrow).**
+   A repo may carry several concurrent locks — different tokens,
+   amounts, recipients, and schedules — up to 10 active at once.
+   Each lock gets its own `grantId`: step 1's response includes an
+   advisory `expectedGrantId`, and confirm-lock (step 5) returns the
+   recorded `grantId` — keep it. Per-lock status is
+   `GET https://api.proofofdev.xyz/api/vesting/grant/{grantId}`;
+   the lock page and status responses list every grant on the repo.
+   Each grant vests only on pushes counted after its own lock
+   landed. An existing active grant on the repo is **not** an
+   obstacle on this escrow — proceed normally.
+
+   **Legacy escrows only (GitEscrowV2 / V1): `repoId already
+   active`.** The older escrows key grants by repo alone: while a
+   grant for the repo is active, every new lock for that repo
+   reverts on-chain with `GitEscrowV2: repoId already active` —
+   regardless of token, amount, or which wallet locks. This refusal
+   applies **only** when the prepared transactions point at a legacy
+   escrow. If it surfaces, **do not retry and do not treat it as
    transient**: read the existing grant
    (`GET https://api.proofofdev.xyz/api/vesting/lock/{owner}/{repo}`),
    report its progress to the user (status, verified pushes out of
-   total, amount locked, per-milestone release), and explain that a
-   second concurrent lock on the same repo is not possible in this
-   escrow — a new lock needs a **different repo**, or the active
-   grant to complete first.
+   total, amount locked, per-milestone release), and explain the
+   options: lock on the current (V3) escrow instead, use a
+   **different repo**, or wait for the active grant to complete.
 
    **Balance freshness — re-read the live balance immediately before
    signing.** The amount was computed from a balance read at prepare
@@ -257,8 +268,9 @@ You **can** lock **any ERC-20 on Base or Robinhood Chain (4663)** from terminal 
      token for the same binding is always accepted.
    - Same `x-wallet-address` header
    - Body: `{ "chain": "robinhood", "repo": "owner/repo", "lockTxHash": "0x…", "verificationToken": "<FRESH token>" }`
+   - The response returns the recorded **`grantId`** — keep it. You may include step 1's `expectedGrantId` in the body as a cross-check; a mismatch is a hard error, not a re-key.
 
-6. Read the grant back (`GET https://api.proofofdev.xyz/api/vesting/lock/owner/repo`) and format the reply locally from the readback (`references/RESPONSE-SAFETY.md`) — include allowlisted lock page URL on its own line.
+6. Read the grant back (`GET https://api.proofofdev.xyz/api/vesting/lock/owner/repo`) and format the reply locally from the readback (`references/RESPONSE-SAFETY.md`) — include allowlisted lock page URL on its own line. The readback's top level is the repo's primary grant and its `grants` array lists **every** lock on the repo: report the new lock's own entry (match by the `grantId` from step 5), and use `GET https://api.proofofdev.xyz/api/vesting/grant/{grantId}` for that lock's status from then on.
 
 ### Phrase handling
 
@@ -303,7 +315,7 @@ If symbol is ambiguous (two `Space` contracts), ask user to pick the `0x` addres
 
 ### Forbidden
 
-- Retrying a lock after a `repoId already active` refusal, or reporting it as a transient failure — it means the repo already has an active grant; report that grant's progress instead (see step 1)
+- Retrying a lock after a `repoId already active` refusal **on a legacy (V2/V1) escrow**, or reporting it as a transient failure — on those escrows it means the repo already has an active grant; report that grant's progress instead (see step 1). On the current V3 escrow the refusal does not exist: concurrent locks are normal there
 - Submitting an approve/lock whose amount exceeds the wallet's live balance at signing time — re-read the balance (step 3½) and re-prepare with the corrected amount
 - Saying "TMP isn't supported" or "only Space and TEST" **without** calling `POST /api/agent/lock`
 - Confusing GitHub vesting with a token's **native** `release()` vesting schedule

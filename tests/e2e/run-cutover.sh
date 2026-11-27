@@ -45,15 +45,21 @@ npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/d
 
 V1="$(python3 -c "import json;print(json.load(open('tests/e2e/state-cutover.json'))['v1'])")"
 V2="$(python3 -c "import json;print(json.load(open('tests/e2e/state-cutover.json'))['v2'])")"
+V3="$(python3 -c "import json;print(json.load(open('tests/e2e/state-cutover.json'))['v3'])")"
 echo "legacy (v1): $V1"
 echo "current (v2): $V2"
+echo "multi-lock (v3): $V3"
 
 echo "=== 4. backend release path under the repointed config ==="
 # Hardhat account #0 — the escrows' oracle and the backend signer.
 export ORACLE_PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 export BASE_RPC_URL="http://127.0.0.1:8545"
 export ROBINHOOD_RPC_URL="http://127.0.0.1:8545"
-export GIT_ESCROW_ADDRESS="$V2"
+# Phase-2 repoint: configured escrow is now V3; V2 joins the
+# historical list via GIT_ESCROW_V2_ADDRESS. Existing grants keep
+# releasing from their own escrows (stored / legacy resolution).
+export GIT_ESCROW_ADDRESS="$V3"
+export GIT_ESCROW_V2_ADDRESS="$V2"
 export GIT_ESCROW_LEGACY_ADDRESS="$V1"
 export REDIS_URL="redis://127.0.0.1:6399"
 npx tsx tests/e2e/cutover-release.ts

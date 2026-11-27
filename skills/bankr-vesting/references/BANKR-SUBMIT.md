@@ -25,7 +25,7 @@ That is **Bankr's wallet security scanner** flagging the token contract or spend
 ### Required agent behavior — stop, do not bypass
 
 1. **Stop the lock flow.** Do **not** submit further transactions.
-2. **Surface the risk** to the user in plain language: Bankr blocked an approve that could enable token loss; the escrow spender was `0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3`.
+2. **Surface the risk** to the user in plain language: Bankr blocked an approve that could enable token loss; the escrow spender was the current escrow pinned in `known-escrow.json` (GitEscrowV3, `0x71A9848e7Cbd70cB7B660e61B4cAEDd224a16eC5`).
 3. **Do not** tell the user to complete the approve in the Proof of Dev web UI, a browser wallet, or any other path to **circumvent** Bankr's scanner. That trains users to bypass safety controls.
 4. **Do not** say "token isn't supported" unless `POST /api/agent/lock` itself failed first.
 5. Options you **may** offer:

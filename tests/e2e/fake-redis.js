@@ -69,6 +69,10 @@ function execCommand(args) {
     }
     case "SET": {
       // SET key value [EX s|PX ms] [NX|XX] [KEEPTTL] [GET]
+      const opts = a.slice(2).map((x) => String(x).toUpperCase());
+      const exists = store.has(a[0]);
+      if (opts.includes("NX") && exists) return bulk(null);
+      if (opts.includes("XX") && !exists) return bulk(null);
       store.set(a[0], { type: "string", value: a[1] });
       return ok();
     }

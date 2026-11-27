@@ -1,5 +1,12 @@
 import type { GrantRecord } from "../lib/redis";
-import { updateGrant, getRedis, getGrantByRepoFullName, KEYS } from "../lib/redis";
+import {
+  updateGrant,
+  updateGrantById,
+  listGrantsForRepo,
+  getRedis,
+  getGrantByRepoFullName,
+  KEYS,
+} from "../lib/redis";
 import {
   verifyPush,
   recordVerifiedPush,
@@ -10,7 +17,12 @@ import {
 } from "./pushVerifier";
 import { writePushCheckpoint } from "../lib/recount";
 import { resolveMergedPrCredit, type MergedPrCredit } from "./prCredit";
-import { triggerReleaseIfMilestone } from "../oracle/releaseOracle";
+import {
+  triggerReleaseIfMilestone,
+  reportRepoCountToV3,
+  isV3Grant,
+  type ReleaseResult,
+} from "../oracle/releaseOracle";
 import { triggerFeeReleaseIfDue, type FeeReleaseResult } from "../oracle/feeLock";
 import {
   payRewardForMerge,
@@ -310,12 +322,66 @@ async function afterCountedPush(
   const headSha = effectiveHeadSha(args.effectivePayload);
   const fingerprint = args.prCredit?.fingerprint;
 
-  await updateGrant(repoId, { verifiedPushCount: args.verifiedPushCount });
-  const release = await triggerReleaseIfMilestone(repoId, grant, args.verifiedPushCount);
+  // Multi-lock (design §4.4): the repo counter incremented ONCE
+  // (recordVerifiedPush, before this hook). The supply-release step
+  // now loops EVERY active grant on the repo, each on its own
+  // basis — V3 grants against the repo cumulative total, legacy
+  // grants against their own record count (which advances by one
+  // per counted push while the grant is active, exactly the
+  // lockstep it kept with the counter in the one-grant era). One
+  // grant's failure is logged and never blocks the others.
+  const repoTotal = args.verifiedPushCount;
+  const allGrants = await listGrantsForRepo(repoId);
+  const activeGrants = allGrants.filter((g) => g.status === "active");
+  let release: ReleaseResult | undefined;
+  let v3ReleaseCarriedTotal = false;
+  let firstV3Grant: GrantRecord | undefined;
+  for (const g of activeGrants) {
+    const v3 = isV3Grant(g);
+    if (v3 && !firstV3Grant) firstV3Grant = g;
+    try {
+      if (v3) {
+        const relative = Math.max(0, repoTotal - (g.startPushCount ?? 0));
+        await updateGrantById(g.grantId!, { verifiedPushCount: relative });
+        const r = await triggerReleaseIfMilestone(repoId, { ...g, verifiedPushCount: relative }, repoTotal);
+        if (r.triggered) v3ReleaseCarriedTotal = true;
+        if (g.grantId === grant.grantId) release = r;
+      } else {
+        const relative = g.verifiedPushCount + 1;
+        if (g.grantId) {
+          await updateGrantById(g.grantId, { verifiedPushCount: relative });
+        } else {
+          await updateGrant(repoId, { verifiedPushCount: relative });
+        }
+        const r = await triggerReleaseIfMilestone(repoId, { ...g, verifiedPushCount: relative }, relative);
+        const isPrimary =
+          g.repoId === grant.repoId && (g.grantId ?? null) === (grant.grantId ?? null);
+        if (isPrimary) release = r;
+      }
+    } catch (err) {
+      console.error(
+        `[processPush] release step failed for grant ${g.grantId ?? g.repoId} on ${g.repoFullName} (continuing):`,
+        err,
+      );
+    }
+  }
+  if (!release) {
+    // The passed-in grant was not in the active loop (e.g. it just
+    // completed): fall back to its own release attempt result shape.
+    release = { triggered: false, reason: "grant not active in this pass" };
+  }
+  // §2.3 reportCount obligation: a repo with V3 grants whose new
+  // total no V3 release carried still owes the V3 escrow the count,
+  // so the next lock stamps a fresh baseline.
+  if (firstV3Grant && !v3ReleaseCarriedTotal) {
+    await reportRepoCountToV3(firstV3Grant, repoTotal).catch((err) =>
+      console.warn("[processPush] reportCount failed (ignored):", err),
+    );
+  }
   // Fee-lock: the launcher's locked trading-fee tranches vest on the
   // same counted pushes, through the same oracle — independently of
   // supply milestones (their own pushesPerTranche schedule on-chain).
-  const feeRelease = await triggerFeeReleaseIfDue(repoId, grant, args.verifiedPushCount);
+  const feeRelease = await triggerFeeReleaseIfDue(repoId, grant, repoTotal);
   const reward = await rewardForCountedPush({
     chain: grant.chain,
     repoId,

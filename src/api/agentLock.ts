@@ -56,6 +56,10 @@ const ESCROW_ABI = parseAbi([
   "event Locked(bytes32 indexed repoId, address indexed recipient, address indexed token, uint256 amount, uint256 totalPushesRequired, uint256 releasesPerMilestone, uint256 tokensPerMilestone)",
 ]);
 
+const ESCROW_V3_ABI = parseAbi([
+  "event Locked(bytes32 indexed grantId, bytes32 indexed repoId, address indexed recipient, address token, uint256 amount, uint256 totalPushesRequired, uint256 releasesPerMilestone, uint256 tokensPerMilestone, uint256 startPushCount)",
+]);
+
 function resolveWallet(req: Request): string | null {
   const header = req.headers["x-wallet-address"];
   const body = req.body?.wallet ?? req.body?.recipient;
@@ -476,10 +480,26 @@ export async function handleAgentConfirmLock(req: Request, res: Response): Promi
     return;
   }
 
-  const logs = parseEventLogs({ abi: ESCROW_ABI, logs: receipt.logs, eventName: "Locked" });
-  const locked = logs[0]?.args;
+  // Multi-lock: select the ABI by the event signature — a V3
+  // escrow's Locked event carries a grantId and a different topic.
+  const v3Logs = parseEventLogs({ abi: ESCROW_V3_ABI, logs: receipt.logs, eventName: "Locked" });
+  const v2Logs = parseEventLogs({ abi: ESCROW_ABI, logs: receipt.logs, eventName: "Locked" });
+  const locked = v3Logs[0]?.args ?? v2Logs[0]?.args;
+  const eventGrantId = v3Logs[0]?.args?.grantId?.toLowerCase();
   if (!locked) {
     res.status(400).json({ ok: false, error: "No Locked event in transaction" });
+    return;
+  }
+
+  // §6: an expected grantId in the request is a cross-check against
+  // the Locked event — a mismatch is a hard error.
+  const expectedGrantId = String(req.body?.grantId ?? req.query["grantId"] ?? "").trim().toLowerCase();
+  if (expectedGrantId && eventGrantId && expectedGrantId !== eventGrantId) {
+    res.status(400).json({
+      ok: false,
+      error: `grantId mismatch: request names ${expectedGrantId} but the lock transaction's Locked event carries ${eventGrantId}`,
+      code: "GRANT_ID_MISMATCH",
+    });
     return;
   }
 
@@ -513,6 +533,7 @@ export async function handleAgentConfirmLock(req: Request, res: Response): Promi
     onChainTxHash: lockTxHash,
     installationId: gh.installationId ?? 0,
     streaming,
+    ...(eventGrantId ? { grantId: eventGrantId } : {}),
     // Launch gate: forward the caller's verification token so grant
     // registration re-validates it and marks the grant launchVerified.
     launchVerificationToken: extractLaunchToken(req),
@@ -534,9 +555,13 @@ export async function handleAgentConfirmLock(req: Request, res: Response): Promi
   await handleRegister({ body: registerBody } as Request, mockRes as unknown as Response);
 
   if (mockRes.statusCode === 409) {
+    // Multi-lock: a V3 lock never 409s at registration, so a 409
+    // here is the legacy one-active-grant rule — UNLESS this exact
+    // grantId is already recorded (idempotent re-confirm).
+    const recordedGrantId = (mockRes.body as { grantId?: string })?.grantId;
     const link = lockUrl(normalizedRepo);
     const replyText = `Lock already active for ${normalizedRepo}.\n${link}`;
-    res.json({ ok: true, alreadyRegistered: true, replyText, tweetReply: replyText, statusUrl: link });
+    res.json({ ok: true, alreadyRegistered: true, ...(recordedGrantId ? { grantId: recordedGrantId } : {}), ...(eventGrantId ? { grantId: eventGrantId } : {}), replyText, tweetReply: replyText, statusUrl: link });
     return;
   }
 
@@ -558,9 +583,14 @@ export async function handleAgentConfirmLock(req: Request, res: Response): Promi
     `${locked.totalPushesRequired} verified pushes to complete\n\n` +
     link;
 
+  const registeredGrant = (mockRes.body as { grant?: { grantId?: string } })?.grant;
   res.json({
     ok: true,
-    grant: (mockRes.body as { grant?: unknown })?.grant,
+    grant: registeredGrant,
+    // §6: confirm-lock returns the recorded grantId (V3 locks).
+    ...((registeredGrant?.grantId ?? eventGrantId)
+      ? { grantId: registeredGrant?.grantId ?? eventGrantId }
+      : {}),
     statusUrl: link,
     replyText,
     tweetReply: replyText,

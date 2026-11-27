@@ -188,5 +188,24 @@ OUT="$(npx tsx tests/e2e/recount-trim-test.ts)"; echo "$OUT"
 check "trimmed log + checkpoint: certified at the true total" "$OUT" '"phase":"trimmed-with-checkpoint","recordedCount":5,"recountedCount":5,"status":"certified","checkpointUsed":true'
 check "trimmed log, no checkpoint: recount REFUSES (incomplete, no total)" "$OUT" '"phase":"trimmed-without-checkpoint","recordedCount":5,"recountedCount":null,"status":"incomplete"'
 
+
+echo "=== 16. multi-lock recount: two active V3 grants settled by derivation (Phase 2) ==="
+# Grants C (baseline 0) and D (baseline 2) lock 300 PTK each on the
+# SAME repo (certified total 3). The recount script must settle
+# each by the §2.5 derivation: C is owed all 3 milestones (300),
+# D exactly one (100); the completed V2 grant must not double-pay.
+OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/deploy-v3-recount.ts)"; echo "$OUT"
+check "V3 grant D stamped baseline 2 on-chain" "$OUT" "startPushCount=2"
+GRANT_C="$(python3 -c "import json;print(json.load(open('tests/e2e/state-recount-v3.json'))['grantC'])")"
+GRANT_D="$(python3 -c "import json;print(json.load(open('tests/e2e/state-recount-v3.json'))['grantD'])")"
+npx tsx tests/e2e/seed-recount-multigrant.ts || exit 1
+OUT="$(BACKUP_ORACLE_PRIVATE_KEY="$BACKUP_KEY" GIT_ESCROW_ADDRESS="$GIT_ESCROW_ADDRESS" REDIS_URL="redis://127.0.0.1:6399" BASE_RPC_URL="http://127.0.0.1:8545" npx tsx scripts/recount-and-release.ts testowner/testrepo)"; echo "$OUT"
+check "recount still certifies the shared repo total (3)" "$OUT" '"recountedCount":3,"recordedCount":3'
+if printf '%s' "$OUT" | grep -q "\"grantId\":\"$GRANT_C\"[^}]*\"tx\":\"0x"; then echo "PASS: recount settled grant C by derivation (release tx present)"; else echo "FAIL: recount settled grant C by derivation"; FAILURES=$((FAILURES + 1)); fi
+if printf '%s' "$OUT" | grep -q "\"grantId\":\"$GRANT_D\"[^}]*\"tx\":\"0x"; then echo "PASS: recount settled grant D by derivation (release tx present)"; else echo "FAIL: recount settled grant D by derivation"; FAILURES=$((FAILURES + 1)); fi
+OUT="$(npx tsx tests/e2e/recount-multigrant-check.ts)"; echo "$OUT"
+check "derivation payouts exact: recipient 700 PTK (900 - 600 locked + 300 C + 100 D)" "$OUT" "recipient PTK=700"
+check "D's unvested remainder stays in the V3 escrow (200 PTK)" "$OUT" "v3escrow PTK=200"
+
 echo "=== RECOUNT DRIVER DONE — failures: $FAILURES ==="
 [ "$FAILURES" -eq 0 ] || exit 1

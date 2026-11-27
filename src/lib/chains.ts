@@ -42,6 +42,12 @@ export type VestingChainConfig = {
    *  the v1 production deployment). Grants that carry no stored
    *  escrow address resolve here — see resolveGrantEscrowAddress. */
   legacyEscrowAddress: string | undefined;
+  /** GitEscrowV2 deployment on this chain (Base only): the escrow
+   *  that was configured before the V3 repoint. Historical — new
+   *  locks never target it once GIT_ESCROW_ADDRESS points at V3 —
+   *  but locks created under it must still parse at registration and
+   *  its address identity pins escrow version 2. */
+  v2EscrowAddress: string | undefined;
   /** FeeStreamEscrow for launcher fee-lock grants (Base only for now). */
   feeStreamEscrowAddress: string | undefined;
   /** Bankr v4 launch factory (launch-record reads: poolOf). */
@@ -78,6 +84,7 @@ export function getVestingChainConfig(key: VestingChainKey): VestingChainConfig 
         // Robinhood was not repointed in the v2 cutover (Base is the
         // beta chain); its configured escrow IS its legacy escrow.
         legacyEscrowAddress: undefined,
+        v2EscrowAddress: undefined,
         feeStreamEscrowAddress: undefined,
         bankrFactoryAddress: env.BANKR_FACTORY_ADDRESS || "0x2F2FDedE5b61D9B624462FB9e138913fD2620427",
         bankrFeeLedgerAddress: env.BANKR_FEE_LEDGER_ADDRESS || "0x15e5F60817ee337f58A0B6c34b905C7C2dBC2F64",
@@ -94,6 +101,7 @@ export function getVestingChainConfig(key: VestingChainKey): VestingChainConfig 
         rpcUrl: env.BASE_SEPOLIA_RPC_URL,
         escrowAddress: env.GIT_ESCROW_SEPOLIA_ADDRESS || undefined,
         legacyEscrowAddress: undefined,
+        v2EscrowAddress: undefined,
         feeStreamEscrowAddress: undefined,
         bankrFactoryAddress: undefined,
         bankrFeeLedgerAddress: undefined,
@@ -120,6 +128,7 @@ export function getVestingChainConfig(key: VestingChainKey): VestingChainConfig 
         // without a stored escrow resolve to the configured escrow,
         // the pre-cutover behaviour.
         legacyEscrowAddress: env.GIT_ESCROW_LEGACY_ADDRESS || undefined,
+        v2EscrowAddress: env.GIT_ESCROW_V2_ADDRESS || undefined,
         feeStreamEscrowAddress: env.FEE_STREAM_ESCROW_ADDRESS || undefined,
         bankrFactoryAddress: env.BANKR_FACTORY_ADDRESS || "0x8cdE4Edb9A51909eef93F102f5Ce1b950769792E",
         bankrFeeLedgerAddress: env.BANKR_FEE_LEDGER_ADDRESS || "0x7C836e937831Cd5931A1ACbB9117dF9714D7d1F7",
@@ -171,7 +180,41 @@ export function knownEscrowAddresses(key: VestingChainKey): string[] {
   if (cfg.legacyEscrowAddress && !out.includes(cfg.legacyEscrowAddress.toLowerCase())) {
     out.push(cfg.legacyEscrowAddress.toLowerCase());
   }
+  if (cfg.v2EscrowAddress && !out.includes(cfg.v2EscrowAddress.toLowerCase())) {
+    out.push(cfg.v2EscrowAddress.toLowerCase());
+  }
   return out;
+}
+
+/**
+ * Escrow version by ADDRESS IDENTITY (multi-lock, design §4.6).
+ *
+ * The version is derived by comparing the address against the
+ * chain's known escrows in priority order:
+ *   1. the legacy (pre-v2) env address            → 1
+ *   2. the V2 env address (GIT_ESCROW_V2_ADDRESS) → 2
+ *   3. the configured escrow                      → 2 when it IS the
+ *      V2 deployment (configured == V2 env, or no V2 env is set —
+ *      the pre-cutover shape, where the configured escrow is the
+ *      historical V2 address), otherwise 3 (post-cutover: the
+ *      configured escrow is a distinct V3 deployment and the V2
+ *      env pins the historical V2 address).
+ * Anything else → null. The mapping never depends on which escrow
+ * is "current", so it stays correct across the V3 repoint.
+ */
+export function escrowVersionOf(
+  key: VestingChainKey,
+  address?: string | null,
+): 1 | 2 | 3 | null {
+  if (!address) return null;
+  const a = address.toLowerCase();
+  const cfg = getVestingChainConfig(key);
+  if (cfg.legacyEscrowAddress && a === cfg.legacyEscrowAddress.toLowerCase()) return 1;
+  if (cfg.v2EscrowAddress && a === cfg.v2EscrowAddress.toLowerCase()) return 2;
+  if (cfg.escrowAddress && a === cfg.escrowAddress.toLowerCase()) {
+    return cfg.v2EscrowAddress ? 3 : 2;
+  }
+  return null;
 }
 
 export function blockscoutBaseForChain(key: VestingChainKey): string {

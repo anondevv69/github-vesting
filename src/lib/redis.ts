@@ -20,6 +20,15 @@ export function getRedis(): Redis {
 
 export const KEYS = {
   grant: (repoId: string) => `vesting:grant:${repoId}`,
+  /** Multi-lock (design §4.2): a V3 grant's record, keyed by its
+   *  on-chain grantId. Legacy (V1/V2) grants keep living under
+   *  `grant(repoId)`; a repo may carry one legacy grant PLUS up to
+   *  10 V3 grants. */
+  grantById: (grantId: string) => `vesting:grant_by_id:${grantId.toLowerCase()}`,
+  /** Multi-lock: the set of V3 grantIds created for a repo. */
+  repoGrants: (repoId: string) => `vesting:repo_grants:${repoId}`,
+  /** Multi-lock: every V3 grantId ever saved (listAllGrants union). */
+  allGrantIds: () => `vesting:all_grant_ids`,
   pushCount: (repoId: string) => `vesting:pushes:${repoId}`,
   pushLog: (repoId: string) => `vesting:push_log:${repoId}`,
   dailyCount: (repoId: string, dateStr: string) => `vesting:daily:${repoId}:${dateStr}`,
@@ -185,6 +194,17 @@ export type GrantRecord = {
    *  registered before per-grant recording existed: those resolve to
    *  the chain's legacy escrow. */
   escrowAddress?: string;
+  /** Multi-lock (design §4.2): the on-chain grantId (bytes32 hex).
+   *  V3 grants only — V1/V2 grants predate grantIds. */
+  grantId?: string;
+  /** Multi-lock: repo cumulative counted total stamped on-chain at
+   *  lock time (GitEscrowV3 knownPushCount). This grant vests only
+   *  on pushes counted after it. V3 grants only. */
+  startPushCount?: number;
+  /** Multi-lock: escrow generation this grant was created under,
+   *  derived from escrowAddress identity at registration
+   *  (see escrowVersionOf in src/lib/chains.ts). */
+  escrowVersion?: 1 | 2 | 3;
   installationId: number;
   /** Launch gate: true when grant registration carried a valid GitHub App
    *  verification token (see src/lib/launchGate.ts). Grants registered
@@ -249,28 +269,100 @@ export async function saveGrant(grant: GrantRecord): Promise<void> {
   await redis.set(KEYS.repoByName(platform, normalized.repoFullName), normalized.repoId);
 }
 
+export async function saveGrantById(grant: GrantRecord): Promise<void> {
+  if (!grant.grantId) throw new Error("saveGrantById: grant.grantId required");
+  const redis = getRedis();
+  const platform = grant.platform ?? "github";
+  const normalized: GrantRecord = {
+    ...grant,
+    platform,
+    grantId: grant.grantId.toLowerCase(),
+    totalLocked: normalizeWeiString(grant.totalLocked),
+    tokensPerMilestone: normalizeWeiString(grant.tokensPerMilestone),
+  };
+  await redis.set(KEYS.grantById(normalized.grantId!), JSON.stringify(normalized));
+  await redis.sadd(KEYS.repoGrants(normalized.repoId), normalized.grantId!);
+  await redis.sadd(KEYS.allGrantIds(), normalized.grantId!);
+  await redis.sadd(KEYS.allGrants(), normalized.repoId);
+  await redis.set(KEYS.repoByName(platform, normalized.repoFullName), normalized.repoId);
+}
+
+export async function getGrantById(grantId: string): Promise<GrantRecord | null> {
+  const raw = await getRedis().get(KEYS.grantById(grantId));
+  if (!raw) return null;
+  const grant = JSON.parse(raw) as GrantRecord;
+  if (!grant.platform) grant.platform = "github";
+  grant.totalLocked = normalizeWeiString(grant.totalLocked);
+  grant.tokensPerMilestone = normalizeWeiString(grant.tokensPerMilestone);
+  return grant;
+}
+
+export async function updateGrantById(
+  grantId: string,
+  patch: Partial<GrantRecord>,
+): Promise<void> {
+  const existing = await getGrantById(grantId);
+  if (!existing) throw new Error(`Grant not found: ${grantId}`);
+  await saveGrantById({ ...existing, ...patch, updatedAt: new Date().toISOString() });
+}
+
+/** All grants for a repo (design §4.2): the legacy V1/V2 grant
+ *  first (under vesting:grant:{repoId}) when present, then the
+ *  repo's V3 grants in creation order. */
+export async function listGrantsForRepo(repoId: string): Promise<GrantRecord[]> {
+  const redis = getRedis();
+  const out: GrantRecord[] = [];
+  const legacy = await getGrant(repoId);
+  if (legacy) out.push(legacy);
+  const ids = await redis.smembers(KEYS.repoGrants(repoId));
+  const v3: GrantRecord[] = [];
+  for (const id of ids) {
+    const g = await getGrantById(id);
+    if (g) v3.push(g);
+  }
+  v3.sort((a, b) => (a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0));
+  return [...out, ...v3];
+}
+
+/** The primary grant (design §4.5): the earliest-created ACTIVE
+ *  grant; if none is active, the most recently created grant. For
+ *  every pre-multi-lock repo this returns exactly the grant the
+ *  1:1 resolution returned before. */
+export function pickPrimaryGrant(grants: GrantRecord[]): GrantRecord | null {
+  if (grants.length === 0) return null;
+  const byCreation = [...grants].sort((a, b) =>
+    a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0,
+  );
+  const active = byCreation.filter((g) => g.status === "active");
+  if (active.length > 0) return active[0]!;
+  return byCreation[byCreation.length - 1]!;
+}
+
+async function resolveRepoIdByName(
+  repoFullName: string,
+  platform?: RepoPlatform,
+): Promise<string | null> {
+  const redis = getRedis();
+  if (platform) {
+    return redis.get(KEYS.repoByName(platform, repoFullName));
+  }
+  for (const p of ["github", "gitlawb"] as RepoPlatform[]) {
+    const repoId = await redis.get(KEYS.repoByName(p, repoFullName));
+    if (repoId) return repoId;
+  }
+  // Legacy grants (pre-platform prefix)
+  return redis.get(`vesting:repo_name:${repoFullName.toLowerCase()}`);
+}
+
 export async function getGrantByRepoFullName(
   repoFullName: string,
   platform?: RepoPlatform,
 ): Promise<GrantRecord | null> {
-  const redis = getRedis();
-
-  if (platform) {
-    const repoId = await redis.get(KEYS.repoByName(platform, repoFullName));
-    if (!repoId) return null;
-    return getGrant(repoId);
-  }
-
-  for (const p of ["github", "gitlawb"] as RepoPlatform[]) {
-    const repoId = await redis.get(KEYS.repoByName(p, repoFullName));
-    if (repoId) return getGrant(repoId);
-  }
-
-  // Legacy grants (pre-platform prefix)
-  const legacyId = await redis.get(`vesting:repo_name:${repoFullName.toLowerCase()}`);
-  if (legacyId) return getGrant(legacyId);
-
-  return null;
+  const repoId = await resolveRepoIdByName(repoFullName, platform);
+  if (!repoId) return null;
+  const grants = await listGrantsForRepo(repoId);
+  if (grants.length > 0) return pickPrimaryGrant(grants);
+  return getGrant(repoId);
 }
 
 export async function getGrant(repoId: string): Promise<GrantRecord | null> {
@@ -291,9 +383,17 @@ export async function updateGrant(repoId: string, patch: Partial<GrantRecord>): 
 
 export async function listAllGrants(): Promise<GrantRecord[]> {
   const redis = getRedis();
-  const ids = await redis.smembers(KEYS.allGrants());
-  const grants = await Promise.all(ids.map((id) => getGrant(id)));
-  return grants.filter((g): g is GrantRecord => g !== null);
+  const repoIds = await redis.smembers(KEYS.allGrants());
+  const legacy = await Promise.all(repoIds.map((id) => getGrant(id)));
+  const out = legacy.filter((g): g is GrantRecord => g !== null);
+  const grantIds = await redis.smembers(KEYS.allGrantIds());
+  const seen = new Set(out.map((g) => g.grantId?.toLowerCase()).filter(Boolean));
+  for (const id of grantIds) {
+    if (seen.has(id.toLowerCase())) continue;
+    const g = await getGrantById(id);
+    if (g) out.push(g);
+  }
+  return out;
 }
 
 export async function deleteGrantByRepoFullName(
@@ -305,6 +405,12 @@ export async function deleteGrantByRepoFullName(
 
   const redis = getRedis();
   const plat = grant.platform ?? "github";
+  const v3Ids = await redis.smembers(KEYS.repoGrants(grant.repoId));
+  for (const id of v3Ids) {
+    await redis.del(KEYS.grantById(id));
+    await redis.srem(KEYS.allGrantIds(), id);
+  }
+  await redis.del(KEYS.repoGrants(grant.repoId));
   await redis.del(KEYS.grant(grant.repoId));
   await redis.srem(KEYS.allGrants(), grant.repoId);
   await redis.del(KEYS.repoByName(plat, grant.repoFullName));

@@ -12,10 +12,9 @@
   "feeStreamEscrow": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
   "feeLockVault": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
   "feeClaimSource": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
-  "bankrRecord": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
   "repoId": "0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3",
   "repoFullName": "testowner/testrepo",
-  "lockTx": "0x1264103d2651776d127a69462474253445d892bc9cd28ccde3dd0f82e4b1e512",
+  "lockTx": "0x5ebce26b5904ce802f21a0d7ca9849d38d1fe9d67dcc281c5f4f9cd15bd9033a",
   "deployTxs": {
     "ptk": "0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b"
   }
