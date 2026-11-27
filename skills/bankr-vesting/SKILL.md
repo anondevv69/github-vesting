@@ -2,7 +2,7 @@
 name: github-vesting
 description: GitHub-gated token vesting on proofofdev.xyz — lock ANY ERC-20 on Base or Robinhood Chain (4663) via api.proofofdev.xyz, link GitHub, repo claims. Use for github vesting, lock tokens, vesting progress, link github, proofofdev, robinhood, RHAGENT. NEVER use github-vesting.vercel.app for API.
 tags: [github, vesting, bankr, base, robinhood, defi, proofofdev]
-version: 5.1
+version: 5.2
 ---
 
 # GitHub Vesting — Bankr agent skill
@@ -208,9 +208,42 @@ You **can** lock **any ERC-20 on Base or Robinhood Chain (4663)** from terminal 
    - `amount` = human units (`855000000`, `855M`, `3.49M`)
    - **Milestone field is exactly `pushesPerMilestone`** (`1` = release after each push). There is **no** `releasesPerMilestone` request field — that name exists only in the on-chain `Locked` event, and sending it is silently ignored, leaving a single end-of-schedule release. After preparing, confirm the response's `pushesPerMilestone` matches the user's cadence before signing.
 
+   **One active grant per repo — an escrow rule, NOT a retryable error.**
+   GitEscrowV2 keys grants by repo alone: while a grant for the repo
+   is active, every new lock for that repo reverts on-chain with
+   `GitEscrowV2: repoId already active` — regardless of token, amount,
+   or which wallet locks. If step 1's response, a wallet simulation,
+   or the submit surfaces an existing active grant for the repo (or
+   that revert string), **do not retry and do not treat it as
+   transient**: read the existing grant
+   (`GET https://api.proofofdev.xyz/api/vesting/lock/{owner}/{repo}`),
+   report its progress to the user (status, verified pushes out of
+   total, amount locked, per-milestone release), and explain that a
+   second concurrent lock on the same repo is not possible in this
+   escrow — a new lock needs a **different repo**, or the active
+   grant to complete first.
+
+   **Balance freshness — re-read the live balance immediately before
+   signing.** The amount was computed from a balance read at prepare
+   time, and balances move: releases from the user's earlier grants
+   land in the same wallet, and other activity changes it too. If the
+   prepared amount is greater than the balance at signing time, the
+   approve/lock will fail or lock less than intended. The pre-submit
+   re-read is step 3½ below — never skip it.
+
 2. If response has **`installUrl`** → allowlist-check, then tell user to install GitHub App, then retry.
 
 3. **`references/TX-VALIDATION.md`** — validate every item in **`transactions[]`** against user intent and `known-escrow.json`, starting with its **escrow identity check** (decoded approve spender == lock `to` == the pinned escrow for the chain). **Abort if any check fails.** On an escrow mismatch, report **both** addresses — and if the decoded escrow is the platform's newer contract while the pin is the older one, tell the user the installed skill's pin is stale after a platform escrow rotation and that reinstalling this skill (same install command) is the remedy, then stop.
+
+3½. **Balance freshness — re-read before you submit.** Immediately
+   before step 4, re-read the wallet's live balance for the token
+   (`GET https://api.proofofdev.xyz/api/agent/fee-tokens`). If the
+   prepared amount **exceeds** the live balance, do **not** submit:
+   recompute the amount against the fresh balance (a fraction like
+   "half" is recomputed on the fresh figure), go back to step 1 with
+   the corrected amount, and re-validate the new `transactions[]`.
+   Submitting an approve/lock for more than the wallet holds just
+   burns a failed transaction.
 
 4. Submit validated txs via Bankr on the response `chainId` (**8453** Base or **4663** Robinhood):
    - `POST https://api.bankr.bot/wallet/submit` with `{ "transaction": { to, data, value, chainId }, "waitForConfirmation": true }`
@@ -237,7 +270,10 @@ Map the user's words to parameters explicitly — never improvise a number:
   compute it, and state the computed amount in your confirmation to
   the user; `totalPushes` = 50; `pushesPerMilestone` = 1 ("after
   each push" always means 1). "A quarter" = × ¼; "all my X" = the
-  full live balance.
+  full live balance. The fraction is always computed on the
+  **freshest** balance: step 3½ re-reads it immediately before
+  signing, and if it moved, the amount is recomputed and re-prepared
+  from that figure — never from the prepare-time read.
 - **"release every K pushes"** → `pushesPerMilestone` = K, and
   `totalPushes` must be an exact multiple of K — if it isn't, ask;
   never round silently.
@@ -267,6 +303,8 @@ If symbol is ambiguous (two `Space` contracts), ask user to pick the `0x` addres
 
 ### Forbidden
 
+- Retrying a lock after a `repoId already active` refusal, or reporting it as a transient failure — it means the repo already has an active grant; report that grant's progress instead (see step 1)
+- Submitting an approve/lock whose amount exceeds the wallet's live balance at signing time — re-read the balance (step 3½) and re-prepare with the corrected amount
 - Saying "TMP isn't supported" or "only Space and TEST" **without** calling `POST /api/agent/lock`
 - Confusing GitHub vesting with a token's **native** `release()` vesting schedule
 - Skipping `confirm-lock` after on-chain lock

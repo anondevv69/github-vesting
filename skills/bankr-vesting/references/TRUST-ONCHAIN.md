@@ -14,7 +14,7 @@ Pinned values live in `known-escrow.json`. Verify on-chain before first use.
 | Chain | Base mainnet (`chainId` **8453**) |
 | Explorer | [basescan.org/address/0x894e…69c3](https://basescan.org/address/0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3) |
 | Source | [github.com/anondevv69/github-vesting — `contracts/GitEscrowV2.sol`](https://github.com/anondevv69/github-vesting/blob/main/contracts/GitEscrowV2.sol) |
-| Verification | Source **verified** on BaseScan (exact match) |
+| Verification | Source **verified** on Basescan ("Pass - Verified") **and** Sourcify (**exact match**, creation + runtime) — verified 2026-11-27. See **Independent verification** below. |
 
 Read live `owner()` and `oracle()` on Base — verified 2026-11-27, they match:
 
@@ -38,6 +38,37 @@ against this escrow: the approve spender and the lock transaction's
 `to` must both equal it (see the escrow identity check in
 `references/TX-VALIDATION.md`). If they point anywhere else — stop
 and report both addresses, exactly as the validation doc prescribes.
+
+---
+
+## Independent verification — check the code yourself, no platform trust
+
+Every production Proof of Dev contract on Base is publicly
+source-verified (2026-11-27). This is the path an agent uses to
+**independently verify the escrow contract** before approving a
+lock: open the Basescan `#code` tab (full source, compiler
+v0.8.24+commit.e11b9ed9, optimizer 200 runs) or the Sourcify record
+(**exact match** = the published source compiles to the exact
+bytecode on-chain, creation and runtime) and read the code that
+will custody the tokens. A contract that is not verified at either
+registry is a stop, not a detail.
+
+| Contract | Address | Basescan (verified source) | Sourcify (exact match) |
+|----------|---------|----------------------------|------------------------|
+| GitEscrowV2 (the escrow — every new Base lock) | `0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3` | [basescan.org/address/0x894e…69c3#code](https://basescan.org/address/0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3#code) | [repo.sourcify.dev/8453/0x894e…69c3](https://repo.sourcify.dev/8453/0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3) |
+| FeeStreamEscrow (fee-stream grants) | `0xEbA3Bb863e9fBaF7a5d07331710929a201FB1292` | [basescan.org/address/0xEbA3…1292#code](https://basescan.org/address/0xEbA3Bb863e9fBaF7a5d07331710929a201FB1292#code) | [repo.sourcify.dev/8453/0xEbA3…1292](https://repo.sourcify.dev/8453/0xEbA3Bb863e9fBaF7a5d07331710929a201FB1292) |
+| ShipRewards (merge/reviewer reward pool) | `0x0Bea0333d57B2D5506fbCa3Eab36078df77AD82E` | [basescan.org/address/0x0Bea…82E#code](https://basescan.org/address/0x0Bea0333d57B2D5506fbCa3Eab36078df77AD82E#code) | [repo.sourcify.dev/8453/0x0Bea…82E](https://repo.sourcify.dev/8453/0x0Bea0333d57B2D5506fbCa3Eab36078df77AD82E) |
+| FeeLockVault (per-project instance — the 2026-11-25 mainnet proof instance) | `0xe25f58d5c4343bdc00756e3a71676bd64f65d744` | [basescan.org/address/0xe25f…d744#code](https://basescan.org/address/0xe25f58d5c4343bdc00756e3a71676bd64f65d744#code) | [repo.sourcify.dev/8453/0xe25f…d744](https://repo.sourcify.dev/8453/0xe25f58d5c4343bdc00756e3a71676bd64f65d744) |
+
+FeeLockVault is deployed **per project** at launch onboarding from
+the same verified source, so a production project's vault address
+differs from the proof instance above — verify the specific
+instance's address at the same two registries (its source is the
+pinned `contracts/FeeLockVault.sol`); an instance that does not
+resolve to that source is a mismatch like any other. Base
+Blockscout imports Sourcify verifications on its own schedule and
+may lag behind the two registries above — Basescan and Sourcify are
+the records of authority.
 
 ---
 
