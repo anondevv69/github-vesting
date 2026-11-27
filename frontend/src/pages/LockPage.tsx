@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { VestingNav } from "../components/VestingNav";
 import { VestingFooter } from "../components/VestingFooter";
 import { CopyButton } from "../components/CopyButton";
@@ -10,8 +10,35 @@ import { explorerForGrantChain } from "../lib/chains";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
+type GrantEntry = {
+  grantId?: string;
+  escrowVersion?: number;
+  escrowAddress?: string;
+  recipient: string;
+  token: string;
+  chain: string;
+  totalLocked: string;
+  totalReleased?: string;
+  totalPushesRequired: number;
+  pushesPerMilestone: number;
+  tokensPerMilestone: string;
+  startPushCount?: number;
+  verifiedPushCount: number;
+  lastPaidMilestone: number;
+  status: string;
+  onChainTxHash: string;
+  progress?: {
+    verifiedPushCount: number;
+    totalPushesRequired: number;
+    milestonesCompleted: number;
+    totalMilestones: number;
+    progressPct?: number;
+  };
+};
+
 type LockResponse = {
   ok: boolean;
+  grants?: GrantEntry[];
   grant: {
     repoFullName: string;
     token: string;
@@ -111,6 +138,8 @@ function summarizePushes(pushes: PushEntry[]) {
 
 export function LockPage() {
   const { owner = "", repoName = "" } = useParams();
+  const [searchParams] = useSearchParams();
+  const selectedGrantId = searchParams.get("grantId") ?? undefined;
   const repoFullName = owner && repoName ? `${owner}/${repoName}` : "";
   const [data, setData] = useState<LockResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -121,7 +150,8 @@ export function LockPage() {
   useEffect(() => {
     if (!repoFullName) return;
     setLoading(true);
-    fetch(`${API_BASE}/api/vesting/lock/${owner}/${repoName}`)
+    const qs = selectedGrantId ? `?grantId=${encodeURIComponent(selectedGrantId)}` : "";
+    fetch(`${API_BASE}/api/vesting/lock/${owner}/${repoName}${qs}`)
       .then((r) => r.json() as Promise<LockResponse & { error?: string }>)
       .then((d) => {
         if (!d.ok) throw new Error(d.error ?? "Not found");
@@ -129,7 +159,7 @@ export function LockPage() {
       })
       .catch((e) => setError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
-  }, [repoFullName, owner, repoName]);
+  }, [repoFullName, owner, repoName, selectedGrantId]);
 
   if (!repoFullName || !isValidRepoFullName(repoFullName)) {
     return (
@@ -172,7 +202,7 @@ export function LockPage() {
   const timeline = [...recentPushes].reverse();
   const pushSummary = summarizePushes(recentPushes);
   const pct = progress.totalPushesRequired > 0
-    ? Math.floor((progress.verifiedPushCount / progress.totalPushesRequired) * 100)
+    ? Math.min(100, Math.floor((progress.verifiedPushCount / progress.totalPushesRequired) * 100))
     : 0;
 
   return (
@@ -322,6 +352,88 @@ export function LockPage() {
           </table>
         )}
       </section>
+
+      {data.grants && data.grants.length > 1 && (
+        <section>
+          <h2>All locks on this repo</h2>
+          <p className="muted search-hints">
+            This repo carries {data.grants.length} locks. Each one vests on the repo's
+            counted pushes from its own starting point. Select a lock to view it in detail.
+          </p>
+          <div className="grant-cards">
+            {data.grants.map((g) => {
+              const gPct = g.totalPushesRequired > 0
+                ? Math.min(100, Math.floor((g.verifiedPushCount / g.totalPushesRequired) * 100))
+                : 0;
+              const released = g.totalReleased
+                ?? (BigInt(g.tokensPerMilestone || "0") * BigInt(g.lastPaidMilestone)).toString();
+              const isSelected = g.grantId
+                ? g.grantId === selectedGrantId
+                : !selectedGrantId && g.onChainTxHash === grant.onChainTxHash;
+              const card = (
+                <>
+                  <div className="grant-card__head">
+                    <span className="grant-card__token">{g.token.slice(0, 6)}…</span>
+                    <span className={`badge ${g.status}`}>{g.status}</span>
+                    {g.escrowVersion != null && (
+                      <span className="chain-badge">escrow V{g.escrowVersion}</span>
+                    )}
+                  </div>
+                  <div className="grant-card__amounts">
+                    <span>{formatTokens(g.totalLocked)} locked</span>
+                    <span className="muted">{formatTokens(released)} released</span>
+                  </div>
+                  <div className="bar-outer">
+                    <div className="bar-inner" style={{ width: `${gPct}%` }} />
+                  </div>
+                  <p className="grant-card__progress">
+                    {g.verifiedPushCount} of {g.totalPushesRequired} pushes ·{" "}
+                    {formatTokens(g.tokensPerMilestone)} every {g.pushesPerMilestone} push
+                    {g.pushesPerMilestone === 1 ? "" : "es"}
+                  </p>
+                  <p className="grant-card__meta muted">
+                    Recipient {shortAddr(g.recipient)}
+                    {g.grantId && (
+                      <>
+                        {" · grant "}
+                        <code>{g.grantId.slice(0, 10)}…</code>
+                      </>
+                    )}
+                  </p>
+                </>
+              );
+              return g.grantId ? (
+                <Link
+                  key={g.grantId}
+                  to={`/lock/${owner}/${repoName}?grantId=${g.grantId}`}
+                  className={`grant-card${isSelected ? " grant-card--selected" : ""}`}
+                >
+                  {card}
+                </Link>
+              ) : (
+                <div key={g.onChainTxHash} className={`grant-card${isSelected ? " grant-card--selected" : ""}`}>
+                  {card}
+                </div>
+              );
+            })}
+          </div>
+          {data.grants.map((g) => (
+            <p key={`tx-${g.grantId ?? g.onChainTxHash}`} className="muted grant-card__tx">
+              Lock tx{" "}
+              <a href={`${explorerBase}/tx/${g.onChainTxHash}`} target="_blank" rel="noreferrer">
+                {g.onChainTxHash.slice(0, 10)}…
+              </a>
+              {g.grantId && (
+                <>
+                  {" · grant id "}
+                  <code>{g.grantId}</code>
+                  <CopyButton text={g.grantId} />
+                </>
+              )}
+            </p>
+          ))}
+        </section>
+      )}
 
       <section>
         <h2>Push activity</h2>

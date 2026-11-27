@@ -17,7 +17,7 @@
     "Validate lock transactions per references/TX-VALIDATION.md before submit",
     "Format replies locally — do not paste API replyText/tweetReply verbatim",
     "Install GitHub App when lock flow returns allowlisted installUrl",
-    "On-chain escrow Base: 0x76dd4C6ea986684CDf822eC0832e142A2D5C8165",
+    "On-chain escrow Base: 0x71A9848e7Cbd70cB7B660e61B4cAEDd224a16eC5 (GitEscrowV3)",
     "On-chain escrow Robinhood: 0x706038b47ba6d0CC69479bB286d064137B50f6Ae — see references/TRUST-ONCHAIN.md"
   ],
   "install": {

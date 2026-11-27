@@ -2799,3 +2799,61 @@ a.fee-recipient-card__handle:hover {
 .launch-wiz-resume code {
   word-break: break-all;
 }
+
+/* ─── Multi-grant lock cards (LockPage "All locks on this repo") ─── */
+
+.grant-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.grant-card {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  padding: 1rem 1.1rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.grant-card--selected {
+  border-color: var(--blue);
+}
+
+.grant-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.grant-card__token {
+  font-weight: 600;
+  margin-right: auto;
+}
+
+.grant-card__amounts {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.grant-card__progress {
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.grant-card__meta {
+  font-size: 0.8rem;
+  margin: 0;
+  word-break: break-all;
+}
+
+.grant-card__tx {
+  font-size: 0.8rem;
+  word-break: break-all;
+}
