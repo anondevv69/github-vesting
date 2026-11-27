@@ -864,3 +864,9 @@ Gregory's order, in his own words: **"Adopt the design and build it"** — the a
   4. The Phase 2 worktree's attestation suite exited 1 on an environment gate (its `mcp/node_modules` was never installed in that copy) while its 21/21 checks passed; pre-existing, unrelated to the change.
 - **Pushes:** production `ship/pr-credit-and-rewards` → **12be55d4** (phases 1–4 + pins, each step tree-verified); review `codex-review-round2` → **f7b4a091** (full build path-set, 52 paths) + this section; `main` → **923ea25c** (LockPage cards + skills + agent.md + pins) + this section mirrored.
 - **Phase 5 (Gregory's, unchanged):** reinstall the skill in Bankr (same install message — it now serves v5.3), operator baseline sync for github-vesting first (deviation 1), then his 50% POD lock over 50 pushes as the first production V3 grant beside his V2 lock. `prepare-lock` defaults to V3.
+
+### §33 addendum (2026-11-27) — V3 baseline pre-sync for github-vesting executed; Phase 5 unblocked
+
+- The deviation-1 operator pre-sync named above is done for `anondevv69/github-vesting`. Backend counted total read live from production at execution time: **2** (status readback for the repo: Gregory's V2 grant `verifiedPushCount` 2, `lastPaidMilestone` 2; that grant started at a zero repo counter, so the repo total is the same 2). GitEscrowV3 `knownPushCount` for the repoId (`0x33d05357…50cc`) read **0** before the sync.
+- `reportCount(repoId, 2)` sent from the production oracle/owner wallet, simulated first: **tx `0x360e0e0281980937c8769c050bc0591f843b91bb5fbf9ea1e0a7790040541da8`** (block 63054764, success). Readback: V3 `knownPushCount` = **2**, equal to the backend total.
+- Gregory's V2 grant untouched by the V3 sync, confirmed by post-sync readback: active, 2/100, `lastPaidMilestone` 2, record unchanged. **Phase 5 unblocked** — his first V3 lock now stamps `startPushCount` 2.
