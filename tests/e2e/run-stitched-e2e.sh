@@ -316,5 +316,43 @@ check "stage 9c: tranche 2 attestedCountAtLock == 3" "$OUT" '"attestedCountAtLoc
 OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/fee-state.ts)"; echo "$OUT"
 check "stage 9c: tranche 1 stamped baseline=3 backend=3" "$OUT" "tranche1 amount=20000000000000000000 baseline=3 backend=3 released=0"
 
+
+echo "=== STAGE 10. MULTI-LOCK: V3 grants beside the completed V2 grant, post-repoint ==="
+OUT="$(npx hardhat run --config hardhat.local.config.ts --network localhost tests/e2e/deploy-v3-stitched.ts)"; echo "$OUT"
+check "stage 10: V3 escrow deployed + two V3 locks on the stitch repo" "$OUT" "V3_LOCK_B tx="
+V3="$(python3 -c "import json;print(json.load(open('tests/e2e/state-v3-stitched.json'))['v3'])")"
+GRANT_A="$(python3 -c "import json;print(json.load(open('tests/e2e/state-v3-stitched.json'))['grantA'])")"
+GRANT_B="$(python3 -c "import json;print(json.load(open('tests/e2e/state-v3-stitched.json'))['grantB'])")"
+LOCK_A="$(python3 -c "import json;print(json.load(open('tests/e2e/state-v3-stitched.json'))['lockTxA'])")"
+LOCK_B="$(python3 -c "import json;print(json.load(open('tests/e2e/state-v3-stitched.json'))['lockTxB'])")"
+# (the stage-9a V2 lock body is re-registered below for the legacy 409 check)
+# Repoint the backend at V3 for new locks (production cutover shape):
+# configured = V3, the stitch V2 escrow becomes the historical V2 entry.
+kill "$SERVER_PID" 2>/dev/null; pkill -f "tsx src/index.ts" 2>/dev/null; sleep 1
+export GIT_ESCROW_V2_ADDRESS="$GIT_ESCROW_ADDRESS"
+export GIT_ESCROW_ADDRESS="$V3"
+npx tsx src/index.ts &
+SERVER_PID=$!
+PIDS+=($SERVER_PID)
+wait_http "$API/health" 30 || exit 1
+echo "backend repointed: GIT_ESCROW_ADDRESS=$V3 GIT_ESCROW_V2_ADDRESS=$GIT_ESCROW_V2_ADDRESS"
+REG10="$(printf '{"repoFullName":"%s","platform":"github","recipient":"%s","token":"%s","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","installationId":777,"streaming":false' "$REPO" "$RECIPIENT" "$PTK")"
+OUT="$(curl -s -X POST "$API/api/vesting/register" -H 'content-type: application/json' -d "$REG10,\"onChainTxHash\":\"$LOCK_A\"}")"; echo "$OUT"
+check "stage 10: V3 grant A registers beside the completed V2 grant (no 409)" "$OUT" '"ok":true'
+check "stage 10: registration A returns its grantId" "$OUT" "\"grantId\":\"$GRANT_A\""
+OUT="$(curl -s -X POST "$API/api/vesting/register" -H 'content-type: application/json' -d "$REG10,\"onChainTxHash\":\"$LOCK_B\"}")"; echo "$OUT"
+check "stage 10: V3 grant B registers beside ACTIVE grant A (no 409)" "$OUT" '"ok":true'
+check "stage 10: registration B returns its grantId" "$OUT" "\"grantId\":\"$GRANT_B\""
+OUT="$(REDIS_URL="redis://127.0.0.1:6399" npx tsx tests/e2e/push-state.ts "$REPO")"; echo "$OUT"
+check "stage 10: repo counter NOT reset by the V3 registrations (still 3)" "$OUT" '"pushCount":3'
+# Re-registering the stage-9a V2 lock body: its V2 grant is still active.
+OUT="$(curl -s -X POST "$API/api/vesting/register" -H 'content-type: application/json' -d "$REG_PLAIN")"; echo "$OUT"
+check "stage 10: second V2-escrow registration still refused (active V2 grant stands)" "$OUT" "Active vesting grant already exists for this repo"
+OUT="$(curl -s "$API/api/vesting/status?repo=$REPO" | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d['grants']), d['grant'].get('grantId'))")"; echo "$OUT"
+# Primary per §4.5 = earliest-created ACTIVE grant: that is the legacy
+# V2 grant — its record still reads active (stage 8's recount script
+# paid its final milestone on-chain without updating the record).
+check "stage 10: status lists 3 grants, primary = the legacy V2 grant (earliest active record)" "$OUT" "3 None"
+
 echo "=== STITCHED E2E DRIVER DONE — $((CHECKS - FAILURES)) PASS / $FAILURES FAIL (of $CHECKS checks) ==="
 [ "$FAILURES" -eq 0 ] || exit 1

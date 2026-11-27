@@ -134,7 +134,7 @@ author: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551594 of 16777216
-  Block #1:            0x1ed911e1a75c00c42942095ceef788b32ff9157f401834dfbd12815863cafecf
+  Block #1:            0x783c8e6eae474a0fc96771ecc35cb5be71d755996571be1643f7cd8562b22576
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -148,7 +148,7 @@ PTK: 0x5FbDB2315678afecb367f032d93F642f64180aa3 deployTx: 0x5bebf31074097527093a
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #2:            0x583be30d1b002333b79a38272a4d43c9f7cc281ccb946fab901d8dcdc3c6157b
+  Block #2:            0x84b3c483a88d9b577b6f733c2686161a7eb3f0c4797633cdfc5b9640664b7722
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -183,7 +183,7 @@ RWD: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 deployTx: 0x5b7587e8cafecb4cb875
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1869326 of 16777216
-  Block #3:            0xee01d612927b4393eeaa46b089fde08091626025acc5b2ce6cf912885cf7307f
+  Block #3:            0x66d42ee500cfb898a4578fb110c8e3762284de65ed4dfed92016a7ebc75cf908
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -218,7 +218,7 @@ GitEscrow: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 deployTx: 0x970c5e6d3b0825
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            793530 of 16777216
-  Block #4:            0xdb32441c9d595ce8c3d1b20e3140c747b43db798c4bf7810492f923b75d423cf
+  Block #4:            0x1cbb84556dcec79d75e5685dcafeba96e8ff569781eb118df115ccbac82c25e5
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -232,7 +232,7 @@ ShipRewards: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9 deployTx: 0xf9bda7b950d8
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #5:            0x6a7966bf62422fde2c738ddcc32a9f856e51fb6af27269d1266ed91d8d76d745
+  Block #5:            0x0e52f8c26e2bcc6b254e560f95ce485c34845e45465a97fe2af50d1578e67c72
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -246,7 +246,7 @@ mint PTK→recipient tx: 0xee6c2808b4002778359d77436ae2d40bdd47bebc0aaf03ad12e28
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            68445 of 16777216
-  Block #6:            0x3196411637a670cafb828c34f42873bf9a87f91d9f27e246e2d9c3df101ca453
+  Block #6:            0x4f9808ca91b1adc12c01fc8ab5dbf4873f7768064fd060a13781fbc068a050fe
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -261,7 +261,7 @@ repoId: 0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46383 of 16777216
-  Block #7:            0xaf71edcc4ac6a090db8b35ab6e64a7e3694de8204e9d574559c50bb6a0a1ed1c
+  Block #7:            0xdd89ad0187fa6c5f9d661e32707e57e62fbb29f0cc4f6721594b0c20c2e63123
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -275,7 +275,7 @@ approve tx: 0xf6b889b8b1e548e9c34d69b02d4f882bbd1d0ebdfc622d4e28e35c7e030eab43
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            263864 of 16777216
-  Block #8:            0x1392049eec24a31901f6409950c3a9115c7cebfaf7eca2627036ddcf229fb0d1
+  Block #8:            0x600b836583f177dbaecd8cf25a3cc5327fe98078133c01e39dbbd8822d120585
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -295,7 +295,7 @@ on-chain grant: recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC totalLocked
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            46844 of 16777216
-  Block #9:            0x2faeafa3420d821b9b7f7f54e6930189834b05b7e3a003d0398ebd66b62055a7
+  Block #9:            0xf5b4c938142a7af9c7b58cd2ea2d022612a4c9364182fa919ad218a8ffa60d03
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -306,7 +306,7 @@ fund ShipRewards tx: 0x594d3e5bf2fc224984bfc52ff25be012359a0637fb4d59b715348d7e6
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
 
 ShipRewards RWD balance: 10000000000000000000000
-state written to /home/hatch/workspace/claude-ship/github-vesting/tests/e2e/state.json
+state written to /home/hatch/workspace/.scratch-multigrant/repo/tests/e2e/state.json
 === 4. vesting server (with /mcp mounted) ===
 [github-vesting] Swarm settler running every 60000ms (review window 6h)
 [github-vesting] Server running on 127.0.0.1:3210
@@ -318,7 +318,7 @@ server up
 server-side repoId (no 0x): 533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
 on-chain repoId matches: true
 grant saved for testowner/testrepo
-linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T17:55:15.675Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-27T17:08:45.136Z","source":"signed"}]
 === 6. MCP over HTTP smoke ===
 PASS  initialize — server={"name":"proofofdev","version":"0.1.0"} protocol=2024-11-05
 PASS  tools/list has 13 tools — agent_briefing,agent_grants,enrol_reviewer,link_status,prepare_launch,prepare_lock,repo_recent_pushes,report_ship,review_push,review_queue,ship_report,verify_github,vesting_status
@@ -357,8 +357,8 @@ SMOKE-HTTP: ALL PASS
     "installationId": 0,
     "status": "active",
     "streaming": false,
-    "createdAt": "2026-11-26T17:55:15.641Z",
-    "updatedAt": "2026-11-26T17:55:15.642Z"
+    "createdAt": "2026-11-27T17:08:45.111Z",
+    "updatedAt": "2026-11-27T17:08:45.111Z"
   },
   "progress": {
     "verifiedPushCount": 0,

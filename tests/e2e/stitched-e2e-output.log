@@ -127,7 +127,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551594 of 16777216
-  Block #1:            0x96179a0c18b1b54c555d3f6d60257e142df4673c7f0043093c460efcc121a6bd
+  Block #1:            0x651c13fed1298dab3f9025b7e9663c132499381c3bfcdee93e3e7d4eca1d21a0
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -139,7 +139,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #2:            0xb5cbb8c8d8bc8d1e2193fe053bc215450c2523a936853cb938d6ac5772b9794e
+  Block #2:            0x900fe010eea663c0ee89c83f0094d9614a09d0880bad72a8a8f31f866f2a8183
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -151,7 +151,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551606 of 16777216
-  Block #3:            0x18329e9dcd34b76fc8adfc4043032df49e0242bde1cfc900a0cae101d4c7a6b8
+  Block #3:            0xa66f843c8a1066a4648c46c565eac2c38a8e1986660d87823775e32b3a05ab2e
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -184,7 +184,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1792931 of 16777216
-  Block #4:            0x2804b10e80b121a6839ca4699a3c698c165d6b8420408c40999ea49ca03ae2cb
+  Block #4:            0xabcc5eb3f057693700bb479cc128e542f1f861e1a7d6477632176264ebd74deb
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -217,7 +217,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            793530 of 16777216
-  Block #5:            0xed0b5a8edb80d592cc9044fa6d72dc685da83ab9415dfed1d06038d1f9e4f1f7
+  Block #5:            0x3825101eceae0cd8da8bf4efd56617183e864c000632aa7a912b0bed51f3f966
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -250,7 +250,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1905421 of 16777216
-  Block #6:            0xb1703693447c3c6f9f91ebeecf1a6b5fa3ea5717a3d9176fa488e81bd6df540c
+  Block #6:            0x9f0e7d22f14cbb436cbdfb9c3aee02c4f84b1ac3e56922b7dbb20e9ca31c0f13
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -283,7 +283,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            353762 of 16777216
-  Block #7:            0x1b0d43bd2aee9efd5926530ef40795bffce6e037c1eb21edb0e3246a6cfc84e1
+  Block #7:            0x99cc416a3aa179a718a08cc20afbc09a62ee0165ed7c20f366168ba53c981130
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -316,7 +316,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734540 of 16777216
-  Block #8:            0x7198e772cdb95ffce1046bd8598b7fbbdd3a5740fd275ab6ea8b63094d91e82a
+  Block #8:            0x6b43c5b8c22441ca555970a99c15bf799f00ee365ad3d61f5293b1956b5a9f94
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -349,7 +349,7 @@ node up
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            381277 of 16777216
-  Block #9:            0xaceb08bac297cd0a6e8a12a559f5ae9d59c02debf7898717cc11a5f1befc08c0
+  Block #9:            0xbd5dd7f854de3ad228369eb14fe2f1156abb108e3e8b9e60d625b1ed35c127f9
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -361,7 +361,7 @@ node up
   To:                  0x2279b7a0a67db372996a5fab50d91eaa73d2ebe6
   Value:               0 ETH
   Gas used:            160248 of 16777216
-  Block #10:           0xf85cfdf4a822f39a30ad207f70c6520c34a2d3ce3fb5cfa2f6396f3f9f2b742b
+  Block #10:           0x2f5bea52bde8392191a8105b058056628fab53eb36c486fb185ceadec9cff220
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -374,7 +374,7 @@ node up
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #11:           0x7a3f0c3f443042fc14e361723318ce6a8ec9eaf91f70c38f17be1d87e8005bf1
+  Block #11:           0xcb4a3e7fa0023fef7f8efa39ba9fea3b8dfa7be61005cade811268a041eccaac
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -387,7 +387,7 @@ node up
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            68445 of 16777216
-  Block #12:           0x596bd902fd067c6e58ec643550c75cb2bc44ab9874f4c3c445bdeecf189d506f
+  Block #12:           0x32026034a99af1622f1b82a92c495ebfe60a8eeb86057e8ad4dd0cc62aa7a090
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -400,7 +400,7 @@ node up
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            68433 of 16777216
-  Block #13:           0xd3a0d7c9816cefb7f2dfbe0ded868a199610d34ffdfee29a98a5684cd8839052
+  Block #13:           0x59ecee52556b8f6ef1fb130d3da4c86ea77598b9bd85ba44f8203f9e9f7e64bd
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -413,7 +413,7 @@ node up
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            46832 of 16777216
-  Block #14:           0x6a7f338c0d2e7cac276269497b64bfd66888fecc0549bcda922a6b5a10f63e8b
+  Block #14:           0xe9998a6f18a07805814b20738cb04ee32d16e02368d1b332f5fe96cde9d7b8df
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -426,7 +426,7 @@ node up
   To:                  0x0165878a594ca255338adfa4d48449f69242eb8f
   Value:               0 ETH
   Gas used:            45764 of 16777216
-  Block #15:           0x1f8cbb1daf4d1a5fdf691c90faf5e8f7dd58164da429ca1406ffb3225d57dd17
+  Block #15:           0xfcccf5f23b30dffd608d2de04bd58e7a1a5ff31b99332ca0ccfdbc38b0a42046
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -439,7 +439,7 @@ node up
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            46832 of 16777216
-  Block #16:           0x9c6df132ca85d687d5ca8fda01aa2c8465903be130d97bf04aeaee40e79a9204
+  Block #16:           0x835a79c54f5ed100d76145872fced0e66c2dba9f1130e8b7e8c2dd7f36cac721
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -476,14 +476,14 @@ PASS: stage 1: vault deployed from the approved implementation (address present)
 [github-vesting] GitLawb webhook: http://127.0.0.1:3210/api/webhook/gitlawb
 [github-vesting] Agent API: http://127.0.0.1:3210/api/agent/briefing
 server up
-linked wallets for @testowner: [{"wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","linkedAt":"2026-11-26T17:35:04.392Z","source":"signed"}]
-linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T17:35:04.442Z","source":"signed"}]
+linked wallets for @testowner: [{"wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","linkedAt":"2026-11-27T17:04:15.241Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-27T17:04:15.275Z","source":"signed"}]
 === STAGE 2. VERIFY: GitHub App verification -> gate token ===
 [fixture] GET /repos/testowner/testrepo/installation -> 200
 [fixture] POST /app/installations/777/access_tokens -> 201
 [fixture] GET /repos/testowner/testrepo -> 200
 [fixture] GET /repos/testowner/testrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testowner","repo":"testowner/testrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3Rvd25lciIsInJlcG8iOiJ0ZXN0b3duZXIvdGVzdHJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3MTQ1MDQsImV4cCI6MTc5NTcxNTQwNCwibm9uY2UiOiJjOWIyOWU2OGJhZmQxYzQ1NTdiOWEyZmEzYzg0ZDNkZCJ9.lmCFImWGv2ztG-XfS6rBqkMH9feqw6g6EXgOBs7eMZw","expiresAt":"2026-11-26T17:50:04.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testowner","repo":"testowner/testrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3Rvd25lciIsInJlcG8iOiJ0ZXN0b3duZXIvdGVzdHJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3OTkwNTUsImV4cCI6MTc5NTc5OTk1NSwibm9uY2UiOiIyNTgwYjMxYThlOGJmZmFjYWQxZTkxMTQwMmY3Y2Y1MiJ9.rEWW-KnVaFlqV34WeulzUekVpYbknAIbd_ySGp2Hx9w","expiresAt":"2026-11-27T17:19:15.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: stage 2: verify ok
 PASS: stage 2: gate token issued (issuance record written)
 === STAGE 3. PREPARE: registrar fee grant FIRST, then prepare-launch -> production template ===
@@ -540,7 +540,7 @@ PASS: stage 2: gate token issued (issuance record written)
   To:                  0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
   Value:               0 ETH
   Gas used:            151559 of 16777216
-  Block #17:           0xd380b878187976e74ea760f96a32fbfea0246a1b37317a4fabe34c74fe1db313
+  Block #17:           0xe58d60a4d1224ea5b78a8c9a8bb155e1723b33f4a9b89d96cda7bbd46133917f
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -672,7 +672,7 @@ PASS: stage 4: launch record carries the prepared recipients exactly
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46383 of 16777216
-  Block #18:           0x7b3cf47b801aaf13581fa042add0c343adadadb338c9f7e0818480500e54aaad
+  Block #18:           0x04f6b84f4e0d0ed2e98f76a4c89f91973658647eae295eeaeab6d19704cef019
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -685,12 +685,12 @@ PASS: stage 4: launch record carries the prepared recipients exactly
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
   Gas used:            268664 of 16777216
-  Block #19:           0x780023fe82e9e4bc3450de4f0cb8652b1de0334da7b8917be23a5bd3d60ed289
+  Block #19:           0xa7200b9973fe18670ddab483ff5254f9e78a4d1cc3679d118197ee693330216d
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
 [32meth_getBlockByNumber[0m
-repo: testowner/testrepo repoId: 0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3 blockTimestamp: 1795714527
+repo: testowner/testrepo repoId: 0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3 blockTimestamp: 1795799079
 LOCK_TX=0x1264103d2651776d127a69462474253445d892bc9cd28ccde3dd0f82e4b1e512
 [32meth_getTransactionReceipt[0m
 [32meth_getTransactionReceipt (2)[0m
@@ -746,13 +746,13 @@ LOCK_TX=0x1264103d2651776d127a69462474253445d892bc9cd28ccde3dd0f82e4b1e512
 [fixture] GET /repos/testowner/testrepo -> 200
 [register] New github vesting grant for testowner/testrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
 [register] Verified launcher @testowner enrolled for ShipRewards on testowner/testrepo
-{"ok":true,"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","grant":{"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","repoFullName":"testowner/testrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"900000000000000000000","totalPushesRequired":3,"pushesPerMilestone":1,"tokensPerMilestone":"300000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x1264103d2651776d127a69462474253445d892bc9cd28ccde3dd0f82e4b1e512","escrowAddress":"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9","installationId":777,"launchVerified":true,"launchVerifiedLogin":"testowner","launcherRewardEnrolled":true,"feeLockVault":"0xa513E6E4b8f2a923D98304ec87F64353C4D5C853","feePushesPerTranche":2,"status":"active","streaming":false,"createdAt":"2026-11-26T17:35:13.334Z","updatedAt":"2026-11-26T17:35:13.334Z"},"lockPath":"/lock/testowner/testrepo","lockUrl":"http://localhost:5173/lock/testowner/testrepo"}
+{"ok":true,"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","grant":{"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","repoFullName":"testowner/testrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"900000000000000000000","totalPushesRequired":3,"pushesPerMilestone":1,"tokensPerMilestone":"300000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"escrowVersion":2,"onChainTxHash":"0x1264103d2651776d127a69462474253445d892bc9cd28ccde3dd0f82e4b1e512","escrowAddress":"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9","installationId":777,"launchVerified":true,"launchVerifiedLogin":"testowner","launcherRewardEnrolled":true,"feeLockVault":"0xa513E6E4b8f2a923D98304ec87F64353C4D5C853","feePushesPerTranche":2,"status":"active","streaming":false,"createdAt":"2026-11-27T17:04:24.484Z","updatedAt":"2026-11-27T17:04:24.484Z"},"lockPath":"/lock/testowner/testrepo","lockUrl":"http://localhost:5173/lock/testowner/testrepo"}
 PASS: stage 5: register ok
 PASS: stage 5: grant stamped launchVerified
 PASS: stage 5: launcher enrolled
-{"ok":true,"repo":"testowner/testrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":true,"enrollment":{"repo":"testowner/testrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","githubLogin":"testowner","verificationNonce":"c9b29e68bafd1c4557b9a2fa3c84d3dd","chainId":8453,"enrolledAt":"2026-11-26T17:35:13.335Z"}}
+{"ok":true,"repo":"testowner/testrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":true,"enrollment":{"repo":"testowner/testrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","githubLogin":"testowner","verificationNonce":"2580b31a8e8bffacad1e911402f7cf52","chainId":8453,"enrolledAt":"2026-11-27T17:04:24.486Z"}}
 PASS: stage 5: enrolment record present
-{"ok":true,"count":1,"projects":[{"repoFullName":"testowner/testrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","status":"active","launchVerified":true,"launchVerifiedLogin":"testowner","launcherRewardEnrolled":true,"verifiedPushCount":0,"createdAt":"2026-11-26T17:35:13.334Z"}]}
+{"ok":true,"count":1,"projects":[{"repoFullName":"testowner/testrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","status":"active","launchVerified":true,"launchVerifiedLogin":"testowner","launcherRewardEnrolled":true,"verifiedPushCount":0,"createdAt":"2026-11-27T17:04:24.484Z"}]}
 PASS: stage 5: verified launch listed
 === STAGE 6. PUSHES + RELEASES: milestones, author reward, replay safety ===
 [webhook] push to testowner/testrepo — evaluating
@@ -765,15 +765,15 @@ PASS: stage 5: verified launch listed
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       GitEscrowV2#release
-  Transaction:         0x33bafa6d4411d45e836868870a8be4efaa1d5778370395541877b46ef28e2ea5
+  Transaction:         0xd0aee0e791228396d33dae5f52e920b56e009c0bc39353c11b946ec95af505d3
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
-  Gas used:            103184 of 108827
-  Block #20:           0x74509d1fa62b8154cf42e72e57bc4e420039d493561304396cb1bfcc59282a1f
+  Gas used:            103636 of 109304
+  Block #20:           0x86f963108a2b2cd65f3c4e44371dd4840f8d6c57da0693f611cbecad386b1808
 
 [32meth_getTransactionReceipt[0m
-[oracle] Release tx confirmed: 0x33bafa6d4411d45e836868870a8be4efaa1d5778370395541877b46ef28e2ea5 (milestone 1)
+[oracle] Release tx confirmed: 0xd0aee0e791228396d33dae5f52e920b56e009c0bc39353c11b946ec95af505d3 (milestone 1)
 [31meth_fillTransaction - Method not supported[0m
 [32meth_getTransactionCount[0m
 [32meth_getBlockByNumber[0m
@@ -781,12 +781,12 @@ PASS: stage 5: verified launch listed
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       FeeStreamEscrow#releaseFee
-  Transaction:         0x7b8798712e756b4fc390c4bb7122413e252ad76746674e201c82ed7dd15f2c98
+  Transaction:         0x395aae4cad1e8e8f5a00cf99a5f4ab7262aac00b016b2a77f383fec8306ca37f
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   To:                  0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
   Value:               0 ETH
-  Gas used:            55718 of 60941
-  Block #21:           0x48944b1f5fc30624cdbb320a3d6430108c31ca8844f9a170d6f80c467f05c834
+  Gas used:            56170 of 61436
+  Block #21:           0x8e56f0e7fea4783364f78652854741452fcd478d227e2ec6de29f2d268f500a0
 
 [32meth_getTransactionReceipt[0m
 [32meth_call[0m
@@ -795,8 +795,8 @@ PASS: stage 5: verified launch listed
   To:                  0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
 
 [webhook] push accepted for testowner/testrepo: total verified pushes = 1
-[webhook:plain] HTTP 200 in 172ms
-{"ok":true,"accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main","verifiedPushCount":1,"release":{"triggered":true,"txHash":"0x33bafa6d4411d45e836868870a8be4efaa1d5778370395541877b46ef28e2ea5","milestone":1,"payout":"300000000000000000000"},"swarm":{"quorum":{"required":2,"passCount":0,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"countPath":"verifier-fallback"}}
+[webhook:plain] HTTP 200 in 239ms
+{"ok":true,"accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main","verifiedPushCount":1,"release":{"triggered":true,"txHash":"0xd0aee0e791228396d33dae5f52e920b56e009c0bc39353c11b946ec95af505d3","milestone":1,"payout":"300000000000000000000"},"swarm":{"quorum":{"required":2,"passCount":0,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"countPath":"verifier-fallback"}}
 [32meth_call[0m
   Contract call:       MockERC20#balanceOf
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
@@ -831,15 +831,15 @@ PASS: stage 6: push 1 paid supply milestone 1 (100 free + 300 released = 400 PTK
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       GitEscrowV2#release
-  Transaction:         0x9a01c7cf4d694cf65a953fb7d64db33118f1b9dccb89249a7aa52bce40001f95
+  Transaction:         0xabb4e6ce240a0e96cb1d3814c2ee56e1a6cb52980eebbcc25c603929844c9457
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
-  Gas used:            68984 of 74104
-  Block #22:           0x1998795c85bf4661a3dd30a87b62757123a627cb651c8726875705ead01feed1
+  Gas used:            69436 of 74589
+  Block #22:           0x7514926e16bf4ef813d8a3ff1c996d55550b89ff7ee357c618b0d1c51bdf5b7a
 
 [32meth_getTransactionReceipt[0m
-[oracle] Release tx confirmed: 0x9a01c7cf4d694cf65a953fb7d64db33118f1b9dccb89249a7aa52bce40001f95 (milestone 2)
+[oracle] Release tx confirmed: 0xabb4e6ce240a0e96cb1d3814c2ee56e1a6cb52980eebbcc25c603929844c9457 (milestone 2)
 [31meth_fillTransaction - Method not supported[0m
 [32meth_getTransactionCount[0m
 [32meth_getBlockByNumber[0m
@@ -847,12 +847,12 @@ PASS: stage 6: push 1 paid supply milestone 1 (100 free + 300 released = 400 PTK
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       FeeStreamEscrow#releaseFee
-  Transaction:         0x0facec401707b3dd11f59fccb229ca7e3922b0605a31f55ddd7ea9193c085668
+  Transaction:         0xe08c83d9d04cecc526844fb9c726469a9100020eaef2b7a31d43bf526c17310d
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   To:                  0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
   Value:               0 ETH
-  Gas used:            38618 of 43596
-  Block #23:           0x73f6826bb4046ae906a18f417f811cf5f172695ddeead825f5014714ccb1104d
+  Gas used:            39070 of 44106
+  Block #23:           0xba9d7b8e231f129b97cce8dcc276f1c08f9d0a84d90e3bbf0414aab905e1eea4
 
 [32meth_getTransactionReceipt[0m
 [32meth_call[0m
@@ -872,18 +872,18 @@ PASS: stage 6: push 1 paid supply milestone 1 (100 free + 300 released = 400 PTK
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       ShipRewards#pay
-  Transaction:         0x0adae8f38b4bbe1d1a1ceaff0e216bc9b1aad6503e489541e5bc3525178930fd
+  Transaction:         0x5cca67f83511f9fc351b3f8f5075ea0cc412ab12e3b3d26fef92c44c200e7945
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   To:                  0xdc64a140aa3e981100a9beca4e685f962f0cf6c9
   Value:               0 ETH
-  Gas used:            109580 of 114716
-  Block #24:           0x4dd00f1a979a705c8c8938effcb2e12efe9b996d53cb41a5c3bb47ed22d54b2d
+  Gas used:            110032 of 115190
+  Block #24:           0x262b62ad2ee18498b741a982a801fae71af8993e87b9c7d5694c588953203217
 
 [32meth_getTransactionReceipt[0m
-[ship-rewards] Paid 10000000000000000000 to 0x90f79bf6eb2c4f870365e785982e1f101e93b906 for merge c0ffee0 (tx: 0x0adae8f38b4bbe1d1a1ceaff0e216bc9b1aad6503e489541e5bc3525178930fd)
+[ship-rewards] Paid 10000000000000000000 to 0x90f79bf6eb2c4f870365e785982e1f101e93b906 for merge c0ffee0 (tx: 0x5cca67f83511f9fc351b3f8f5075ea0cc412ab12e3b3d26fef92c44c200e7945)
 [webhook] push accepted for testowner/testrepo: total verified pushes = 2
-[webhook:prhuman] HTTP 200 in 144ms
-{"ok":true,"accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)","verifiedPushCount":2,"release":{"triggered":true,"txHash":"0x9a01c7cf4d694cf65a953fb7d64db33118f1b9dccb89249a7aa52bce40001f95","milestone":2,"payout":"300000000000000000000"},"prCredit":{"prNumber":42,"authorLogin":"testauthor"},"reward":{"paid":true,"txHash":"0x0adae8f38b4bbe1d1a1ceaff0e216bc9b1aad6503e489541e5bc3525178930fd","recipient":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","amount":"10000000000000000000"},"swarm":{"quorum":{"required":2,"passCount":0,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"countPath":"verifier-fallback"}}
+[webhook:prhuman] HTTP 200 in 238ms
+{"ok":true,"accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)","verifiedPushCount":2,"release":{"triggered":true,"txHash":"0xabb4e6ce240a0e96cb1d3814c2ee56e1a6cb52980eebbcc25c603929844c9457","milestone":2,"payout":"300000000000000000000"},"prCredit":{"prNumber":42,"authorLogin":"testauthor"},"reward":{"paid":true,"txHash":"0x5cca67f83511f9fc351b3f8f5075ea0cc412ab12e3b3d26fef92c44c200e7945","recipient":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","amount":"10000000000000000000"},"swarm":{"quorum":{"required":2,"passCount":0,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"countPath":"verifier-fallback"}}
 [32meth_call[0m
   Contract call:       MockERC20#balanceOf
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
@@ -911,7 +911,7 @@ PASS: stage 6: author reward paid the merge author exactly once (10 RWD)
 [fixture] GET /repos/testowner/testrepo/pulls/42 -> 200
 [fixture] GET /repos/testowner/testrepo/pulls/42/files -> 200
 [webhook] push rejected: Commit c0ffee0 already counted — duplicate push ignored
-[webhook:prhuman] HTTP 200 in 47ms
+[webhook:prhuman] HTTP 200 in 35ms
 {"ok":true,"accepted":false,"reason":"Commit c0ffee0 already counted — duplicate push ignored"}
 [32meth_call[0m
   Contract call:       MockERC20#balanceOf
@@ -961,12 +961,12 @@ PASS: stage 6: backend counted exactly 2 pushes
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       FeeLockVault#claimFees
-  Transaction:         0xf110742bf1f78659642d3e76e4d35ad5cf811dd096fee5aa7008312f90700a65
+  Transaction:         0xd8bc062b5ccdf0c1b1312461f5afcfe3539e3fe33f565821aa142ae6036772ca
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0xa513e6e4b8f2a923d98304ec87f64353c4d5c853
   Value:               0 ETH
-  Gas used:            66148 of 75967
-  Block #25:           0xcaff695bc031bb42b41cbefb252283580230c15f74e767db72730fd1fd17063e
+  Gas used:            66600 of 76487
+  Block #25:           0x477db16ac4893b3edb48637c94c76fffea47308b53325dfddc332667d0039c3b
 
 [32meth_getTransactionReceipt[0m
 [32meth_call[0m
@@ -985,15 +985,15 @@ PASS: stage 6: backend counted exactly 2 pushes
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       FeeLockVault#lockAccrued
-  Transaction:         0xe0d730669bbcc7fa29232328d865a42e8a37543ea83aa7a6d661e817e2a6c358
+  Transaction:         0x343755402d37876890c5e1531ad8b4e9ca2c6cee269cb8cefb58dde0b633251a
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0xa513e6e4b8f2a923d98304ec87f64353c4d5c853
   Value:               0 ETH
-  Gas used:            247292 of 282067
-  Block #26:           0xa4a91367aeda49d7bc96838c948adf9c08dc339ca02f8bbe3fb448c162eee7af
+  Gas used:            247744 of 282583
+  Block #26:           0x81dc71a66074fa4bf4c7f4667c53d566e28e889852250d37def45dcd19164a3f
 
 [32meth_getTransactionReceipt[0m
-KEEPER {"vault":"0xa513E6E4b8f2a923D98304ec87F64353C4D5C853","attestedCountAtLock":"2","attestationNonce":"1","accruedBeforeClaim":"0","claimTx":"0xf110742bf1f78659642d3e76e4d35ad5cf811dd096fee5aa7008312f90700a65","accruedBeforeLock":"40000000000000000000","expectedBaseline":"2","lockTx":"0xe0d730669bbcc7fa29232328d865a42e8a37543ea83aa7a6d661e817e2a6c358","lockedAmount":"40000000000000000000"}
+KEEPER {"vault":"0xa513E6E4b8f2a923D98304ec87F64353C4D5C853","attestedCountAtLock":"2","attestationNonce":"1","accruedBeforeClaim":"0","claimTx":"0xd8bc062b5ccdf0c1b1312461f5afcfe3539e3fe33f565821aa142ae6036772ca","accruedBeforeLock":"40000000000000000000","expectedBaseline":"2","lockTx":"0x343755402d37876890c5e1531ad8b4e9ca2c6cee269cb8cefb58dde0b633251a","lockedAmount":"40000000000000000000"}
 PASS: stage 7: keeper claimed + locked 40 WETH
 PASS: stage 7: tranche 1 on-chain baseline == 2
 PASS: stage 7: tranche 1 attestedCountAtLock == 2 (baseline == attested == on-chain)
@@ -1122,12 +1122,12 @@ NOTE: the 'one more counted push' for this tranche is push 3 — the stage-8 dea
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       GitEscrowV2#setOracle
-  Transaction:         0x2bc48fa382f7477e78aef943691d4eabafcc1653bcfb1e1223b632f5a705a33f
+  Transaction:         0x951bf7e3cce221d59ffeeef35c24d9c111c9813b8b4ee8b92f6b1259c893d4eb
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
   Gas used:            30723 of 16777216
-  Block #27:           0x9579a18f1fff0128e2a7a0ddf218b530866282c00bf123e700b0f57d1536f244
+  Block #27:           0xaef652de8cf755b1daf92aecf9f0a40d810ba0622d9dd40a6e4c7226f63bf761
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1156,12 +1156,12 @@ NOTE: the 'one more counted push' for this tranche is push 3 — the stage-8 dea
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       FeeStreamEscrow#setOracle
-  Transaction:         0x02ccb34fa651a234b19dee8c4b73ae7c3e03981f48c1c6abf21236333477ae50
+  Transaction:         0x97f05d46b3ae661e308dd558fe33b1d3b2abd718c5ffc4f5280f84913e7de8be
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
   Value:               0 ETH
   Gas used:            30761 of 16777216
-  Block #28:           0x9ce3e7901aa2a7a37d3c3fd50c05ad77213d4ce095ed90cc146d24ae22382729
+  Block #28:           0x8641584e679900e862f8f9e4c2b6fddccc231f38d33169b51ea8c0dc261bc67e
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1175,8 +1175,8 @@ NOTE: the 'one more counted push' for this tranche is push 3 — the stage-8 dea
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
 
-ROTATED supply oracle -> 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 tx=0x2bc48fa382f7477e78aef943691d4eabafcc1653bcfb1e1223b632f5a705a33f
-ROTATED fee oracle -> 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 tx=0x02ccb34fa651a234b19dee8c4b73ae7c3e03981f48c1c6abf21236333477ae50
+ROTATED supply oracle -> 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 tx=0x951bf7e3cce221d59ffeeef35c24d9c111c9813b8b4ee8b92f6b1259c893d4eb
+ROTATED fee oracle -> 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 tx=0x97f05d46b3ae661e308dd558fe33b1d3b2abd718c5ffc4f5280f84913e7de8be
 PASS: stage 8: supply oracle rotated to the backup
 PASS: stage 8: fee oracle rotated to the backup
 [webhook] push to testowner/testrepo — evaluating
@@ -1229,7 +1229,7 @@ Contract Call:
 
 Docs: https://viem.sh/docs/contract/writeContract
 Details: Error: VM Exception while processing transaction: reverted with reason string 'GitEscrowV2: not oracle'
-Version: viem@2.52.2
+Version: viem@2.58.7
 [31meth_fillTransaction - Method not supported[0m
 [32meth_getTransactionCount[0m
 [32meth_getBlockByNumber[0m
@@ -1277,10 +1277,10 @@ Contract Call:
 
 Docs: https://viem.sh/docs/contract/writeContract
 Details: Error: VM Exception while processing transaction: reverted with reason string 'FeeStreamEscrow: not oracle'
-Version: viem@2.52.2
+Version: viem@2.58.7
 [webhook] push accepted for testowner/testrepo: total verified pushes = 3
-[webhook:plain2] HTTP 200 in 2220ms
-{"ok":true,"accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)","verifiedPushCount":3,"release":{"triggered":false,"reason":"Oracle tx failed: The contract function \"release\" reverted with the following reason:\nGitEscrowV2: not oracle\n\nContract Call:\n  address:   0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\n  function:  release(bytes32 repoId, uint256 totalVerifiedPushes)\n  args:             (0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3, 3)\n  sender:    0x70997970C51812dc3A010C7d01b50e0d17dc79C8\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: Error: VM Exception while processing transaction: reverted with reason string 'GitEscrowV2: not oracle'\nVersion: viem@2.52.2"},"swarm":{"quorum":{"required":2,"passCount":0,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"countPath":"verifier-fallback"}}
+[webhook:plain2] HTTP 200 in 2212ms
+{"ok":true,"accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)","verifiedPushCount":3,"release":{"triggered":false,"reason":"Oracle tx failed: The contract function \"release\" reverted with the following reason:\nGitEscrowV2: not oracle\n\nContract Call:\n  address:   0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\n  function:  release(bytes32 repoId, uint256 totalVerifiedPushes)\n  args:             (0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3, 3)\n  sender:    0x70997970C51812dc3A010C7d01b50e0d17dc79C8\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: Error: VM Exception while processing transaction: reverted with reason string 'GitEscrowV2: not oracle'\nVersion: viem@2.58.7"},"swarm":{"quorum":{"required":2,"passCount":0,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"countPath":"verifier-fallback"}}
 {"repo":"testowner/testrepo","pushCount":3,"log":[{"sha":"a11ce00","accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main"},{"sha":"c0ffee0","accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)"},{"sha":"c0ffee0","accepted":false,"reason":"Commit c0ffee0 already counted — duplicate push ignored"},{"sha":"b22ce00","accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)"}]}
 PASS: stage 8: backend counted push 3 (backend ahead of chain)
 [32meth_call[0m
@@ -1350,7 +1350,7 @@ PASS: stage 8: dead oracle paid no supply milestone (still 700 PTK incl. the 100
 FEE_STATE knownPushCount=2 tranches=1 cursor=0
 FEE_STATE tranche0 amount=40000000000000000000 baseline=2 backend=2 released=0
 PASS: stage 8: on-chain fee counter still 2 while the report is unlanded
-{"mode":"pending","pending":{"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","repoFullName":"testowner/testrepo","pushCount":3,"attempts":1,"lastError":"The contract function \"releaseFee\" reverted with the following reason:\nFeeStreamEscrow: not oracle\n\nContract Call:\n  address:   0x5FC8d32690cc91D4c39d9d3abcBD16989F875707\n  function:  releaseFee(bytes32 repoId, uint256 totalVerifiedPushes)\n  args:                (0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3, 3)\n  sender:    0x70997970C51812dc3A010C7d01b50e0d17dc79C8\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: Error: VM Exception while processing transaction:","recordedAt":"2026-11-26T17:35:30.514Z","updatedAt":"2026-11-26T17:35:30.514Z"}}
+{"mode":"pending","pending":{"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","repoFullName":"testowner/testrepo","pushCount":3,"attempts":1,"lastError":"The contract function \"releaseFee\" reverted with the following reason:\nFeeStreamEscrow: not oracle\n\nContract Call:\n  address:   0x5FC8d32690cc91D4c39d9d3abcBD16989F875707\n  function:  releaseFee(bytes32 repoId, uint256 totalVerifiedPushes)\n  args:                (0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3, 3)\n  sender:    0x70997970C51812dc3A010C7d01b50e0d17dc79C8\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: Error: VM Exception while processing transaction:","recordedAt":"2026-11-27T17:04:41.924Z","updatedAt":"2026-11-27T17:04:41.924Z"}}
 PASS: stage 8: pending fee release recorded at push count 3
 --- spot-check 9(c) runs HERE, at the only point a genuine pending entry exists ---
 [32meth_chainId[0m
@@ -1380,16 +1380,16 @@ PASS: stage 8: pending fee release recorded at push count 3
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockFeeClaimSource#accrue
-  Transaction:         0x4a177329030cf77696a45ecf2d6693ab890b1b13ebf44bc249b34dc411471215
+  Transaction:         0xea9ff09723a3fe3211255fb2bde6b8f2d56b710aac18117d52ac329f0075bb4e
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x0165878a594ca255338adfa4d48449f69242eb8f
   Value:               0 ETH
   Gas used:            45764 of 16777216
-  Block #29:           0x2ebaa99566eff041f164fcf6249c0a7744c83cd60358151b38e1fd8245b12cb1
+  Block #29:           0x563fb505247a8d319823329d2101d07e7915d4d70ebd4e32340f68b44f8c381d
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
-TOPUP accrued 20 WETH to vault, tx=0x4a177329030cf77696a45ecf2d6693ab890b1b13ebf44bc249b34dc411471215
+TOPUP accrued 20 WETH to vault, tx=0xea9ff09723a3fe3211255fb2bde6b8f2d56b710aac18117d52ac329f0075bb4e
 [32meth_call[0m
   Contract call:       MockFeeClaimSource#claimable
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
@@ -1543,12 +1543,12 @@ PASS: stage 8: dead oracle key can no longer release fees
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       GitEscrowV2#release
-  Transaction:         0x62a3384e0e570619231ef08373fd306efba24347b65a61244c28447128151381
+  Transaction:         0xe3bd7401a8bc84af024b30a53386688df76f213ff8eeca600be0bd89e9c69ecf
   From:                0x15d34aaf54267db7d7c367839aaf71a00a2c6a65
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
-  Gas used:            69537 of 79316
-  Block #30:           0xaf0cb8c0b55d3c4ea44f75d3330d318bf51cfa6fd39df924dbff4af07e978788
+  Gas used:            69989 of 79831
+  Block #30:           0x2ce7d9f803aaffa38c28a0a8622b51f157b6e6a5e700372e7d4ed98f01f34dfa
 
 [32meth_getTransactionReceipt[0m
 RECOUNT repo=testowner/testrepo entries=4 recounted=3 recorded=3 status=certified checkpointUsed=false
@@ -1556,8 +1556,8 @@ RECOUNT repo=testowner/testrepo entries=4 recounted=3 recorded=3 status=certifie
   COUNT c0ffee0000 — Counted on replay
   skip  c0ffee0000 — Commit c0ffee0 already counted — duplicate push ignored
   COUNT b22ce00000 — Counted on replay
-RELEASE tx=0x62a3384e0e570619231ef08373fd306efba24347b65a61244c28447128151381 status=success
-{"repo":"testowner/testrepo","recountedCount":3,"recordedCount":3,"equal":true,"releaseTx":"0x62a3384e0e570619231ef08373fd306efba24347b65a61244c28447128151381"}
+RELEASE grant=533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3 tx=0xe3bd7401a8bc84af024b30a53386688df76f213ff8eeca600be0bd89e9c69ecf status=success
+{"repo":"testowner/testrepo","recountedCount":3,"recordedCount":3,"equal":true,"releaseTx":"0xe3bd7401a8bc84af024b30a53386688df76f213ff8eeca600be0bd89e9c69ecf","releases":[{"grantId":null,"escrow":"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9","tx":"0xe3bd7401a8bc84af024b30a53386688df76f213ff8eeca600be0bd89e9c69ecf"}]}
 PASS: stage 8: recount equals the backend total (3 = 3)
 PASS: stage 8: recount certified the history
 PASS: stage 8: backup-oracle supply release landed
@@ -1591,12 +1591,12 @@ PASS: stage 8: supply escrow fully drained, no double-pay
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       FeeStreamEscrow#releaseFee
-  Transaction:         0x554b1b9297f17af435dc2dd9a3238deef4d11d555125b04031c3c296701a97cc
+  Transaction:         0x85fe9a60e75b9732812068e2e07177233209dd20ecc193dcbf5d5eaf72150d45
   From:                0x15d34aaf54267db7d7c367839aaf71a00a2c6a65
   To:                  0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
   Value:               0 ETH
-  Gas used:            130452 of 135548
-  Block #31:           0x8ed21a20b8656fc5b21738048b4c8e4b7af1ef933c03a5a4a36e4e74da63f893
+  Gas used:            130904 of 136017
+  Block #31:           0x4e15fe98716201555c44de92f8823ac94299b93ab19f2b946cc92844bfe21916
 
 [32meth_getTransactionReceipt[0m
 [32meth_call[0m
@@ -1604,9 +1604,9 @@ PASS: stage 8: supply escrow fully drained, no double-pay
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
 
-[fee-lock] Released 20000000000000000000 fee tokens to 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC for testowner/testrepo (tx: 0x554b1b9297f17af435dc2dd9a3238deef4d11d555125b04031c3c296701a97cc)
-SWEEP {"repo":"testowner/testrepo","triggered":true,"txHash":"0x554b1b9297f17af435dc2dd9a3238deef4d11d555125b04031c3c296701a97cc","payout":"20000000000000000000","remainingDue":"0"}
-{"swept":1,"results":[{"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","repoFullName":"testowner/testrepo","result":{"triggered":true,"txHash":"0x554b1b9297f17af435dc2dd9a3238deef4d11d555125b04031c3c296701a97cc","payout":"20000000000000000000","remainingDue":"0"}}]}
+[fee-lock] Released 20000000000000000000 fee tokens to 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC for testowner/testrepo (tx: 0x85fe9a60e75b9732812068e2e07177233209dd20ecc193dcbf5d5eaf72150d45)
+SWEEP {"repo":"testowner/testrepo","triggered":true,"txHash":"0x85fe9a60e75b9732812068e2e07177233209dd20ecc193dcbf5d5eaf72150d45","payout":"20000000000000000000","remainingDue":"0"}
+{"swept":1,"results":[{"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","repoFullName":"testowner/testrepo","result":{"triggered":true,"txHash":"0x85fe9a60e75b9732812068e2e07177233209dd20ecc193dcbf5d5eaf72150d45","payout":"20000000000000000000","remainingDue":"0"}}]}
 PASS: stage 8: fee sweep retried the pending release once
 [32meth_call[0m
   Contract call:       MockERC20#balanceOf
@@ -1783,12 +1783,12 @@ PASS: stage 8: balances unchanged after the second sweep
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#mint
-  Transaction:         0xc0589019641ff928cd1515ae608eee661e4541f8307f9b1ecbd96f24c9c2297c
+  Transaction:         0x786261d4cd167219d35f121eedc1ef12ee5b8a8c37ce34fa0ffdd4890920d66a
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            34209 of 16777216
-  Block #32:           0x912265f48002e473567cf438097163b8b688f35c3a0ad0f1201e94993498f704
+  Block #32:           0x509e7ca4fcd2103117a5630bcd7241edefc28107f5e3064810eb91c3f2e26c48
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1796,12 +1796,12 @@ PASS: stage 8: balances unchanged after the second sweep
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       MockERC20#approve
-  Transaction:         0x042fb86470a186415b27050e94c24041b4277aea57566aabf1fccd8c7923979d
+  Transaction:         0x45c79c718e246176b1c761f11d0114d5e57070d614a9a43df33430ee2301b46b
   From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #33:           0x1ac616b528338ec033ede27d3339a96b6937edc57de04c68957fc92127fc1f66
+  Block #33:           0x118b6f5a5803e0a57361816481c705197a076d5b8e1d17c2c0beeb611e7942bf
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1809,12 +1809,12 @@ PASS: stage 8: balances unchanged after the second sweep
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       GitEscrowV2#lock
-  Transaction:         0x08164ef44dcf2edcef757e999702d2618df0621b9be3dbc857a475b6bd2856da
+  Transaction:         0xa4e0da5e04292c667a93da88587c81688e54888a2c180f359a5412588518455c
   From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
   Gas used:            251552 of 16777216
-  Block #34:           0xb017fa7dbf6fe6b671efe8f37bf93d9618c5327c3a19cf72b748a0119ab2986b
+  Block #34:           0x8740c91e373ba226a6897a0cbaa68464d45cb1ad98eb5ccad1db7ace845e2dba
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1826,10 +1826,10 @@ PASS: stage 8: balances unchanged after the second sweep
 [fixture] GET /repos/testowner/stitched-plain/installation -> 200
 [fixture] GET /repos/testowner/stitched-plain -> 200
 [register] New github vesting grant for testowner/stitched-plain by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"766a0f9a53c5384a78f0dd7e1882b1bb7d8b540ac128559853ed5af90ef0546c","grant":{"repoId":"766a0f9a53c5384a78f0dd7e1882b1bb7d8b540ac128559853ed5af90ef0546c","repoFullName":"testowner/stitched-plain","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x08164ef44dcf2edcef757e999702d2618df0621b9be3dbc857a475b6bd2856da","escrowAddress":"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T17:36:00.455Z","updatedAt":"2026-11-26T17:36:00.455Z"},"lockPath":"/lock/testowner/stitched-plain","lockUrl":"http://localhost:5173/lock/testowner/stitched-plain"}
+{"ok":true,"repoId":"766a0f9a53c5384a78f0dd7e1882b1bb7d8b540ac128559853ed5af90ef0546c","grant":{"repoId":"766a0f9a53c5384a78f0dd7e1882b1bb7d8b540ac128559853ed5af90ef0546c","repoFullName":"testowner/stitched-plain","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"escrowVersion":2,"onChainTxHash":"0xa4e0da5e04292c667a93da88587c81688e54888a2c180f359a5412588518455c","escrowAddress":"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-27T17:05:15.169Z","updatedAt":"2026-11-27T17:05:15.169Z"},"lockPath":"/lock/testowner/stitched-plain","lockUrl":"http://localhost:5173/lock/testowner/stitched-plain"}
 PASS: stage 9a: tokenless registration still registers an ordinary grant
 PASS: stage 9a: ordinary grant is NOT stamped
-{"ok":true,"count":1,"projects":[{"repoFullName":"testowner/testrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","status":"active","launchVerified":true,"launchVerifiedLogin":"testowner","launcherRewardEnrolled":true,"verifiedPushCount":3,"createdAt":"2026-11-26T17:35:13.334Z"}]}
+{"ok":true,"count":1,"projects":[{"repoFullName":"testowner/testrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","status":"active","launchVerified":true,"launchVerifiedLogin":"testowner","launcherRewardEnrolled":true,"verifiedPushCount":3,"createdAt":"2026-11-27T17:04:24.484Z"}]}
 PASS: stage 9a: ordinary grant is NOT in the verified-launch listing
 PASS: stage 9a: the stamped launch is STILL listed
 {"ok":true,"repo":"testowner/stitched-plain","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":false,"enrollment":null}
@@ -1968,12 +1968,12 @@ backend restarted under the backup oracle key (attestation issuer == current ora
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       FeeLockVault#claimFees
-  Transaction:         0x6771817b4a30e39ef01fabd18125598e6ef9822e3739199cbbaaed7e29fe5f9c
+  Transaction:         0xa1c5796917ad3c54dde45910a7cd92ca36dcab200ab8f78be14047f910a946e9
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0xa513e6e4b8f2a923d98304ec87f64353c4d5c853
   Value:               0 ETH
-  Gas used:            66148 of 75967
-  Block #35:           0x1123c92c1beda593d7de5605bf316e1edc4ad2bac536698e33f24ad117386fea
+  Gas used:            66600 of 76487
+  Block #35:           0x1ea8b40aac68e658e0ab3777f43cefe373fc2cee1e0aa17119b2e25cf412860c
 
 [32meth_getTransactionReceipt[0m
 [32meth_call[0m
@@ -1992,15 +1992,15 @@ backend restarted under the backup oracle key (attestation issuer == current ora
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       FeeLockVault#lockAccrued
-  Transaction:         0x235dc2f102932b5a25b246065b4e3f33c1ef3203fc8e6f547a3d7a3e5543589f
+  Transaction:         0x57718c6631578b00780afb7b45aa3d062f2c75c3622b73637c07cb16d856494c
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0xa513e6e4b8f2a923d98304ec87f64353c4d5c853
   Value:               0 ETH
-  Gas used:            161792 of 195288
-  Block #36:           0x27aee96f5a7a86d25f565affd83e0652049c97924aca2422f8216cc68042aa82
+  Gas used:            162244 of 195834
+  Block #36:           0xb2286e7c0dc57b4eabe3bfa639f60700f78ce05fd6869a92c240d8b531ae8853
 
 [32meth_getTransactionReceipt[0m
-KEEPER {"vault":"0xa513E6E4b8f2a923D98304ec87F64353C4D5C853","attestedCountAtLock":"3","attestationNonce":"2","accruedBeforeClaim":"0","claimTx":"0x6771817b4a30e39ef01fabd18125598e6ef9822e3739199cbbaaed7e29fe5f9c","accruedBeforeLock":"20000000000000000000","expectedBaseline":"3","lockTx":"0x235dc2f102932b5a25b246065b4e3f33c1ef3203fc8e6f547a3d7a3e5543589f","lockedAmount":"20000000000000000000"}
+KEEPER {"vault":"0xa513E6E4b8f2a923D98304ec87F64353C4D5C853","attestedCountAtLock":"3","attestationNonce":"2","accruedBeforeClaim":"0","claimTx":"0xa1c5796917ad3c54dde45910a7cd92ca36dcab200ab8f78be14047f910a946e9","accruedBeforeLock":"20000000000000000000","expectedBaseline":"3","lockTx":"0x57718c6631578b00780afb7b45aa3d062f2c75c3622b73637c07cb16d856494c","lockedAmount":"20000000000000000000"}
 PASS: stage 9c: keeper no longer deferred
 PASS: stage 9c: keeper locked the 20 WETH accrued during the death window (tranche 2)
 PASS: stage 9c: tranche 2 attestedCountAtLock == 3
@@ -2055,4 +2055,198 @@ FEE_STATE knownPushCount=3 tranches=2 cursor=0
 FEE_STATE tranche0 amount=40000000000000000000 baseline=2 backend=2 released=20000000000000000000
 FEE_STATE tranche1 amount=20000000000000000000 baseline=3 backend=3 released=0
 PASS: stage 9c: tranche 1 stamped baseline=3 backend=3
-=== STITCHED E2E DRIVER DONE — 64 PASS / 0 FAIL (of 64 checks) ===
+=== STAGE 10. MULTI-LOCK: V3 grants beside the completed V2 grant, post-repoint ===
+[32meth_chainId[0m
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_blockNumber[0m
+[32meth_getBlockByNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract deployment: GitEscrowV3
+  Contract address:    0x4a679253410272dd5232b3ff7cf5dbb88f295319
+  Transaction:         0x8418fadef15f9d0a1f166c1e34809ec19574da190e768d9a325dc317dddb000e
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  Value:               0 ETH
+  Gas used:            1700835 of 16777216
+  Block #37:           0x9b76b6d23f8bc7e84b249813809adbb64ff85cc53abd416e1eb8bb37eb984094
+
+[32meth_getTransactionByHash[0m
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockERC20#mint
+  Transaction:         0x2e2509851f06d5c9bd891d987eeda2db30cf90724d5c857b7896eb76c00b6319
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+  Value:               0 ETH
+  Gas used:            34221 of 16777216
+  Block #38:           0xe9ac33d741fa1612673f08bb3fdf4a8264be39af14da02598117c65bc4854ab2
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockERC20#approve
+  Transaction:         0xde6b6b50ff5bc285a070b3d5c71c45636678ee99fa38387cf2f3e368a8046c36
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+  Value:               0 ETH
+  Gas used:            46371 of 16777216
+  Block #39:           0x32e936617335ce24fa7320b6e50b592d39fe9e71fbe04ef580fdf0522c549650
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       GitEscrowV3#lock
+  Transaction:         0xf67ff046d2f7b77cea2fe2974b03b09775cb443f8dc41b0ecd3314791ba05cf4
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x4a679253410272dd5232b3ff7cf5dbb88f295319
+  Value:               0 ETH
+  Gas used:            385229 of 16777216
+  Block #40:           0x28aa8cc1539030986443d25d363e23bf1fc3eb41c2b5eb14f750041915a1cad0
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockERC20#approve
+  Transaction:         0x45a4d33e18ae91c1e2684d80a8dc73fa1eb386e0d9a3d19ea174c9d98483ad7d
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+  Value:               0 ETH
+  Gas used:            46371 of 16777216
+  Block #41:           0xcde5639a20739534ef882c483c32189725415d88a6521ae9e656002fbe0cc434
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       GitEscrowV3#lock
+  Transaction:         0x6420c8430ab8c5ecf5aa2c6252eea34ddfed23f8c920403d0e3b1460bb342be4
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x4a679253410272dd5232b3ff7cf5dbb88f295319
+  Value:               0 ETH
+  Gas used:            272584 of 16777216
+  Block #42:           0x5d59e3d89e58f6f2f768e54b8034fd726319752c407010a0e7193a96bfb51d31
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+V3_LOCK_A tx=0xf67ff046d2f7b77cea2fe2974b03b09775cb443f8dc41b0ecd3314791ba05cf4 grantId=0xb736f4b29edccf5d0acbb373cefc186e6265a97a99f23cfd66cf686a1e9f65a4
+V3_LOCK_B tx=0x6420c8430ab8c5ecf5aa2c6252eea34ddfed23f8c920403d0e3b1460bb342be4 grantId=0x36d9ea3344d400132a135637306368756830e087b02d4a0acb3ecca0dc763422
+V3 STITCHED STATE: {"v3":"0x4A679253410272dd5232B3Ff7cF5dbB88f295319","grantA":"0xb736f4b29edccf5d0acbb373cefc186e6265a97a99f23cfd66cf686a1e9f65a4","lockTxA":"0xf67ff046d2f7b77cea2fe2974b03b09775cb443f8dc41b0ecd3314791ba05cf4","grantB":"0x36d9ea3344d400132a135637306368756830e087b02d4a0acb3ecca0dc763422","lockTxB":"0x6420c8430ab8c5ecf5aa2c6252eea34ddfed23f8c920403d0e3b1460bb342be4"}
+PASS: stage 10: V3 escrow deployed + two V3 locks on the stitch repo
+[github-vesting] Swarm settler running every 60000ms (review window 0h)
+[github-vesting] Server running on 127.0.0.1:3210
+[github-vesting] Webhook URL: http://127.0.0.1:3210/api/webhook/github
+[github-vesting] GitLawb webhook: http://127.0.0.1:3210/api/webhook/gitlawb
+[github-vesting] Agent API: http://127.0.0.1:3210/api/agent/briefing
+backend repointed: GIT_ESCROW_ADDRESS=0x4A679253410272dd5232B3Ff7cF5dbB88f295319 GIT_ESCROW_V2_ADDRESS=0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
+[32meth_getTransactionReceipt (2)[0m
+[32meth_getTransactionReceipt (3)[0m
+[32meth_getTransactionReceipt (4)[0m
+[32meth_getBlockByNumber[0m
+[32meth_call[0m
+  Contract call:       GitEscrowV3#getGrant
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x4a679253410272dd5232b3ff7cf5dbb88f295319
+
+[fixture] GET /repos/testowner/testrepo/installation -> 200
+[fixture] POST /app/installations/777/access_tokens -> 201
+[fixture] GET /repos/testowner/testrepo -> 200
+[register] New github vesting grant for testowner/testrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+{"ok":true,"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","grantId":"0xb736f4b29edccf5d0acbb373cefc186e6265a97a99f23cfd66cf686a1e9f65a4","grant":{"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","repoFullName":"testowner/testrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"grantId":"0xb736f4b29edccf5d0acbb373cefc186e6265a97a99f23cfd66cf686a1e9f65a4","startPushCount":0,"escrowVersion":3,"onChainTxHash":"0xf67ff046d2f7b77cea2fe2974b03b09775cb443f8dc41b0ecd3314791ba05cf4","escrowAddress":"0x4a679253410272dd5232b3ff7cf5dbb88f295319","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-27T17:05:33.613Z","updatedAt":"2026-11-27T17:05:33.613Z"},"lockPath":"/lock/testowner/testrepo","lockUrl":"http://localhost:5173/lock/testowner/testrepo"}
+PASS: stage 10: V3 grant A registers beside the completed V2 grant (no 409)
+PASS: stage 10: registration A returns its grantId
+[32meth_getTransactionReceipt[0m
+[32meth_getTransactionReceipt (2)[0m
+[32meth_getTransactionReceipt (3)[0m
+[32meth_getBlockByNumber[0m
+[32meth_call[0m
+  Contract call:       GitEscrowV3#getGrant
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x4a679253410272dd5232b3ff7cf5dbb88f295319
+
+[fixture] GET /repos/testowner/testrepo/installation -> 200
+[fixture] GET /repos/testowner/testrepo -> 200
+[register] New github vesting grant for testowner/testrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+{"ok":true,"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","grantId":"0x36d9ea3344d400132a135637306368756830e087b02d4a0acb3ecca0dc763422","grant":{"repoId":"533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3","repoFullName":"testowner/testrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"grantId":"0x36d9ea3344d400132a135637306368756830e087b02d4a0acb3ecca0dc763422","startPushCount":0,"escrowVersion":3,"onChainTxHash":"0x6420c8430ab8c5ecf5aa2c6252eea34ddfed23f8c920403d0e3b1460bb342be4","escrowAddress":"0x4a679253410272dd5232b3ff7cf5dbb88f295319","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-27T17:05:33.660Z","updatedAt":"2026-11-27T17:05:33.660Z"},"lockPath":"/lock/testowner/testrepo","lockUrl":"http://localhost:5173/lock/testowner/testrepo"}
+PASS: stage 10: V3 grant B registers beside ACTIVE grant A (no 409)
+PASS: stage 10: registration B returns its grantId
+{"repo":"testowner/testrepo","pushCount":3,"log":[{"sha":"a11ce00","accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main"},{"sha":"c0ffee0","accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)"},{"sha":"c0ffee0","accepted":false,"reason":"Commit c0ffee0 already counted — duplicate push ignored"},{"sha":"b22ce00","accepted":true,"reason":"1 commit(s), ~55 lines in 11 code file(s) on main · cooldown bypassed (substantial change)"}]}
+PASS: stage 10: repo counter NOT reset by the V3 registrations (still 3)
+[32meth_getTransactionReceipt[0m
+[32meth_getTransactionReceipt (2)[0m
+[32meth_getTransactionReceipt (3)[0m
+[32meth_getBlockByNumber[0m
+{"ok":false,"error":"Active vesting grant already exists for this repo"}
+PASS: stage 10: second V2-escrow registration still refused (active V2 grant stands)
+3 None
+PASS: stage 10: status lists 3 grants, primary = the legacy V2 grant (earliest active record)
+=== STITCHED E2E DRIVER DONE — 72 PASS / 0 FAIL (of 72 checks) ===

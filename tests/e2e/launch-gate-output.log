@@ -135,7 +135,7 @@ author: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551594 of 16777216
-  Block #1:            0xa6204e76425ff7ec6908a7cfaf4ff44b919a0e21af57153ed041e7d39a557fb1
+  Block #1:            0x561836c7b401206ccd56fc900c4df1d907bc04b17e79f443cb12d5755740cfe7
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -149,7 +149,7 @@ PTK: 0x5FbDB2315678afecb367f032d93F642f64180aa3 deployTx: 0x5bebf31074097527093a
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #2:            0x1e0fc139e9542ba82005f123dae870429a33756f706b39af185eb80f6a53eebf
+  Block #2:            0xe1fb84189ca07e1f85c29964c61737c8634955448cc4677f397a2863c867c1fe
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -184,7 +184,7 @@ RWD: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 deployTx: 0x5b7587e8cafecb4cb875
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1869326 of 16777216
-  Block #3:            0x74b0fb62e0e54183916705aac833a432fa0a7754e3eacc8789401dfba302003b
+  Block #3:            0x8c6828ac9fa9eb3e9a07aace5353346908ee9b58400645938fdb94949e83a598
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -219,7 +219,7 @@ GitEscrow: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 deployTx: 0x970c5e6d3b0825
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            793530 of 16777216
-  Block #4:            0xf2bacb6010764e5bce116de7d800d72360441dc57d12b34d636cc8c6f3a0be03
+  Block #4:            0xb6c81c1b75e23d5d1908ad04afe1a4e0cfb751418a2ca09e479998c4f75567f5
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -233,7 +233,7 @@ ShipRewards: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9 deployTx: 0xf9bda7b950d8
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #5:            0x5abd29054bb500c760f6839fa6f60ef5059f8f55e9bcd2ec1504107afc361978
+  Block #5:            0x19039f55b503c3c0e7b00ceef3b199e0747d11c610695d7d748ed92030be0e67
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -247,7 +247,7 @@ mint PTK→recipient tx: 0xee6c2808b4002778359d77436ae2d40bdd47bebc0aaf03ad12e28
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            68445 of 16777216
-  Block #6:            0x35792282af9b27c47471546beca1de35f3c7aa69144af2ddcae11bdf4952ac0a
+  Block #6:            0xeabaf9bf4376f9a867ad94aee9531e59276b286cd7106dbc1a868a491f0dbc1b
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -262,7 +262,7 @@ repoId: 0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46383 of 16777216
-  Block #7:            0x48584755b221fd99a652ef859a87d65edf8c4d4d8bc01588becd4399e93b29a2
+  Block #7:            0x12dfce2880d03fae59cdbf37ca5d78e952e9b9b922eb23a23168daf6e4b193fc
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -276,7 +276,7 @@ approve tx: 0xf6b889b8b1e548e9c34d69b02d4f882bbd1d0ebdfc622d4e28e35c7e030eab43
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            263864 of 16777216
-  Block #8:            0x5bf453486047a50a7ed56f4d51a5d195d353f7195fb67df3ba8dd388c4e5df78
+  Block #8:            0x6b8034c4a75011c6bb763edbc04bf2801c5741768b77568420b39ccefa83d701
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -296,7 +296,7 @@ on-chain grant: recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC totalLocked
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            46844 of 16777216
-  Block #9:            0x472c13d9be03405cfd7b68edbfd464274c6e5fed3d75bfa73b4b8ca6e085ec06
+  Block #9:            0x4d078654bc6c7e30fe3a473e1439ad4cc28e87e90324b9ebffee28d620bb6b36
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -307,7 +307,7 @@ fund ShipRewards tx: 0x594d3e5bf2fc224984bfc52ff25be012359a0637fb4d59b715348d7e6
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
 
 ShipRewards RWD balance: 10000000000000000000000
-state written to /home/hatch/workspace/claude-ship/github-vesting/tests/e2e/state.json
+state written to /home/hatch/workspace/.scratch-multigrant/repo/tests/e2e/state.json
 recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC author=0x90F79bf6EB2c4f870365E785982E1f101E93b906 ptk=0x5FbDB2315678afecb367f032d93F642f64180aa3
 === 3b. PRE-verification lock for testauthor/orderrepo (ordering fixture) ===
 [32meth_chainId[0m
@@ -384,7 +384,7 @@ recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC author=0x90F79bf6EB2c4f8703
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            51309 of 16777216
-  Block #10:           0xf2d1bc37b76ae2c55da0097c167a4ebafa043513356a47c4f9566932df391156
+  Block #10:           0x362ba83610d6e7cd499e02567b679b4a7f6a3c5d0298d8f93088278122fdfca6
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -397,7 +397,7 @@ recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC author=0x90F79bf6EB2c4f8703
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #11:           0x6f7a163f64e55647e860ffdcc7070e0363163409fdbd79235886889f5b354346
+  Block #11:           0x9483bcef29daf2833fc326aa66e6ed77c3d41aed2f208a0cb2eeafe7ff9e10ec
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -410,12 +410,12 @@ recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC author=0x90F79bf6EB2c4f8703
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            229652 of 16777216
-  Block #12:           0xa992d5ce8c8675d7491ea99ae6223b7dcd1689d411427890b2c84beb66d2e981
+  Block #12:           0x65a5e59525e4e4165520955e275f1176af78e786150747b99dbca8c34cc7ae5d
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
 [32meth_getBlockByNumber[0m
-repo: testauthor/orderrepo repoId: 0x0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f blockTimestamp: 1795715553
+repo: testauthor/orderrepo repoId: 0x0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f blockTimestamp: 1795799349
 LOCK_TX=0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f896323600fa15
 pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f896323600fa15
 === 3c. recognition fixture (round-3: prepared record now REQUIRED for the stamp) ===
@@ -472,7 +472,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551606 of 16777216
-  Block #13:           0xc533e3705cc1322f7031dd39da2436f156f89f8be06b27d74a83ebb781724540
+  Block #13:           0x3bf3420ae002ce75b0d57fc43d0f8f1dc548b6f586bb34e0c84c8960608971f3
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -505,7 +505,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1792931 of 16777216
-  Block #14:           0x3dcc82dd8a7e3a2a72a4352f29a87abb686e1419bba998abf2927cdf545fd996
+  Block #14:           0x331a9939d859ffb19e4a55348aa8d36c0a99a93ebf0c03db71c448b2e16a8c45
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -538,7 +538,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1905421 of 16777216
-  Block #15:           0x5e09cdce606cd03e3309735ac2c10912570316c7e625c171fcf2624e63c04e72
+  Block #15:           0xba35743615138826b48f481b668c8790e432016fadccf287ebbb106d93ef80b8
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -571,7 +571,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            353762 of 16777216
-  Block #16:           0xee068533a4aa977fb0cd067000199303f45da48840de453ca2a3d863a2993be3
+  Block #16:           0x67b1bec19e5584e69a1d6344d9cdf00976169a328d3d527f7f6a6b2778d6d70b
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -604,7 +604,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            381277 of 16777216
-  Block #17:           0xc40c1ebd4541c6845c0e7647a5e1e514847c4dc7f9dd69d7a9aacf6296ea5151
+  Block #17:           0x1db77b5fa780c69dc805c133399b96a79bc5b0c12f7ce59fd52eb11341662973
 
 [32meth_getTransactionByHash[0m
 [32meth_accounts[0m
@@ -637,7 +637,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734540 of 16777216
-  Block #18:           0xb8da63190d1efe8a4931d80faa0582a1e15b10b459821faa8629e4cc807f0763
+  Block #18:           0x0135b93cfb0dbed8ddb33e3056ed886668d62350fb1c7d44689a6dbe8fba3609
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -649,7 +649,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734540 of 16777216
-  Block #19:           0x45e6005db7479f942074225c485d78c75257fb6ec2cf40024873142187cc128e
+  Block #19:           0x04225f96af74d720d123a71345483aed34c2bea1949a15dfbd3ed3e75dc15200
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -661,7 +661,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734540 of 16777216
-  Block #20:           0xfc986891b2eea8ddc4bf722b2154e226b2f642f0976dc7693d048a6e41d02b38
+  Block #20:           0xe33dae9f4c13098e263eed0e81dc62e11ed0e61cae39ad74d20d20ad78ed4e71
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -673,7 +673,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734540 of 16777216
-  Block #21:           0xc6a4f1e5e64fdf1554868e2979aeeb02eb483fead77d0fe4a9e5c437bf80b433
+  Block #21:           0x4ace8022947c1d9d1e354d165d1fb44479153356bc1ef3b7bd70505ae4f327c2
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -685,7 +685,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734540 of 16777216
-  Block #22:           0xbd2496f9612bf0bfcd632c8dcb83923c2ae6d9b8d62615bfc7e8bb5eddba8c03
+  Block #22:           0x430a82ff5f754e1a1f9648efa7ee47fe2d2261d07e435964d4202ab53554365e
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -697,7 +697,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
   Value:               0 ETH
   Gas used:            151559 of 16777216
-  Block #23:           0xabc08be9b3ece5ffc241383a06bae062523b6628fdb623b63d98fe2c1661fcf4
+  Block #23:           0xfe51e6086eaf4e71c3fd78123cc0105bc3c5c27936897d000b5edae531ecdc04
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -710,7 +710,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
   Value:               0 ETH
   Gas used:            151559 of 16777216
-  Block #24:           0x05a1aba3106db72810e3620ac5ff1918e23d5d5198f20fbb6e9af1b1ff715178
+  Block #24:           0xcdd39f3483ee2c7c423864551abb45b58bcd386ba3a03cfdebdbd9ffcba36668
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -723,7 +723,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
   Value:               0 ETH
   Gas used:            151559 of 16777216
-  Block #25:           0x20bb059e8ed91b42b38cbc1f88fe83763e7d308822330fa8cf83d9859210d9cc
+  Block #25:           0xca29660455cbc6afec1f3c73f6a38cc12f2bd7b5f82e06c94e5972071a1c7e64
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -736,7 +736,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
   Value:               0 ETH
   Gas used:            151559 of 16777216
-  Block #26:           0x124bbc2035f92a668e9fd48492b4dd3d892ca1c65164d0e8981b25d4978eb713
+  Block #26:           0x019576deed7cdca93a80a24f7fc91a42d5ad8119b8994a59b17702a0acd13508
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -749,7 +749,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
   Value:               0 ETH
   Gas used:            151559 of 16777216
-  Block #27:           0x0128c97b9172927cab745b8195839dede402e2a36a29b08fce301441e3b2cd95
+  Block #27:           0x58f6ef6515f15e9feb7a6c5ce547f80e336dadb8121ed573510ce439bfdbe4c3
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -762,7 +762,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734540 of 16777216
-  Block #28:           0x35e90f14d33d306a5936b4d963f0938def8b9f76b0f52f3f2e77b4f26e2d57e7
+  Block #28:           0x6b4d3718392eb6579503c6240e837a6220dd8cc29ab23c549752e9b11dbca43e
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -774,7 +774,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734540 of 16777216
-  Block #29:           0xbd8cab02d9c459311ba4013f97d33374e52777b2a17dfe187158ba6fc88d3bb1
+  Block #29:           0x84f0421f04485c6f1d6b1d6d6aad1c356422af2e34fd771289a3e12de4b7fa52
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -786,7 +786,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1905421 of 16777216
-  Block #30:           0x13cef605068f55d03a91b363bbce1986d356f7edc056e5058571383c3a7a7606
+  Block #30:           0xc859eabeef1d4f2bad2372219cdda38fd542ef12641d4d9e80a3da1b647eab15
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -798,7 +798,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734528 of 16777216
-  Block #31:           0x6db0d05a2e22d5aaafc7862d05f57308be838f3d474f2e19aa450ab546d1deb6
+  Block #31:           0xed2298cc20bd9c8f36465d403df454b35dece92a565deb5e9271a6d8c3d59a7a
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -810,7 +810,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551558 of 16777216
-  Block #32:           0xb089088b9dccc83d15bffac0d1ce8bce38a6ef05215206ce9b300ddfba40ed00
+  Block #32:           0x5fc7843c70ec234279d3a3c32755dfd1296012deaa380c70dc8b55d03673bada
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -822,7 +822,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734516 of 16777216
-  Block #33:           0x14e98bd69e7abb3f5967d52b71a4a0bbb0a359f717068cfa09300720ebfd0879
+  Block #33:           0xf3193e773286f79fe7c187e3e36d69d4514bc08d4751029e8d92f325c8d4d172
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -834,7 +834,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            353762 of 16777216
-  Block #34:           0xcaba41778da49a645cc810b2b9b71f92f1c49a1cfd019b21fb3377e363b21f85
+  Block #34:           0x579639e14deffba6f805effc2672bd2f0f76f3a7fa6623825fa1f29137919279
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -846,7 +846,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734528 of 16777216
-  Block #35:           0x191e8d6f0bb78f60d91f4d7bac731e87b5cb6f29f5add44de43fe7dafe21a3cc
+  Block #35:           0xc62837949a93c0896dc878a3b72918bdd482c947b17c2dc7ab5675612e6570ae
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -858,7 +858,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734528 of 16777216
-  Block #36:           0x95e61bad335b6581109d569cb724f331714792b1ac164246d217d4a55d181e08
+  Block #36:           0xfcf210c074bd010a455e407fc28ea8a1c459ea5f11ba96d3fe8c9d1a44046708
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -870,7 +870,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            734540 of 16777216
-  Block #37:           0x650b42a172f70862552b2ed626c314937c27d51dbbbe6fbac65e8436db17e7fc
+  Block #37:           0x49b4cf1be6ed400eda4443ebef5133bd014a17b76416dab4287a1d022b957779
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -882,7 +882,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   To:                  0x610178da211fef7d417bc0e6fed39f05609ad788
   Value:               0 ETH
   Gas used:            151559 of 16777216
-  Block #38:           0x826796d141e880278f6f9bc6f11a735b48e5119a01460c248b7097ef8987fec7
+  Block #38:           0x6403ead529dd6dec5081f2e8e4a9b60fbedd7c0216b046c348d9ad0a2a8c603d
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -895,7 +895,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #39:           0x74f9497688962142605291ef70b608638f10fe8f61806a2e8f95a911f5d609ee
+  Block #39:           0xfa16d5a08339eeb6bd1da1ba8e05d677ff7cda74f48cf7ca68f706778a0b2ec5
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -907,7 +907,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #40:           0x6d8e57884f48417e4769b9f158220187eb5f9087bef4d320d4eabd385814b91d
+  Block #40:           0xfe766af1b41b81819cf464cf3810c1b790da6be94cd9ed550813d14d39355621
 
 [32meth_getTransactionByHash[0m
 [32meth_blockNumber[0m
@@ -919,7 +919,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   To:                  0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #41:           0x3be1396b3fff92fc34f34c731855a4bbdb60929fe339bf75bfadbadcfb9f426b
+  Block #41:           0x96847e739a3363c73423f5c539e69ebce1364681828d2f4bd0bac06909884017
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -932,7 +932,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   To:                  0x1613beb3b2c4f22ee086b2b38c1476a3ce7f78e8
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #42:           0x96d32713d3395bc11dea3859b62b5c94ea9ccbe88d448e3ac8df79556b37b462
+  Block #42:           0xc021611cfb082f852b6b07a98bb1e9592e806e530f2934275c2c0f47d9477e15
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -945,7 +945,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   To:                  0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0
   Value:               0 ETH
   Gas used:            160248 of 16777216
-  Block #43:           0xcfd3b7630d757bdede3fbfaa99f428cd53790c34ee0c41a63397ff3caf460a90
+  Block #43:           0xbe13ec43acdba625c890d95776152b801b453030152d83a246523c12fa3e559f
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -958,7 +958,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   To:                  0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0
   Value:               0 ETH
   Gas used:            160248 of 16777216
-  Block #44:           0x9c454df9b6847f08eff18c09f3c7227fe4d45399eb43868301904e490740f9a5
+  Block #44:           0x9b4fa80c31514bf878ba39952427ec9f24265312d27951365703c8edaa336581
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -971,7 +971,7 @@ pre-verification lock tx: 0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f8
   To:                  0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0
   Value:               0 ETH
   Gas used:            160248 of 16777216
-  Block #45:           0xc8aec7d699591c171fa28201ed7c659ba88f63401d7b5cbf2173a9802d5f7334
+  Block #45:           0x3f2b90c2d272fb804bc24b9d8a3e4aa55c3c6761f1bab496ebc86d5388b1ad78
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -990,9 +990,9 @@ server up
 server-side repoId (no 0x): 533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
 on-chain repoId matches: true
 grant saved for testowner/testrepo
-linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T17:52:37.429Z","source":"signed"}]
-linked wallets for @testauthor: [{"wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","linkedAt":"2026-11-26T17:52:38.914Z","source":"signed"},{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T17:52:37.429Z","source":"signed"}]
-linked wallets for @gregory: [{"wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","linkedAt":"2026-11-26T17:52:38.935Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-27T17:09:08.842Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","linkedAt":"2026-11-27T17:09:11.122Z","source":"signed"},{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-27T17:09:08.842Z","source":"signed"}]
+linked wallets for @gregory: [{"wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","linkedAt":"2026-11-27T17:09:11.151Z","source":"signed"}]
 [31meth_fillTransaction - Method not supported[0m
 [32meth_getTransactionCount[0m
 [32meth_getBlockByNumber[0m
@@ -1005,7 +1005,7 @@ linked wallets for @gregory: [{"wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e1
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            51321 of 51321
-  Block #46:           0x8641d4fdabdb14f80deb5ec03f003a0f6ced235c9f24001a333d624f4e7d1814
+  Block #46:           0x97969b7fa6d9df3f862b2ab8d89910cc4d4ef6118033e1824943d4c0ae3f26c7
 
 minted 100 PTK -> recipient, tx: 0x718ac644fffb5d1fc42da2e1c3eb63b39f115114553a0c694ccedd60b0b70bf7
 === 7. verify: app NOT installed -> refused, no token ===
@@ -1033,7 +1033,7 @@ PASS: unlinked issued no token
 [fixture] GET /repos/testauthor/launchrepo/installation -> 200
 [fixture] GET /repos/testauthor/launchrepo -> 200
 [fixture] GET /repos/testauthor/launchrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9sYXVuY2hyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NzE1NTU5LCJleHAiOjE3OTU3MTY0NTksIm5vbmNlIjoiZWI5MTBhZTNkNWY3NTRlYmIzNjBhZTc3N2Q0MWRiOGIifQ.Q_WjJxEJCJ91KTkCUbEvZ2ckC2yj7QZJDkzDzA-neO8","expiresAt":"2026-11-26T18:07:39.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9sYXVuY2hyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1Nzk5MzUxLCJleHAiOjE3OTU4MDAyNTEsIm5vbmNlIjoiYTFjZTNlYzM3Mjg2MzAxYWYyZDg2NjdjMmNmMzM4MjAifQ.hV1wF1ZzJ3m9u5-E3idhrL-D_7Nmo9lOXciwlPs-ihg","expiresAt":"2026-11-27T17:24:11.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: happy verify ok
 PASS: happy verify has token
 token captured (354 chars)
@@ -1112,7 +1112,7 @@ token captured (354 chars)
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            34209 of 16777216
-  Block #47:           0xb8e8e49429a59295479f8c04c1726078563e23b9526b2daee6fb9929bdf5a509
+  Block #47:           0x2d68258eafc0b2b43385b5a9a4b0e469b8698d8e7e85ae0e93ad266cd4cb06ab
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1125,7 +1125,7 @@ token captured (354 chars)
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #48:           0xe71d0dfffabc108889f8d7e94b819cae857a77ed8416c4d9cd04776146abf6f7
+  Block #48:           0x733742db67112d18223386fec002499427ac38731dbf61ed6616980e6899da9a
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1138,12 +1138,12 @@ token captured (354 chars)
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            234452 of 16777216
-  Block #49:           0x855b2e6458b7aa945ea4395ed198f644625d286e4cf930313ddd52132d2e8e19
+  Block #49:           0xeefb8d8f8c60534b12095b8adc0818eecf2350a3cf3ee428c2c44f0b2be1baa8
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
 [32meth_getBlockByNumber[0m
-repo: testauthor/launchrepo repoId: 0xcff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba blockTimestamp: 1795715603
+repo: testauthor/launchrepo repoId: 0xcff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba blockTimestamp: 1795799396
 LOCK_TX=0xb5efc0202606115e56129552e58946a6e6297915aa910e797792b334861359d7
 post-verification lock tx: 0xb5efc0202606115e56129552e58946a6e6297915aa910e797792b334861359d7
 === 11. prepare-lock: NO token -> refused ===
@@ -1224,7 +1224,7 @@ PASS: expired token refused
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
 
-{"ok":true,"apiBase":"http://127.0.0.1:3210","webFallback":"http://localhost:5173/create","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","repo":"testauthor/launchrepo","installationId":777,"chain":"base","tokenSymbol":"PTK","tokenDecimals":18,"amountWei":"10000000000000000000","amountFormatted":"10","streaming":false,"lockFunction":"lock","totalPushes":10,"pushesPerMilestone":10,"tokensPerMilestone":"10000000000000000000","transactions":[{"step":"approve","description":"Approve 10 PTK for GitEscrow","to":"0x5FbDB2315678afecb367f032d93F642f64180aa3","data":"0x095ea7b30000000000000000000000009fe46736679d2d9a65f0992f2272de9f3c7fa6e00000000000000000000000000000000000000000000000008ac7230489e80000","value":"0x0","chainId":8453},{"step":"lock","description":"Lock 10 PTK for testauthor/launchrepo","to":"0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0","data":"0xc9c2dca6cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa30000000000000000000000000000000000000000000000008ac7230489e80000000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000a","value":"0x0","chainId":8453}],"needsApprove":true,"repoClaim":{"verified":false,"status":"none","claimUrl":"http://127.0.0.1:3210/api/repo-claims/challenge","verifyHint":"Optional: POST /api/repo-claims/challenge then push .proofofdev/claim.json before locking"},"statusUrl":"http://localhost:5173/lock/testauthor/launchrepo","bankrPrompt":"Execute GitHub vesting lock on Base for wallet 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc:\nRepo: testauthor/launchrepo\nToken: PTK (10)\nSchedule: 10 verified pushes, release every 10\n\nSubmit these 2 transaction(s) in order on Base (chainId 8453):\n1. Approve 10 PTK for GitEscrow → to 0x5FbDB2315678afecb367f032d93F642f64180aa3\n2. Lock 10 PTK for testauthor/launchrepo → to 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0\n\nAfter the lock transaction confirms, call:\nPOST http://127.0.0.1:3210/api/agent/confirm-lock\nbody: { \"repo\": \"testauthor/launchrepo\", \"lockTxHash\": \"<lock tx hash>\" }\nheader: x-wallet-address: 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","bankrSubmitUrl":"https://api.bankr.bot/wallet/submit","confirmUrl":"http://127.0.0.1:3210/api/agent/confirm-lock","replyText":"Ready to lock 10 PTK on testauthor/launchrepo.\n2 Base tx(s): approve + lock.\nSchedule: all tokens after 10 verified pushes.\n\nBankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.\n\nIf Bankr blocks approve (untrusted_address), use web UI: http://localhost:5173/create","tweetReply":"Ready to lock 10 PTK on testauthor/launchrepo.\n2 Base tx(s): approve + lock.\nSchedule: all tokens after 10 verified pushes.\n\nBankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.\n\nIf Bankr blocks approve (untrusted_address), use web UI: http://localhost:5173/create"}
+{"ok":true,"apiBase":"http://127.0.0.1:3210","webFallback":"http://localhost:5173/create","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","repo":"testauthor/launchrepo","installationId":777,"chain":"base","escrowVersion":2,"tokenSymbol":"PTK","tokenDecimals":18,"amountWei":"10000000000000000000","amountFormatted":"10","streaming":false,"lockFunction":"lock","totalPushes":10,"pushesPerMilestone":10,"tokensPerMilestone":"10000000000000000000","transactions":[{"step":"approve","description":"Approve 10 PTK for GitEscrow","to":"0x5FbDB2315678afecb367f032d93F642f64180aa3","data":"0x095ea7b30000000000000000000000009fe46736679d2d9a65f0992f2272de9f3c7fa6e00000000000000000000000000000000000000000000000008ac7230489e80000","value":"0x0","chainId":8453},{"step":"lock","description":"Lock 10 PTK for testauthor/launchrepo","to":"0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0","data":"0xc9c2dca6cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa30000000000000000000000000000000000000000000000008ac7230489e80000000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000a","value":"0x0","chainId":8453}],"needsApprove":true,"repoClaim":{"verified":false,"status":"none","claimUrl":"http://127.0.0.1:3210/api/repo-claims/challenge","verifyHint":"Optional: POST /api/repo-claims/challenge then push .proofofdev/claim.json before locking"},"statusUrl":"http://localhost:5173/lock/testauthor/launchrepo","bankrPrompt":"Execute GitHub vesting lock on Base for wallet 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc:\nRepo: testauthor/launchrepo\nToken: PTK (10)\nSchedule: 10 verified pushes, release every 10\n\nSubmit these 2 transaction(s) in order on Base (chainId 8453):\n1. Approve 10 PTK for GitEscrow → to 0x5FbDB2315678afecb367f032d93F642f64180aa3\n2. Lock 10 PTK for testauthor/launchrepo → to 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0\n\nAfter the lock transaction confirms, call:\nPOST http://127.0.0.1:3210/api/agent/confirm-lock\nbody: { \"repo\": \"testauthor/launchrepo\", \"lockTxHash\": \"<lock tx hash>\" }\nheader: x-wallet-address: 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","bankrSubmitUrl":"https://api.bankr.bot/wallet/submit","confirmUrl":"http://127.0.0.1:3210/api/agent/confirm-lock","replyText":"Ready to lock 10 PTK on testauthor/launchrepo.\n2 Base tx(s): approve + lock.\nSchedule: all tokens after 10 verified pushes.\n\nBankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.\n\nIf Bankr blocks approve (untrusted_address), use web UI: http://localhost:5173/create","tweetReply":"Ready to lock 10 PTK on testauthor/launchrepo.\n2 Base tx(s): approve + lock.\nSchedule: all tokens after 10 verified pushes.\n\nBankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.\n\nIf Bankr blocks approve (untrusted_address), use web UI: http://localhost:5173/create"}
 PASS: happy prepare ok
 PASS: happy prepare has transactions
 === 16. confirm-lock: NO token -> refused ===
@@ -1321,11 +1321,11 @@ PASS: step-18 prepare-launch ok
 [fixture] GET /repos/testauthor/launchrepo -> 200
 [register] New github vesting grant for testauthor/launchrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
 [register] Verified launcher @testauthor enrolled for ShipRewards on testauthor/launchrepo
-{"ok":true,"repoId":"cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba","grant":{"repoId":"cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba","repoFullName":"testauthor/launchrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0xb5efc0202606115e56129552e58946a6e6297915aa910e797792b334861359d7","escrowAddress":"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0","installationId":777,"launchVerified":true,"launchVerifiedLogin":"testauthor","launcherRewardEnrolled":true,"feeLockVault":"0x0dcd1bf9a1b36ce34237eeafef220932846bcd82","status":"active","streaming":false,"createdAt":"2026-11-26T17:52:43.077Z","updatedAt":"2026-11-26T17:52:43.077Z"},"lockPath":"/lock/testauthor/launchrepo","lockUrl":"http://localhost:5173/lock/testauthor/launchrepo"}
+{"ok":true,"repoId":"cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba","grant":{"repoId":"cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba","repoFullName":"testauthor/launchrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"escrowVersion":2,"onChainTxHash":"0xb5efc0202606115e56129552e58946a6e6297915aa910e797792b334861359d7","escrowAddress":"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0","installationId":777,"launchVerified":true,"launchVerifiedLogin":"testauthor","launcherRewardEnrolled":true,"feeLockVault":"0x0dcd1bf9a1b36ce34237eeafef220932846bcd82","status":"active","streaming":false,"createdAt":"2026-11-27T17:09:15.811Z","updatedAt":"2026-11-27T17:09:15.811Z"},"lockPath":"/lock/testauthor/launchrepo","lockUrl":"http://localhost:5173/lock/testauthor/launchrepo"}
 PASS: verified register ok
 PASS: grant stamped launchVerified
 PASS: grant stamped launcherRewardEnrolled
-{"ok":true,"repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":true,"enrollment":{"repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","githubLogin":"testauthor","verificationNonce":"eb910ae3d5f754ebb360ae777d41db8b","chainId":8453,"enrolledAt":"2026-11-26T17:52:43.079Z"}}
+{"ok":true,"repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":true,"enrollment":{"repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","githubLogin":"testauthor","verificationNonce":"a1ce3ec37286301af2d8667c2cf33820","chainId":8453,"enrolledAt":"2026-11-27T17:09:15.815Z"}}
 PASS: enrolment record present
 PASS: enrolment ties the login
 PASS: enrolment ties the token id (nonce)
@@ -1336,7 +1336,7 @@ PASS: enrolment ties the token id (nonce)
 [fixture] GET /repos/testauthor/otherrepo/installation -> 200
 [fixture] GET /repos/testauthor/otherrepo -> 200
 [register] New github vesting grant for testauthor/otherrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"18f9441b9c2c234baaaf3859b2ca5eec3d28b9b7b9b8f378868b67bcd6d9ce8d","grant":{"repoId":"18f9441b9c2c234baaaf3859b2ca5eec3d28b9b7b9b8f378868b67bcd6d9ce8d","repoFullName":"testauthor/otherrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T17:52:43.131Z","updatedAt":"2026-11-26T17:52:43.131Z"},"lockPath":"/lock/testauthor/otherrepo","lockUrl":"http://localhost:5173/lock/testauthor/otherrepo"}
+{"ok":true,"repoId":"18f9441b9c2c234baaaf3859b2ca5eec3d28b9b7b9b8f378868b67bcd6d9ce8d","grant":{"repoId":"18f9441b9c2c234baaaf3859b2ca5eec3d28b9b7b9b8f378868b67bcd6d9ce8d","repoFullName":"testauthor/otherrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-27T17:09:15.950Z","updatedAt":"2026-11-27T17:09:15.950Z"},"lockPath":"/lock/testauthor/otherrepo","lockUrl":"http://localhost:5173/lock/testauthor/otherrepo"}
 PASS: unverified register ok (legacy path)
 PASS: unverified grant NOT stamped enrolled
 {"ok":true,"repo":"testauthor/otherrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":false,"enrollment":null}
@@ -1410,13 +1410,13 @@ PASS: no-issuance-record token refused
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
 
-{"ok":true,"apiBase":"http://127.0.0.1:3210","webFallback":"http://localhost:5173/create","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","repo":"testauthor/launchrepo","installationId":777,"chain":"base","tokenSymbol":"PTK","tokenDecimals":18,"amountWei":"10000000000000000000","amountFormatted":"10","streaming":false,"lockFunction":"lock","totalPushes":10,"pushesPerMilestone":10,"tokensPerMilestone":"10000000000000000000","transactions":[{"step":"approve","description":"Approve 10 PTK for GitEscrow","to":"0x5FbDB2315678afecb367f032d93F642f64180aa3","data":"0x095ea7b30000000000000000000000009fe46736679d2d9a65f0992f2272de9f3c7fa6e00000000000000000000000000000000000000000000000008ac7230489e80000","value":"0x0","chainId":8453},{"step":"lock","description":"Lock 10 PTK for testauthor/launchrepo","to":"0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0","data":"0xc9c2dca6cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa30000000000000000000000000000000000000000000000008ac7230489e80000000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000a","value":"0x0","chainId":8453}],"needsApprove":true,"repoClaim":{"verified":false,"status":"none","claimUrl":"http://127.0.0.1:3210/api/repo-claims/challenge","verifyHint":"Optional: POST /api/repo-claims/challenge then push .proofofdev/claim.json before locking"},"statusUrl":"http://localhost:5173/lock/testauthor/launchrepo","bankrPrompt":"Execute GitHub vesting lock on Base for wallet 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc:\nRepo: testauthor/launchrepo\nToken: PTK (10)\nSchedule: 10 verified pushes, release every 10\n\nSubmit these 2 transaction(s) in order on Base (chainId 8453):\n1. Approve 10 PTK for GitEscrow → to 0x5FbDB2315678afecb367f032d93F642f64180aa3\n2. Lock 10 PTK for testauthor/launchrepo → to 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0\n\nAfter the lock transaction confirms, call:\nPOST http://127.0.0.1:3210/api/agent/confirm-lock\nbody: { \"repo\": \"testauthor/launchrepo\", \"lockTxHash\": \"<lock tx hash>\" }\nheader: x-wallet-address: 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","bankrSubmitUrl":"https://api.bankr.bot/wallet/submit","confirmUrl":"http://127.0.0.1:3210/api/agent/confirm-lock","replyText":"Ready to lock 10 PTK on testauthor/launchrepo.\n2 Base tx(s): approve + lock.\nSchedule: all tokens after 10 verified pushes.\n\nBankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.\n\nIf Bankr blocks approve (untrusted_address), use web UI: http://localhost:5173/create","tweetReply":"Ready to lock 10 PTK on testauthor/launchrepo.\n2 Base tx(s): approve + lock.\nSchedule: all tokens after 10 verified pushes.\n\nBankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.\n\nIf Bankr blocks approve (untrusted_address), use web UI: http://localhost:5173/create"}
+{"ok":true,"apiBase":"http://127.0.0.1:3210","webFallback":"http://localhost:5173/create","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","repo":"testauthor/launchrepo","installationId":777,"chain":"base","escrowVersion":2,"tokenSymbol":"PTK","tokenDecimals":18,"amountWei":"10000000000000000000","amountFormatted":"10","streaming":false,"lockFunction":"lock","totalPushes":10,"pushesPerMilestone":10,"tokensPerMilestone":"10000000000000000000","transactions":[{"step":"approve","description":"Approve 10 PTK for GitEscrow","to":"0x5FbDB2315678afecb367f032d93F642f64180aa3","data":"0x095ea7b30000000000000000000000009fe46736679d2d9a65f0992f2272de9f3c7fa6e00000000000000000000000000000000000000000000000008ac7230489e80000","value":"0x0","chainId":8453},{"step":"lock","description":"Lock 10 PTK for testauthor/launchrepo","to":"0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0","data":"0xc9c2dca6cff181521927e3097b1616a40b6acfd15d2453395d055b8fd40205274067e2ba0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa30000000000000000000000000000000000000000000000008ac7230489e80000000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000a","value":"0x0","chainId":8453}],"needsApprove":true,"repoClaim":{"verified":false,"status":"none","claimUrl":"http://127.0.0.1:3210/api/repo-claims/challenge","verifyHint":"Optional: POST /api/repo-claims/challenge then push .proofofdev/claim.json before locking"},"statusUrl":"http://localhost:5173/lock/testauthor/launchrepo","bankrPrompt":"Execute GitHub vesting lock on Base for wallet 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc:\nRepo: testauthor/launchrepo\nToken: PTK (10)\nSchedule: 10 verified pushes, release every 10\n\nSubmit these 2 transaction(s) in order on Base (chainId 8453):\n1. Approve 10 PTK for GitEscrow → to 0x5FbDB2315678afecb367f032d93F642f64180aa3\n2. Lock 10 PTK for testauthor/launchrepo → to 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0\n\nAfter the lock transaction confirms, call:\nPOST http://127.0.0.1:3210/api/agent/confirm-lock\nbody: { \"repo\": \"testauthor/launchrepo\", \"lockTxHash\": \"<lock tx hash>\" }\nheader: x-wallet-address: 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","bankrSubmitUrl":"https://api.bankr.bot/wallet/submit","confirmUrl":"http://127.0.0.1:3210/api/agent/confirm-lock","replyText":"Ready to lock 10 PTK on testauthor/launchrepo.\n2 Base tx(s): approve + lock.\nSchedule: all tokens after 10 verified pushes.\n\nBankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.\n\nIf Bankr blocks approve (untrusted_address), use web UI: http://localhost:5173/create","tweetReply":"Ready to lock 10 PTK on testauthor/launchrepo.\n2 Base tx(s): approve + lock.\nSchedule: all tokens after 10 verified pushes.\n\nBankr: submit transactions from this response, then POST confirm-lock with the lock tx hash.\n\nIf Bankr blocks approve (untrusted_address), use web UI: http://localhost:5173/create"}
 PASS: token reuse across calls within TTL ok
 === 23. ordering: lock tx PREDATES the verification token -> registers UNSTAMPED, no enrolment ===
 [fixture] GET /repos/testauthor/orderrepo/installation -> 200
 [fixture] GET /repos/testauthor/orderrepo -> 200
 [fixture] GET /repos/testauthor/orderrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/orderrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9vcmRlcnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3MTU1NjcsImV4cCI6MTc5NTcxNjQ2Nywibm9uY2UiOiJkYjI2MGE0ZjZjZDIwY2IxMzZkNDk3YjBkM2Y2YWY4YiJ9.4yIm4PfmZ4Sw7hgFnVzxCQkxNd3nceiaGCorSdS_UFw","expiresAt":"2026-11-26T18:07:47.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/orderrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9vcmRlcnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3OTkzNjAsImV4cCI6MTc5NTgwMDI2MCwibm9uY2UiOiI1MzliYzRlMDFmODkxMTA4YmFkZmU4YmRjY2E5M2JmOSJ9.EdipR2JMD9sVYJayoW_Pces7n22SEJnazRngXz3q0AU","expiresAt":"2026-11-27T17:24:20.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: orderrepo verify ok
 [32meth_getCode[0m
 [32meth_call[0m
@@ -1459,7 +1459,7 @@ PASS: orderrepo prepare-launch ok
 [fixture] GET /repos/testauthor/orderrepo/installation -> 200
 [fixture] GET /repos/testauthor/orderrepo -> 200
 [register] New github vesting grant for testauthor/orderrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f","grant":{"repoId":"0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f","repoFullName":"testauthor/orderrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f896323600fa15","escrowAddress":"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T17:52:47.563Z","updatedAt":"2026-11-26T17:52:47.563Z"},"lockPath":"/lock/testauthor/orderrepo","lockUrl":"http://localhost:5173/lock/testauthor/orderrepo","launchVerification":{"stamped":false,"code":"LAUNCH_ORDERING_PREDATES_VERIFICATION","note":"Lock transaction predates the verification — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Verify first, then lock, then register."}}
+{"ok":true,"repoId":"0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f","grant":{"repoId":"0791244ab744abe2ccfed80441c9ceb4f2c60e1e5c32e8fb7e627d56f5ab711f","repoFullName":"testauthor/orderrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"escrowVersion":2,"onChainTxHash":"0x96dce627e37cbb2b486fa045e4fb2a6f6dfebd70004605aa23f896323600fa15","escrowAddress":"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-27T17:09:20.359Z","updatedAt":"2026-11-27T17:09:20.359Z"},"lockPath":"/lock/testauthor/orderrepo","lockUrl":"http://localhost:5173/lock/testauthor/orderrepo","launchVerification":{"stamped":false,"code":"LAUNCH_ORDERING_PREDATES_VERIFICATION","note":"Lock transaction predates the verification — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Verify first, then lock, then register."}}
 PASS: predated-lock register ok (ordinary grant)
 PASS: predated-lock register reports unstamped
 PASS: predated-lock carries the ordering code
@@ -1471,7 +1471,7 @@ PASS: predated-lock launch has no enrolment
 [fixture] GET /repos/testauthor/nolockrepo/installation -> 200
 [fixture] GET /repos/testauthor/nolockrepo -> 200
 [fixture] GET /repos/testauthor/nolockrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/nolockrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ub2xvY2tyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NzE1NTY3LCJleHAiOjE3OTU3MTY0NjcsIm5vbmNlIjoiNzcxNWY1MDlkNTYwNjhlMzAzN2I5MDhiMDRiZTZlMWUifQ.Xj0aTVzBjmmURN5kSqUZ-Cm1vXPj5_nLLtFUOoOXlBw","expiresAt":"2026-11-26T18:07:47.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/nolockrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ub2xvY2tyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1Nzk5MzYwLCJleHAiOjE3OTU4MDAyNjAsIm5vbmNlIjoiZjg3MDU2NzFmNGE2YjhjZDNjOGU0ZDBjMjAzOGFjNjMifQ.B9gUfad0-ooomvZwhCTyzyehf7niAcKMsGD91tlGeCI","expiresAt":"2026-11-27T17:24:20.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: nolockrepo verify ok
 [32meth_getCode[0m
 [32meth_call[0m
@@ -1513,7 +1513,7 @@ PASS: nolockrepo prepare-launch ok
 [fixture] GET /repos/testauthor/nolockrepo/installation -> 200
 [fixture] GET /repos/testauthor/nolockrepo -> 200
 [register] New github vesting grant for testauthor/nolockrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"aa8677a880a938ed55dcdc446537b9b32290a7cf96a6d16887bd5bfd61a71278","grant":{"repoId":"aa8677a880a938ed55dcdc446537b9b32290a7cf96a6d16887bd5bfd61a71278","repoFullName":"testauthor/nolockrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T17:52:47.702Z","updatedAt":"2026-11-26T17:52:47.702Z"},"lockPath":"/lock/testauthor/nolockrepo","lockUrl":"http://localhost:5173/lock/testauthor/nolockrepo","launchVerification":{"stamped":false,"code":"LAUNCH_ORDERING_UNPROVABLE","note":"Registration transaction carries no provable lock timestamp (no Locked event) — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Register with the lock transaction itself so ordering (verify → lock) can be proven."}}
+{"ok":true,"repoId":"aa8677a880a938ed55dcdc446537b9b32290a7cf96a6d16887bd5bfd61a71278","grant":{"repoId":"aa8677a880a938ed55dcdc446537b9b32290a7cf96a6d16887bd5bfd61a71278","repoFullName":"testauthor/nolockrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x5bebf31074097527093a87b41a2be0cdd1e1e01bb90dae4ee4a081681d41ec4b","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-27T17:09:20.496Z","updatedAt":"2026-11-27T17:09:20.496Z"},"lockPath":"/lock/testauthor/nolockrepo","lockUrl":"http://localhost:5173/lock/testauthor/nolockrepo","launchVerification":{"stamped":false,"code":"LAUNCH_ORDERING_UNPROVABLE","note":"Registration transaction carries no provable lock timestamp (no Locked event) — grant registered WITHOUT the launchVerified stamp or launcher enrolment. Register with the lock transaction itself so ordering (verify → lock) can be proven."}}
 PASS: unprovable-ordering register ok (ordinary grant)
 PASS: unprovable-ordering reports unstamped
 PASS: unprovable-ordering carries the fail-closed code
@@ -1525,7 +1525,7 @@ PASS: unprovable-ordering launch has no enrolment
 [fixture] GET /repos/gregory/platformrepo/installation -> 200
 [fixture] GET /repos/gregory/platformrepo -> 200
 [fixture] GET /repos/gregory/platformrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"gregory","repo":"gregory/platformrepo","wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6ImdyZWdvcnkiLCJyZXBvIjoiZ3JlZ29yeS9wbGF0Zm9ybXJlcG8iLCJ3YWxsZXQiOiIweDM3NGQ5MWE1Njc0ZmE3Y2Y4NmU3MjUwOTNiNTg0OGI5N2UxZTEzYjQiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3MTU1NjcsImV4cCI6MTc5NTcxNjQ2Nywibm9uY2UiOiI1YzJkNDBjZTA5MjVmYmQyNjRmM2E1NjZhMTRkNzRkNCJ9.ZlDTEKhHqTKYz5fLShcV2SbPvRevK42W9iZ8yR0-fvo","expiresAt":"2026-11-26T18:07:47.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"gregory","repo":"gregory/platformrepo","wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6ImdyZWdvcnkiLCJyZXBvIjoiZ3JlZ29yeS9wbGF0Zm9ybXJlcG8iLCJ3YWxsZXQiOiIweDM3NGQ5MWE1Njc0ZmE3Y2Y4NmU3MjUwOTNiNTg0OGI5N2UxZTEzYjQiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3OTkzNjAsImV4cCI6MTc5NTgwMDI2MCwibm9uY2UiOiI5ZTEwYWY0ZjdkYzdlM2RiMTI4ODY3OTJhMzU3YTE4ZiJ9.CSDlSSRtYmDyQoOtEJfA5htQQpLoMgmgY-loPWwCqwo","expiresAt":"2026-11-27T17:24:20.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: gregory verify ok
 {"ok":true,"prepared":true,"repo":"gregory/platformrepo","wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","chain":"base","githubLogin":"gregory","feeLockVault":null,"platformLaunch":true,"launchInput":{"name":"Platform Token","symbol":"PLAT","feeRecipients":[{"recipient":"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266","shareBps":2500},{"recipient":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","shareBps":7500}],"vesting":{"bps":0,"recipient":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4"}},"note":"PREPARED ONLY — unsigned Bankr SDK launch input for the platform's own launch. Nothing was signed, broadcast, or launched. Fee split: 2500 bps of the creator slice to the platform reward treasury, 7500 bps to Gregory's wallet (the platform share — the scoped raw-wallet exception; launcher launches always use a fee-lock vault). Bankr time-vesting explicitly off (vesting.bps = 0)."}
 PASS: gregory prepare-launch without vault succeeds (platform launch)
@@ -1536,14 +1536,14 @@ PASS: treasury still gets its 2500 on the platform launch
 [fixture] GET /repos/testauthor/launchrepo/installation -> 200
 [fixture] GET /repos/testauthor/launchrepo -> 200
 [fixture] GET /repos/testauthor/launchrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9sYXVuY2hyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NzE1NTY3LCJleHAiOjE3OTU3MTY0NjcsIm5vbmNlIjoiOWJjNjRjMzcwZGI5ZjY0ZTAwODhmYzdiZGEwNzNjNTEifQ.L0DZoM3pM6O_9MbNikTm6EnlSyzZH4mWdNv-xbc0Zy0","expiresAt":"2026-11-26T18:07:47.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/launchrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9sYXVuY2hyZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1Nzk5MzYwLCJleHAiOjE3OTU4MDAyNjAsIm5vbmNlIjoiNzA1MmRlYmJiYjYyZTU3NTUwNWQ1MGUxNWFjMjhkZGEifQ.yjIQ6UcK0aVPNAa9ZBuMGTb1vp7BVzlSO8BrxaiXE4o","expiresAt":"2026-11-27T17:24:20.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 {"ok":false,"error":"feeLockVault required: a platform launch names the project's FeeLockVault as the launcher-share fee recipient so trading fees auto-lock instead of arriving liquid (Gregory's fee-lock rule). Deploy/register the vault first, then prepare the launch.","code":"LAUNCH_FEE_VAULT_REQUIRED"}
 PASS: non-gregory no-vault prepare refused
 === 27. round-3: valid token + lock but NO prepared record -> UNSTAMPED (LAUNCH_NO_PREPARED_RECORD) ===
 [fixture] GET /repos/testauthor/nopreprepo/installation -> 200
 [fixture] GET /repos/testauthor/nopreprepo -> 200
 [fixture] GET /repos/testauthor/nopreprepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/nopreprepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ub3ByZXByZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1NzE1NTY3LCJleHAiOjE3OTU3MTY0NjcsIm5vbmNlIjoiNThmNDUwMzcxNjNhNWRmODEyM2JiN2FjYmFlNThlMjEifQ.KtRei-Afgq95ZuqIb3rVV1sDW25qOTT3Z63kGgouWfM","expiresAt":"2026-11-26T18:07:47.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/nopreprepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ub3ByZXByZXBvIiwid2FsbGV0IjoiMHgzYzQ0Y2RkZGI2YTkwMGZhMmI1ODVkZDI5OWUwM2QxMmZhNDI5M2JjIiwiY2hhaW5JZCI6ODQ1MywiaW5zdGFsbGF0aW9uSWQiOjc3NywiaWF0IjoxNzk1Nzk5MzYwLCJleHAiOjE3OTU4MDAyNjAsIm5vbmNlIjoiMDAwNTZiY2Q2NmUxYTQxYjIwYTVlODgwYjhiOTY3YWMifQ._DDynVEfYqu4wmBQDpCuSzAd46oRqdi1qG8ICQQRrBY","expiresAt":"2026-11-27T17:24:20.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: nopreprepo verify ok
 [32meth_chainId[0m
 [32meth_accounts[0m
@@ -1619,7 +1619,7 @@ PASS: nopreprepo verify ok
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            34209 of 16777216
-  Block #50:           0x481c8840c88085c68311b6101feed82851f4252fd3bb355928122f6b6adcb3a9
+  Block #50:           0xfa24b47bfe7dd4c59faf0958d05e195cf028e06ebdd9efa727b3b92281d8f8d4
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1632,7 +1632,7 @@ PASS: nopreprepo verify ok
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #51:           0x0742a53c6e29ad8438ea4114d18109d7054fdcdb60678002c30348778594080c
+  Block #51:           0x2c814194fd87b5da0be854ee070226ecd3e8133a2cce39934005e4971e523055
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1645,7 +1645,7 @@ PASS: nopreprepo verify ok
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            234452 of 16777216
-  Block #52:           0x4176c530df8cf52b8bcf4198230736d3d0723ea24e91ba422448beaf183a8320
+  Block #52:           0x6ce6cdf9bef7f60590b9e470c90e8684f47ea4d71ef4b491df96015a769809d9
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1658,7 +1658,7 @@ PASS: nopreprepo verify ok
 [fixture] GET /repos/testauthor/nopreprepo/installation -> 200
 [fixture] GET /repos/testauthor/nopreprepo -> 200
 [register] New github vesting grant for testauthor/nopreprepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"c1dee7a7121530355cd19ab6d9656d7b8bf03e2632965efb700575664d3e45c3","grant":{"repoId":"c1dee7a7121530355cd19ab6d9656d7b8bf03e2632965efb700575664d3e45c3","repoFullName":"testauthor/nopreprepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x79f47562e75a7d968d422eff4f0b1bbaf4de50b5ebc558e55c31b52f829890cd","escrowAddress":"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T17:52:50.604Z","updatedAt":"2026-11-26T17:52:50.604Z"},"lockPath":"/lock/testauthor/nopreprepo","lockUrl":"http://localhost:5173/lock/testauthor/nopreprepo","launchVerification":{"stamped":false,"code":"LAUNCH_NO_PREPARED_RECORD","note":"No prepared-launch record exists for this repo+wallet — verified recognition requires the launch to have gone through POST /api/launch/prepare-launch. Grant registered WITHOUT the launchVerified stamp or launcher enrolment (ordinary unstamped grant)."}}
+{"ok":true,"repoId":"c1dee7a7121530355cd19ab6d9656d7b8bf03e2632965efb700575664d3e45c3","grant":{"repoId":"c1dee7a7121530355cd19ab6d9656d7b8bf03e2632965efb700575664d3e45c3","repoFullName":"testauthor/nopreprepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"escrowVersion":2,"onChainTxHash":"0x79f47562e75a7d968d422eff4f0b1bbaf4de50b5ebc558e55c31b52f829890cd","escrowAddress":"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-27T17:09:23.259Z","updatedAt":"2026-11-27T17:09:23.259Z"},"lockPath":"/lock/testauthor/nopreprepo","lockUrl":"http://localhost:5173/lock/testauthor/nopreprepo","launchVerification":{"stamped":false,"code":"LAUNCH_NO_PREPARED_RECORD","note":"No prepared-launch record exists for this repo+wallet — verified recognition requires the launch to have gone through POST /api/launch/prepare-launch. Grant registered WITHOUT the launchVerified stamp or launcher enrolment (ordinary unstamped grant)."}}
 PASS: no-prepared register ok (ordinary grant)
 PASS: no-prepared reports unstamped
 PASS: no-prepared carries the code
@@ -1670,7 +1670,7 @@ PASS: no-prepared launch has no enrolment
 [fixture] GET /repos/testauthor/faultrepo/installation -> 200
 [fixture] GET /repos/testauthor/faultrepo -> 200
 [fixture] GET /repos/testauthor/faultrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/faultrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9mYXVsdHJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3MTU1NzAsImV4cCI6MTc5NTcxNjQ3MCwibm9uY2UiOiI2NTU3MTFmZjU0YWQ3MjhkMmM3YjVkZjlkYWNmNzg4MSJ9.CZ7oTvI-Xadtrm2PiCRKUvF7Wm4rHw3S1kZQ_Q0VkP8","expiresAt":"2026-11-26T18:07:50.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/faultrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9mYXVsdHJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3OTkzNjMsImV4cCI6MTc5NTgwMDI2Mywibm9uY2UiOiIyZWE4OTk4MDQxOTdlY2RmYWM4MWQ4ZTQyZjY3MjVjZiJ9.a1plI6oJYIaS2QprRbZ9k5FlZHPO0ky47L0MHrUNvHQ","expiresAt":"2026-11-27T17:24:23.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 PASS: faultrepo verify ok
 [32meth_chainId[0m
 [32meth_accounts[0m
@@ -1746,7 +1746,7 @@ PASS: faultrepo verify ok
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            34209 of 16777216
-  Block #53:           0xb6e3438b8cdcf9a96105a62bd071f7517844dcba1afeb3ac2d3b68bed062cdba
+  Block #53:           0x656abc5a5189c5bd4ec49bdc28171520a5e57ef63203541ee03dbce621d65682
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1759,7 +1759,7 @@ PASS: faultrepo verify ok
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #54:           0x949b80aa4aa2066995899d5a045491ffb510c547a65fd420a78299c7d86b8314
+  Block #54:           0x85c57e939bbf835746bea523598cc2d219dfbf47cc8ffbc9db0113d907aecb64
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1772,7 +1772,7 @@ PASS: faultrepo verify ok
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            234440 of 16777216
-  Block #55:           0xfede5f5d9b00ea7429ca6635eaa10b0c4a9f200e3e78f14dee5871fdbefb4f98
+  Block #55:           0xe8f70024ee95904801df758ae195d086950036c5978f17cec5ad1935042b0a2b
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1796,7 +1796,7 @@ FAULT prepared-launch-get on
 [fixture] GET /repos/testauthor/faultrepo/installation -> 200
 [fixture] GET /repos/testauthor/faultrepo -> 200
 [register] New github vesting grant for testauthor/faultrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"bafe0e5fe900ede2359e86c74c90fbb164121cdeedca22bd93386a3c89e77da1","grant":{"repoId":"bafe0e5fe900ede2359e86c74c90fbb164121cdeedca22bd93386a3c89e77da1","repoFullName":"testauthor/faultrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0x3a258460d53a90c38d923f9593dd83e6eae941c7fb59dfc979bb3ff02ef63e5a","escrowAddress":"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T17:52:53.955Z","updatedAt":"2026-11-26T17:52:53.955Z"},"lockPath":"/lock/testauthor/faultrepo","lockUrl":"http://localhost:5173/lock/testauthor/faultrepo","launchVerification":{"stamped":false,"code":"LAUNCH_PREPARED_LOOKUP_FAILED","note":"The prepared-launch record lookup FAILED (storage error) — fail-closed: grant registered WITHOUT the launchVerified stamp or launcher enrolment. A lookup error is never treated as 'no record'."}}
+{"ok":true,"repoId":"bafe0e5fe900ede2359e86c74c90fbb164121cdeedca22bd93386a3c89e77da1","grant":{"repoId":"bafe0e5fe900ede2359e86c74c90fbb164121cdeedca22bd93386a3c89e77da1","repoFullName":"testauthor/faultrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x5FbDB2315678afecb367f032d93F642f64180aa3","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"escrowVersion":2,"onChainTxHash":"0x3a258460d53a90c38d923f9593dd83e6eae941c7fb59dfc979bb3ff02ef63e5a","escrowAddress":"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-27T17:09:27.519Z","updatedAt":"2026-11-27T17:09:27.519Z"},"lockPath":"/lock/testauthor/faultrepo","lockUrl":"http://localhost:5173/lock/testauthor/faultrepo","launchVerification":{"stamped":false,"code":"LAUNCH_PREPARED_LOOKUP_FAILED","note":"The prepared-launch record lookup FAILED (storage error) — fail-closed: grant registered WITHOUT the launchVerified stamp or launcher enrolment. A lookup error is never treated as 'no record'."}}
 FAULT prepared-launch-get off
 PASS: lookup-fault register ok (ordinary grant)
 PASS: lookup-fault reports unstamped
@@ -1808,7 +1808,7 @@ PASS: lookup-fault launch has no enrolment
 [fixture] GET /repos/testauthor/chainrepo/installation -> 200
 [fixture] GET /repos/testauthor/chainrepo -> 200
 [fixture] GET /repos/testauthor/chainrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9jaGFpbnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3MTU1NzQsImV4cCI6MTc5NTcxNjQ3NCwibm9uY2UiOiIwZWNhOGIzMmU2MWZjOTIwNzk2NmEwNGMwYmYxNDJlYSJ9.e6Jt_KI9RZdsBq0Z1AKPOBwtv6ZqCMQQvWXECM2tRaE","expiresAt":"2026-11-26T18:07:54.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9jaGFpbnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3OTkzNjgsImV4cCI6MTc5NTgwMDI2OCwibm9uY2UiOiIyZjgwYTk1OTQ0MjdhODViMmM0YTdmMjNkMTUzMGY5ZSJ9.gem8U0ZxFTY0F2HPBugPEIS9WxU8IIzcE24nAqltqQY","expiresAt":"2026-11-27T17:24:28.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 [32meth_chainId[0m
 [32meth_accounts[0m
 [32mhardhat_metadata[0m
@@ -1883,7 +1883,7 @@ PASS: lookup-fault launch has no enrolment
   To:                  0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
   Value:               0 ETH
   Gas used:            34209 of 16777216
-  Block #56:           0xfa3d5d24e46dbbff5e8185c4aa9a6e9e1866cc4c21aab3099cb351036bdeb94d
+  Block #56:           0xc2054e114d7c250eb604747badceb34c3efa0f1b607c789fcddab59218ec994f
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1896,7 +1896,7 @@ PASS: lookup-fault launch has no enrolment
   To:                  0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #57:           0xad84db37a175d299e87daba6bcd1b669ba922c4af0736f2fa4c63627bf6813d5
+  Block #57:           0x01bd8214e2d5f0175a7e7ed204ea82b8ea977258f6f26b9f14ce8a2ab8e2a07b
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1909,7 +1909,7 @@ PASS: lookup-fault launch has no enrolment
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            251552 of 16777216
-  Block #58:           0x01d7bf60e3f4c0504c034cedf21803d5d9605a7eb79bde14dc9fa9d3ab542cb5
+  Block #58:           0x745207d12fe58a60f6363635b3dca60b0a61ae5fa704f75322167481e03524cd
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -1950,7 +1950,7 @@ PASS: chainrepo prepare under T1 ok
 [fixture] GET /repos/testauthor/chainrepo/installation -> 200
 [fixture] GET /repos/testauthor/chainrepo -> 200
 [fixture] GET /repos/testauthor/chainrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9jaGFpbnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3MTU1NzcsImV4cCI6MTc5NTcxNjQ3Nywibm9uY2UiOiI5NTE0NDhmMzgwZjFhN2NjNWQ1YmVkNjkxODFlN2E5MyJ9.sy-eOozuxkWILVa7V9X3iaLQc3ZJYJbj0OrsHx67oNQ","expiresAt":"2026-11-26T18:07:57.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9jaGFpbnJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3OTkzNzEsImV4cCI6MTc5NTgwMDI3MSwibm9uY2UiOiI2NDc2MTU3YmQ2NjUyNTA0ODY4ODA1OTRkMDU2MDc2MyJ9.zrVZS6uyOrLeKeG2fSdnBBJ49Mwk2oduZ23KLre20Rg","expiresAt":"2026-11-27T17:24:31.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 [32meth_getTransactionReceipt[0m
 [32meth_getTransactionReceipt (2)[0m
 [32meth_getTransactionReceipt (3)[0m
@@ -2005,22 +2005,22 @@ PASS: chainrepo prepare under T1 ok
 [fixture] GET /repos/testauthor/chainrepo -> 200
 [register] New github vesting grant for testauthor/chainrepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
 [register] Verified launcher @testauthor enrolled for ShipRewards on testauthor/chainrepo
-{"ok":true,"repoId":"b54650b2c6984c2a869b7b8865333896789caa2c1c181d934578fe242414238c","grant":{"repoId":"b54650b2c6984c2a869b7b8865333896789caa2c1c181d934578fe242414238c","repoFullName":"testauthor/chainrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0xf44e71a2f3ab03a7e9b50c8c9f0f11dc2f941d55234d1bae18e675c60afa3c68","escrowAddress":"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0","installationId":777,"launchVerified":true,"launchVerifiedLogin":"testauthor","launcherRewardEnrolled":true,"feeLockVault":"0x9a676e781a523b5d0c0e43731313a708cb607508","status":"active","streaming":false,"createdAt":"2026-11-26T17:52:57.221Z","updatedAt":"2026-11-26T17:52:57.221Z"},"lockPath":"/lock/testauthor/chainrepo","lockUrl":"http://localhost:5173/lock/testauthor/chainrepo"}
+{"ok":true,"repoId":"b54650b2c6984c2a869b7b8865333896789caa2c1c181d934578fe242414238c","grant":{"repoId":"b54650b2c6984c2a869b7b8865333896789caa2c1c181d934578fe242414238c","repoFullName":"testauthor/chainrepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"escrowVersion":2,"onChainTxHash":"0xf44e71a2f3ab03a7e9b50c8c9f0f11dc2f941d55234d1bae18e675c60afa3c68","escrowAddress":"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0","installationId":777,"launchVerified":true,"launchVerifiedLogin":"testauthor","launcherRewardEnrolled":true,"feeLockVault":"0x9a676e781a523b5d0c0e43731313a708cb607508","status":"active","streaming":false,"createdAt":"2026-11-27T17:09:31.702Z","updatedAt":"2026-11-27T17:09:31.702Z"},"lockPath":"/lock/testauthor/chainrepo","lockUrl":"http://localhost:5173/lock/testauthor/chainrepo"}
 PASS: chained-token register ok
 PASS: chained-token grant STAMPED
 PASS: chained-token grant enrolled
 PASS: chained-token register carries no withhold code
-{"ok":true,"repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":true,"enrollment":{"repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","githubLogin":"testauthor","verificationNonce":"951448f380f1a7cc5d5bed69181e7a93","chainId":8453,"enrolledAt":"2026-11-26T17:52:57.222Z"}}
+{"ok":true,"repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","enrolled":true,"enrollment":{"repo":"testauthor/chainrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","githubLogin":"testauthor","verificationNonce":"6476157bd665250486880594d0560763","chainId":8453,"enrolledAt":"2026-11-27T17:09:31.703Z"}}
 PASS: chained-token enrolment present
 === 30. round-3: token issued BEFORE the preparation cannot chain -> UNSTAMPED (LAUNCH_PREPARED_NONCE_MISMATCH) ===
 [fixture] GET /repos/testauthor/stalerepo/installation -> 200
 [fixture] GET /repos/testauthor/stalerepo -> 200
 [fixture] GET /repos/testauthor/stalerepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/stalerepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9zdGFsZXJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3MTU1NzcsImV4cCI6MTc5NTcxNjQ3Nywibm9uY2UiOiIxOGIxMjBlMmJjYmZhZjNjZjBiMGMzMmUzYmQwMmFmMSJ9.warjTfDMNUxEdMFFmr2b5y0yW_-rZllQmFLA9Q2LGNw","expiresAt":"2026-11-26T18:07:57.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/stalerepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9zdGFsZXJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3OTkzNzEsImV4cCI6MTc5NTgwMDI3MSwibm9uY2UiOiI0MmJiMjI2ODY1NDNjZWNjMmIxMDc4NWE3NzNjZWY3ZiJ9.OCUY06rpYcdE71QYDC9BgAtHWSSm5yG6sqWcyODH2kY","expiresAt":"2026-11-27T17:24:31.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 [fixture] GET /repos/testauthor/stalerepo/installation -> 200
 [fixture] GET /repos/testauthor/stalerepo -> 200
 [fixture] GET /repos/testauthor/stalerepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/stalerepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9zdGFsZXJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3MTU1NzksImV4cCI6MTc5NTcxNjQ3OSwibm9uY2UiOiI5ZjgxODIyY2FjYmNjMWNmNjllMWQ3NjFkY2I3YjUwYyJ9.iX3MxxA-GSF3Ys73wHLO13lAhNwYITvEfK2ZSZ2TPZI","expiresAt":"2026-11-26T18:07:59.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/stalerepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9zdGFsZXJlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3OTkzNzMsImV4cCI6MTc5NTgwMDI3Mywibm9uY2UiOiI5MzFiM2JkOTRlNGVlZDJiNTcwZWMxOGNkYWE4NjM5ZCJ9.QN15EUOSE-6i1a0FBRCzDQ_yOPNg_ARRoZuRLPR7dB0","expiresAt":"2026-11-27T17:24:33.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 [32meth_getCode[0m
 [32meth_call[0m
   Contract call:       FeeLockVault#escrow
@@ -2128,7 +2128,7 @@ PASS: stalerepo prepare under T2 ok
   To:                  0x1613beb3b2c4f22ee086b2b38c1476a3ce7f78e8
   Value:               0 ETH
   Gas used:            34209 of 16777216
-  Block #59:           0x482a4a9a1735eebf3d165d494ab0199352d2572fbef635452808271d838d639d
+  Block #59:           0x4d4851d7a3dfa8b068e01e20a1fa993e6ee7769944447f9177e8b78df8ee8e6d
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -2141,7 +2141,7 @@ PASS: stalerepo prepare under T2 ok
   To:                  0x1613beb3b2c4f22ee086b2b38c1476a3ce7f78e8
   Value:               0 ETH
   Gas used:            46371 of 16777216
-  Block #60:           0x478cc3cd4e0ff07e64c1aa21eaa61fb74be532e066f93ad17c3e4b218174365e
+  Block #60:           0x5a7cd39be96282b7a3ac8c165757d28b2a693a7dffc500b90374f9d60b5f8708
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -2154,7 +2154,7 @@ PASS: stalerepo prepare under T2 ok
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            251552 of 16777216
-  Block #61:           0xb995bd21a9e2097112c1d59750a99fa8835e313399511ff0ad3fcdbd3404da92
+  Block #61:           0xbfb05a50006864a9868d686e9dcb4bb4035b11e5101ffe8e32bc59d02a79592e
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -2167,7 +2167,7 @@ PASS: stalerepo prepare under T2 ok
 [fixture] GET /repos/testauthor/stalerepo/installation -> 200
 [fixture] GET /repos/testauthor/stalerepo -> 200
 [register] New github vesting grant for testauthor/stalerepo by 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-{"ok":true,"repoId":"c822e4f148f16aa7a1a90f09664ecd73cd51244a8e70159323aa189d57f1444b","grant":{"repoId":"c822e4f148f16aa7a1a90f09664ecd73cd51244a8e70159323aa189d57f1444b","repoFullName":"testauthor/stalerepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"onChainTxHash":"0xaf91472a55fb7b956c1940aacc2288cfe582620f547a80348a9d566f7d037cf7","escrowAddress":"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-26T17:53:02.142Z","updatedAt":"2026-11-26T17:53:02.142Z"},"lockPath":"/lock/testauthor/stalerepo","lockUrl":"http://localhost:5173/lock/testauthor/stalerepo","launchVerification":{"stamped":false,"code":"LAUNCH_PREPARED_NONCE_MISMATCH","note":"The presented verification token neither matches the prepared record's nonce nor chains to it (it was issued before the preparation) — grant registered WITHOUT the launchVerified stamp or launcher enrolment."}}
+{"ok":true,"repoId":"c822e4f148f16aa7a1a90f09664ecd73cd51244a8e70159323aa189d57f1444b","grant":{"repoId":"c822e4f148f16aa7a1a90f09664ecd73cd51244a8e70159323aa189d57f1444b","repoFullName":"testauthor/stalerepo","platform":"github","recipient":"0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC","token":"0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8","chain":"base","totalLocked":"10000000000000000000","totalPushesRequired":2,"pushesPerMilestone":1,"tokensPerMilestone":"5000000000000000000","verifiedPushCount":0,"lastPaidMilestone":0,"escrowVersion":2,"onChainTxHash":"0xaf91472a55fb7b956c1940aacc2288cfe582620f547a80348a9d566f7d037cf7","escrowAddress":"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0","installationId":777,"status":"active","streaming":false,"createdAt":"2026-11-27T17:09:36.661Z","updatedAt":"2026-11-27T17:09:36.661Z"},"lockPath":"/lock/testauthor/stalerepo","lockUrl":"http://localhost:5173/lock/testauthor/stalerepo","launchVerification":{"stamped":false,"code":"LAUNCH_PREPARED_NONCE_MISMATCH","note":"The presented verification token neither matches the prepared record's nonce nor chains to it (it was issued before the preparation) — grant registered WITHOUT the launchVerified stamp or launcher enrolment."}}
 PASS: stale-token register ok (ordinary grant)
 PASS: stale-token reports unstamped
 PASS: stale-token carries the nonce-mismatch code
@@ -2178,7 +2178,7 @@ PASS: stale-token launch has no enrolment
 [fixture] GET /repos/testauthor/bindingsrepo/installation -> 200
 [fixture] GET /repos/testauthor/bindingsrepo -> 200
 [fixture] GET /repos/testauthor/bindingsrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/bindingsrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9iaW5kaW5nc3JlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3MTU1ODIsImV4cCI6MTc5NTcxNjQ4Miwibm9uY2UiOiI0YTkyMDI2NzYyMTdkOGZmMDQ5MzAyNmJlZDlkMGNiYyJ9.kzRSOvCPfmw2oO4UHOJHm_x7XH6DqxdqXPOi8tfcIDI","expiresAt":"2026-11-26T18:08:02.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/bindingsrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9iaW5kaW5nc3JlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3OTkzNzYsImV4cCI6MTc5NTgwMDI3Niwibm9uY2UiOiIzMmVkZDVhYzBhYjgxMDExMDYwZWRjZTEwYzNiMWExZCJ9.fzBvuIxWWEMC-rRHyDtrm1klbt04OxlPmM9VmrjWxwg","expiresAt":"2026-11-27T17:24:36.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 [32meth_getCode[0m
 [32meth_call[0m
   Contract call:       FeeLockVault#escrow
@@ -2323,7 +2323,7 @@ PASS: vault bound to another claim ledger refused at prepare
 [fixture] GET /repos/testauthor/nograntrepo/installation -> 200
 [fixture] GET /repos/testauthor/nograntrepo -> 200
 [fixture] GET /repos/testauthor/nograntrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/nograntrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ub2dyYW50cmVwbyIsIndhbGxldCI6IjB4M2M0NGNkZGRiNmE5MDBmYTJiNTg1ZGQyOTllMDNkMTJmYTQyOTNiYyIsImNoYWluSWQiOjg0NTMsImluc3RhbGxhdGlvbklkIjo3NzcsImlhdCI6MTc5NTcxNTU4MiwiZXhwIjoxNzk1NzE2NDgyLCJub25jZSI6IjllZGRmMjNmZTJiMzEyZWRlNzk3ZDI5Njg0YWVjMmY1In0.udVOp3BQ7pS7fM7oCgvyKE0gutOZVVs0RJn8g--8xVU","expiresAt":"2026-11-26T18:08:02.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/nograntrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ub2dyYW50cmVwbyIsIndhbGxldCI6IjB4M2M0NGNkZGRiNmE5MDBmYTJiNTg1ZGQyOTllMDNkMTJmYTQyOTNiYyIsImNoYWluSWQiOjg0NTMsImluc3RhbGxhdGlvbklkIjo3NzcsImlhdCI6MTc5NTc5OTM3NiwiZXhwIjoxNzk1ODAwMjc2LCJub25jZSI6ImYxZjc1MzhiZWRlYmQyMWQzMjA5YzVhMjA0NzI4ZGEwIn0.iQhi1rWlJW6jWn8TMQ7NKF25aSZNccyi3ikZyJK408U","expiresAt":"2026-11-27T17:24:36.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 [32meth_getCode[0m
 [32meth_call[0m
   Contract call:       FeeLockVault#escrow
@@ -2360,7 +2360,7 @@ PASS: correct vault but NO registered fee grant refused at prepare
 [fixture] GET /repos/testauthor/grantmisrepo/installation -> 200
 [fixture] GET /repos/testauthor/grantmisrepo -> 200
 [fixture] GET /repos/testauthor/grantmisrepo -> 200
-{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/grantmisrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ncmFudG1pc3JlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3MTU1ODIsImV4cCI6MTc5NTcxNjQ4Miwibm9uY2UiOiI0MDA4MjhlODU1MGNiZmQ0ZjJmN2MxMzgyMTkyYjdlNCJ9.qAQ70Gdbt1FWH5jtJb3nv5YHrhb86bo0SlI-oOwx2WY","expiresAt":"2026-11-26T18:08:02.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
+{"ok":true,"verified":true,"githubLogin":"testauthor","repo":"testauthor/grantmisrepo","wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","chainId":8453,"installationId":777,"verificationToken":"eyJ2IjoxLCJnaXRodWJMb2dpbiI6InRlc3RhdXRob3IiLCJyZXBvIjoidGVzdGF1dGhvci9ncmFudG1pc3JlcG8iLCJ3YWxsZXQiOiIweDNjNDRjZGRkYjZhOTAwZmEyYjU4NWRkMjk5ZTAzZDEyZmE0MjkzYmMiLCJjaGFpbklkIjo4NDUzLCJpbnN0YWxsYXRpb25JZCI6Nzc3LCJpYXQiOjE3OTU3OTkzNzcsImV4cCI6MTc5NTgwMDI3Nywibm9uY2UiOiI4NDg3MzU2YzI5YWUxMjU3NzhkZmRmMjIwMzFlYTk0ZCJ9.GOw_1QxCSRC-YW8WBRhkPLdraBQkBY26KrIAOauu5KM","expiresAt":"2026-11-27T17:24:37.000Z","expiresInSec":900,"next":"Present verificationToken to POST /api/agent/prepare-lock, /api/agent/lock and /api/agent/confirm-lock (body field or x-launch-verification header) before it expires."}
 [32meth_getCode[0m
 [32meth_call[0m
   Contract call:       FeeLockVault#escrow

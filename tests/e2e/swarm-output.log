@@ -135,7 +135,7 @@ author: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551594 of 16777216
-  Block #1:            0xec133d9ec28c216240ca453d65f7571fa7217b17c348ce553b0585eb08a55ec3
+  Block #1:            0x0a206b1909917dda376c0d8381a81c4c1199c7162e349ee503f3f73eeec3dba1
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -149,7 +149,7 @@ PTK: 0x5FbDB2315678afecb367f032d93F642f64180aa3 deployTx: 0x5bebf31074097527093a
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #2:            0xbde3f40baf8bce367bc714d54c07eb5ac820b011b2f49aa823837610c141cbf8
+  Block #2:            0x7e31a0be4b82bedf51461f2fe43aaedfe99795bbaeb6270e6ac1c4c652090e34
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -184,7 +184,7 @@ RWD: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 deployTx: 0x5b7587e8cafecb4cb875
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1869326 of 16777216
-  Block #3:            0xdb5393ec5f0619b28b3659dc42568299f3896c55aace23088f5e2be76c76ddaa
+  Block #3:            0xc55150f1ab0449b455e13980ce8712750ed67ccd21973a15177515a1e35f6eed
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -219,7 +219,7 @@ GitEscrow: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 deployTx: 0x970c5e6d3b0825
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            793530 of 16777216
-  Block #4:            0xd625e7644cd9cd3a7b4de952eb42e54d6550392fb1368e4df4c3ab69e67ec534
+  Block #4:            0x3dda58e931dbb4e643d5d5408b019f90152c5c6678c86894b13a544c8e8b1d97
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -233,7 +233,7 @@ ShipRewards: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9 deployTx: 0xf9bda7b950d8
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #5:            0x8427551bd0af544bdda79ffa77be91818ca26b86cf628035ccfdd59f74f03e1b
+  Block #5:            0x515342306515b2637931fe7b05cf322d7cfe79e4a68923004d40cec5a3c74f2e
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -247,7 +247,7 @@ mint PTK→recipient tx: 0xee6c2808b4002778359d77436ae2d40bdd47bebc0aaf03ad12e28
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            68445 of 16777216
-  Block #6:            0xf59b99201f97ddefa162de05465b3ac6267da71d2500884963d9432892cc76e8
+  Block #6:            0x23377ab8d2abb2abf2fdaecabc837dd3a643f5f12da8f5ffee180008cd5e293f
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -262,7 +262,7 @@ repoId: 0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46383 of 16777216
-  Block #7:            0xecc8c2f283b79fc0f8b394bc7dc1047587083415f63718f3d8ea6f48afbab679
+  Block #7:            0x138f8b675cde1e64dde7787c5f7d205afcfe3400038aba5d9aeea90560162844
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -276,7 +276,7 @@ approve tx: 0xf6b889b8b1e548e9c34d69b02d4f882bbd1d0ebdfc622d4e28e35c7e030eab43
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            263864 of 16777216
-  Block #8:            0xf45f36918f95aea69be2f893a8a8b654cc64aaa9fa53128b230976103fa331a9
+  Block #8:            0x7fe388efe8139e63d6c5ed4fedafd64187368bbb5469b1d8a97710a6ef038e18
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -296,7 +296,7 @@ on-chain grant: recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC totalLocked
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            46844 of 16777216
-  Block #9:            0x6291865db5e8640d9810fc621624c786004b6b93a4963eb61c7d2594baacc5a6
+  Block #9:            0xc655268f282ec457872f63b12db01bd8bf47480cc475d03db2590b935d0abef2
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -307,7 +307,7 @@ fund ShipRewards tx: 0x594d3e5bf2fc224984bfc52ff25be012359a0637fb4d59b715348d7e6
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
 
 ShipRewards RWD balance: 10000000000000000000000
-state written to /home/hatch/workspace/claude-ship/github-vesting/tests/e2e/state.json
+state written to /home/hatch/workspace/.scratch-multigrant/repo/tests/e2e/state.json
 author=0x90F79bf6EB2c4f870365E785982E1f101E93b906 revone=0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc revtwo=0x4385f10D2b496d5862Acf6Ca2FA488412425F8aB
 === 4. fixture GitHub API ===
 [fixture] GitHub API fixture listening on http://127.0.0.1:8977
@@ -320,7 +320,7 @@ author=0x90F79bf6EB2c4f870365E785982E1f101E93b906 revone=0x9965507D1a55bcC2695C5
 server up
 === 6. seed swarm grant + linked wallets (author, revone, revtwo) ===
 swarm grant saved for testowner/testrepo (swarmReviewRequired: true)
-linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-26T17:27:42.479Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","linkedAt":"2026-11-27T17:12:02.503Z","source":"signed"}]
 revone wallet: 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc
 revtwo wallet: 0x4385f10D2b496d5862Acf6Ca2FA488412425F8aB
 linked wallets for @revone/@revtwo saved
@@ -328,11 +328,11 @@ linked wallets for @revone/@revtwo saved
 {"ok":false,"error":"Wallet 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 is not linked to @revone. Link a wallet first (signature or magic-link flow), then enrol — reviewer rewards pay the linked wallet.","code":"SWARM_WALLET_NOT_LINKED"}
 PASS: enrol unlinked wallet refused
 === 8. enrolment: revone, revtwo, and the author (enrolment != per-push independence) ===
-{"ok":true,"enrolled":true,"enrollment":{"githubLogin":"revone","wallet":"0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc","enrolledAt":"2026-11-26T17:27:45.935Z"},"settlement":"platform-counting-path","reviewMovesMoney":false}
+{"ok":true,"enrolled":true,"enrollment":{"githubLogin":"revone","wallet":"0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc","enrolledAt":"2026-11-27T17:12:05.803Z"},"settlement":"platform-counting-path","reviewMovesMoney":false}
 PASS: revone enrolled
-{"ok":true,"enrolled":true,"enrollment":{"githubLogin":"revtwo","wallet":"0x4385f10d2b496d5862acf6ca2fa488412425f8ab","enrolledAt":"2026-11-26T17:27:47.636Z"},"settlement":"platform-counting-path","reviewMovesMoney":false}
+{"ok":true,"enrolled":true,"enrollment":{"githubLogin":"revtwo","wallet":"0x4385f10d2b496d5862acf6ca2fa488412425f8ab","enrolledAt":"2026-11-27T17:12:07.378Z"},"settlement":"platform-counting-path","reviewMovesMoney":false}
 PASS: revtwo enrolled
-{"ok":true,"enrolled":true,"enrollment":{"githubLogin":"testauthor","wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","enrolledAt":"2026-11-26T17:27:49.517Z"},"settlement":"platform-counting-path","reviewMovesMoney":false}
+{"ok":true,"enrolled":true,"enrollment":{"githubLogin":"testauthor","wallet":"0x90f79bf6eb2c4f870365e785982e1f101e93b906","enrolledAt":"2026-11-27T17:12:09.272Z"},"settlement":"platform-counting-path","reviewMovesMoney":false}
 PASS: author enrolled (may review others' pushes)
 === 9. balances before ===
 [32meth_accounts[0m
@@ -367,7 +367,7 @@ PASS: author enrolled (may review others' pushes)
 
 [before] author RWD=0 | revone RWD=0 | revtwo RWD=0 | pool RWD=10000 | recipient PTK=0
 === 10. push #47 with NO reviews -> PENDING in its review window ===
-{"ok":true,"report":{"repo":"testowner/testrepo","headSha":"4747474747474747474747474747474747474747","prNumber":47,"authorLogin":"testauthor","state":"reported","reportedAt":"2026-11-26T17:27:51.316Z","updatedAt":"2026-11-26T17:27:51.316Z","settlement":"github-webhook","reportMovesMoney":false}}
+{"ok":true,"report":{"repo":"testowner/testrepo","headSha":"4747474747474747474747474747474747474747","prNumber":47,"authorLogin":"testauthor","state":"reported","reportedAt":"2026-11-27T17:12:10.945Z","updatedAt":"2026-11-27T17:12:10.945Z","settlement":"github-webhook","reportMovesMoney":false}}
 [webhook] push to testowner/testrepo — evaluating
 [fixture] GET /repos/testowner/testrepo/installation -> 200
 [fixture] POST /app/installations/777/access_tokens -> 201
@@ -375,8 +375,8 @@ PASS: author enrolled (may review others' pushes)
 [fixture] GET /repos/testowner/testrepo/pulls/47/files -> 200
 [ship-report] testowner/testrepo@47474747 → confirmed (counted)
 [webhook] push pending swarm review: Swarm review: review window open (0/2 PASS) — push counts on 2 independent PASS or at window expiry (verifier fallback)
-[webhook:swarm47] HTTP 200 in 94ms
-{"ok":true,"accepted":false,"pending":true,"reason":"Swarm review: review window open (0/2 PASS) — push counts on 2 independent PASS or at window expiry (verifier fallback)","swarm":{"quorum":{"required":2,"passCount":0,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"windowExpiresAt":1795735671476}}
+[webhook:swarm47] HTTP 200 in 131ms
+{"ok":true,"accepted":false,"pending":true,"reason":"Swarm review: review window open (0/2 PASS) — push counts on 2 independent PASS or at window expiry (verifier fallback)","swarm":{"quorum":{"required":2,"passCount":0,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"windowExpiresAt":1795821131153}}
 PASS: no-review push not counted
 PASS: no-review push is pending, not rejected
 PASS: pending reason names the open window
@@ -409,7 +409,7 @@ PASS: pending reason names the open window
 PASS: nothing released without quorum
 PASS: author not rewarded without quorum
 === 11. queue: push awaits review for an independent reviewer ===
-{"ok":true,"repo":"testowner/testrepo","swarmRequired":true,"queue":[{"repo":"testowner/testrepo","headSha":"4747474747474747474747474747474747474747","authorLogin":"testauthor","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","duplicateFlagged":false,"quorum":{"required":2,"passCount":0,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"windowOpenedAt":1795714071476,"windowExpiresAt":1795735671476}],"settlement":"platform-counting-path","reviewMovesMoney":false}
+{"ok":true,"repo":"testowner/testrepo","swarmRequired":true,"queue":[{"repo":"testowner/testrepo","headSha":"4747474747474747474747474747474747474747","authorLogin":"testauthor","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","duplicateFlagged":false,"quorum":{"required":2,"passCount":0,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"windowOpenedAt":1795799531153,"windowExpiresAt":1795821131153}],"settlement":"platform-counting-path","reviewMovesMoney":false}
 PASS: queue lists push #47 for revone
 === 12. author reviews OWN push -> refused (independence) ===
 [fixture] GET /repos/testowner/testrepo/pulls/47/files -> 200
@@ -417,14 +417,14 @@ PASS: queue lists push #47 for revone
 PASS: self-review refused
 === 13. first independent PASS -> still below quorum ===
 [fixture] GET /repos/testowner/testrepo/pulls/47/files -> 200
-{"ok":true,"review":{"repo":"testowner/testrepo","headSha":"4747474747474747474747474747474747474747","reviewerLogin":"revone","reviewerWallet":"0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc","verdict":"pass","different":true,"meaningful":true,"checksPass":true,"effectiveVerdict":"pass","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","submittedAt":"2026-11-26T17:27:58.690Z"},"quorum":{"required":2,"passCount":1,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"settlementOutcome":{"counted":false,"pending":true,"reason":"Swarm review: review window open (1/2 PASS) — push counts on 2 independent PASS or at window expiry (verifier fallback)"},"settlement":"platform-counting-path","reviewMovesMoney":false}
+{"ok":true,"review":{"repo":"testowner/testrepo","headSha":"4747474747474747474747474747474747474747","reviewerLogin":"revone","reviewerWallet":"0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc","verdict":"pass","different":true,"meaningful":true,"checksPass":true,"effectiveVerdict":"pass","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","submittedAt":"2026-11-27T17:12:18.015Z"},"quorum":{"required":2,"passCount":1,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"settlementOutcome":{"counted":false,"pending":true,"reason":"Swarm review: review window open (1/2 PASS) — push counts on 2 independent PASS or at window expiry (verifier fallback)"},"settlement":"platform-counting-path","reviewMovesMoney":false}
 PASS: revone PASS recorded
 PASS: quorum not yet met (1/2)
 [webhook] push to testowner/testrepo — evaluating
 [ship-report] testowner/testrepo@47474747 → confirmed (counted)
 [webhook] push pending swarm review: Swarm review: review window open (1/2 PASS) — push counts on 2 independent PASS or at window expiry (verifier fallback)
-[webhook:swarm47] HTTP 200 in 39ms
-{"ok":true,"accepted":false,"pending":true,"reason":"Swarm review: review window open (1/2 PASS) — push counts on 2 independent PASS or at window expiry (verifier fallback)","swarm":{"quorum":{"required":2,"passCount":1,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"windowExpiresAt":1795735671476}}
+[webhook:swarm47] HTTP 200 in 30ms
+{"ok":true,"accepted":false,"pending":true,"reason":"Swarm review: review window open (1/2 PASS) — push counts on 2 independent PASS or at window expiry (verifier fallback)","swarm":{"quorum":{"required":2,"passCount":1,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"windowExpiresAt":1795821131153}}
 PASS: 1-PASS push still not counted
 PASS: 1-PASS push still pending
 PASS: reason shows 1/2 progress in the window
@@ -439,15 +439,15 @@ PASS: reason shows 1/2 progress in the window
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       GitEscrow#release
-  Transaction:         0x5850aab37c1e8c63ec34e4239ce7bd1d7317d58b793a3ea8186e1369bab0d6b6
+  Transaction:         0xcac681ff9a17f4c678b25fc1a7907f0ed9ff7450024eccc81df4444d3284d8a6
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
-  Gas used:            120284 of 125922
-  Block #10:           0x0728a73ffb191809204047c9a01734a59a6e38db7cb612d4e1e1508e3c51cb76
+  Gas used:            120736 of 126396
+  Block #10:           0x3d544c5b95cb7c40a5e168bcd4df5973a428b109a28adc463a3a5ae1fb51eb54
 
 [32meth_getTransactionReceipt[0m
-[oracle] Release tx confirmed: 0x5850aab37c1e8c63ec34e4239ce7bd1d7317d58b793a3ea8186e1369bab0d6b6 (milestone 1)
+[oracle] Release tx confirmed: 0xcac681ff9a17f4c678b25fc1a7907f0ed9ff7450024eccc81df4444d3284d8a6 (milestone 1)
 [32meth_call[0m
   Contract call:       ShipRewards#isPaid
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
@@ -460,15 +460,15 @@ PASS: reason shows 1/2 progress in the window
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       ShipRewards#pay
-  Transaction:         0x968cb0416b9df7380b437098ece5e0f1b00e76f1c7721fe4cb0f213fdde1a565
+  Transaction:         0xd330c4360e79313cd5c7ec4961f8c36b2de185c313ecdc46ff3556ee2f4a4748
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
-  Gas used:            109580 of 114716
-  Block #11:           0x6b7dbd8b52466018320eb8b592d115bcb4b9754798735f2b763832c6369da3d7
+  Gas used:            110032 of 115190
+  Block #11:           0x149753a5e3543b6c9f16fb0b1cc10886348fc3af54129dbb93fbe9612112d156
 
 [32meth_getTransactionReceipt[0m
-[ship-rewards] Paid 10000000000000000000 to 0x90f79bf6eb2c4f870365e785982e1f101e93b906 for merge 4747474 (tx: 0x968cb0416b9df7380b437098ece5e0f1b00e76f1c7721fe4cb0f213fdde1a565)
+[ship-rewards] Paid 10000000000000000000 to 0x90f79bf6eb2c4f870365e785982e1f101e93b906 for merge 4747474 (tx: 0xd330c4360e79313cd5c7ec4961f8c36b2de185c313ecdc46ff3556ee2f4a4748)
 [32meth_call[0m
   Contract call:       ShipRewards#isPaid
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
@@ -481,15 +481,15 @@ PASS: reason shows 1/2 progress in the window
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       ShipRewards#pay
-  Transaction:         0x5e0fbe48284d53c9ea73ffa3f15ef89ddd624501a5b0f345b4502e0d504deeb0
+  Transaction:         0xc05d76d3d336712828185f623e8dd3e4598d6a6452fd6d90e28793f2c69be427
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
-  Gas used:            92480 of 97538
-  Block #12:           0x0ec4363b6307c9d4fa3ddcb75358827b62f5f3550df547b84287761d00826d34
+  Gas used:            92932 of 98014
+  Block #12:           0x79da072b11f5a16dc502f6189025debd3908427d9005b0b27200c4983921d5ca
 
 [32meth_getTransactionReceipt[0m
-[ship-rewards] Paid 1000000000000000000 to 0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc for merge 4747474 (tx: 0x5e0fbe48284d53c9ea73ffa3f15ef89ddd624501a5b0f345b4502e0d504deeb0)
+[ship-rewards] Paid 1000000000000000000 to 0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc for merge 4747474 (tx: 0xc05d76d3d336712828185f623e8dd3e4598d6a6452fd6d90e28793f2c69be427)
 [32meth_call[0m
   Contract call:       ShipRewards#isPaid
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
@@ -502,17 +502,17 @@ PASS: reason shows 1/2 progress in the window
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       ShipRewards#pay
-  Transaction:         0x39ab8de15c2a349a13eff5e2d9b5eecb5cfec69d43642acb0ff44dd477a363b3
+  Transaction:         0xe5ffd2f7e8ce78dfe025687b14593e825abd0da0d140bebbb313d5bcb3f0b4ce
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
-  Gas used:            92480 of 97538
-  Block #13:           0x71b5018e88f6a5be0bbb8ab4797cd9d8d5d65140ec1178768c387c63a1f8058b
+  Gas used:            92932 of 98014
+  Block #13:           0xecf5a9690e71a213eb7d1a1af85e9b97fdd14c7980f82f6a5d855232d05a5dee
 
 [32meth_getTransactionReceipt[0m
-[ship-rewards] Paid 1000000000000000000 to 0x4385f10d2b496d5862acf6ca2fa488412425f8ab for merge 4747474 (tx: 0x39ab8de15c2a349a13eff5e2d9b5eecb5cfec69d43642acb0ff44dd477a363b3)
+[ship-rewards] Paid 1000000000000000000 to 0x4385f10d2b496d5862acf6ca2fa488412425f8ab for merge 4747474 (tx: 0xe5ffd2f7e8ce78dfe025687b14593e825abd0da0d140bebbb313d5bcb3f0b4ce)
 [ship-report] testowner/testrepo@47474747 → paid (counted)
-{"ok":true,"review":{"repo":"testowner/testrepo","headSha":"4747474747474747474747474747474747474747","reviewerLogin":"revtwo","reviewerWallet":"0x4385f10d2b496d5862acf6ca2fa488412425f8ab","verdict":"pass","different":true,"meaningful":true,"checksPass":true,"effectiveVerdict":"pass","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","submittedAt":"2026-11-26T17:28:00.304Z"},"quorum":{"required":2,"passCount":2,"failCount":0,"duplicateFlagged":false,"met":true,"blocked":false},"settlementOutcome":{"counted":true,"countPath":"swarm","reason":"1 commit(s), ~55 lines in 11 code file(s) on main"},"settlement":"platform-counting-path","reviewMovesMoney":false}
+{"ok":true,"review":{"repo":"testowner/testrepo","headSha":"4747474747474747474747474747474747474747","reviewerLogin":"revtwo","reviewerWallet":"0x4385f10d2b496d5862acf6ca2fa488412425f8ab","verdict":"pass","different":true,"meaningful":true,"checksPass":true,"effectiveVerdict":"pass","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","submittedAt":"2026-11-27T17:12:19.845Z"},"quorum":{"required":2,"passCount":2,"failCount":0,"duplicateFlagged":false,"met":true,"blocked":false},"settlementOutcome":{"counted":true,"countPath":"swarm","reason":"1 commit(s), ~55 lines in 11 code file(s) on main"},"settlement":"platform-counting-path","reviewMovesMoney":false}
 PASS: revtwo PASS recorded
 PASS: quorum met at submission
 PASS: settlement outcome reports the swarm count
@@ -551,7 +551,7 @@ PASS: recipient PTK = 500 (milestone release)
 [fixture] GET /repos/testowner/testrepo/pulls/47 -> 200
 [fixture] GET /repos/testowner/testrepo/pulls/47/files -> 200
 [webhook] push rejected: Commit 4747474 already counted — duplicate push ignored
-[webhook:swarm47] HTTP 200 in 44ms
+[webhook:swarm47] HTTP 200 in 38ms
 {"ok":true,"accepted":false,"reason":"Commit 4747474 already counted — duplicate push ignored"}
 PASS: post-settlement webhook is a duplicate
 PASS: duplicate reason after settlement
@@ -561,7 +561,7 @@ PASS: duplicate reason after settlement
 [fixture] GET /repos/testowner/testrepo/pulls/47 -> 200
 [fixture] GET /repos/testowner/testrepo/pulls/47/files -> 200
 [webhook] push rejected: Commit 4747474 already counted — duplicate push ignored
-[webhook:swarm47] HTTP 200 in 37ms
+[webhook:swarm47] HTTP 200 in 46ms
 {"ok":true,"accepted":false,"reason":"Commit 4747474 already counted — duplicate push ignored"}
 PASS: replay rejected
 PASS: replay reason is duplicate SHA
@@ -595,12 +595,12 @@ PASS: author still 10 after replay
 PASS: revone still 1 after replay
 PASS: revtwo still 1 after replay
 === 16. duplicate diff (PR #48 == PR #47 code) + FAIL citing duplicate -> NOT counted ===
-{"ok":true,"report":{"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","prNumber":48,"authorLogin":"testauthor","state":"reported","reportedAt":"2026-11-26T17:28:04.342Z","updatedAt":"2026-11-26T17:28:04.342Z","settlement":"github-webhook","reportMovesMoney":false}}
+{"ok":true,"report":{"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","prNumber":48,"authorLogin":"testauthor","state":"reported","reportedAt":"2026-11-27T17:12:23.748Z","updatedAt":"2026-11-27T17:12:23.748Z","settlement":"github-webhook","reportMovesMoney":false}}
 [fixture] GET /repos/testowner/testrepo/pulls/48/files -> 200
-{"ok":true,"review":{"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","reviewerLogin":"revone","reviewerWallet":"0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc","verdict":"pass","different":true,"meaningful":true,"checksPass":true,"effectiveVerdict":"pass","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","submittedAt":"2026-11-26T17:28:06.161Z"},"quorum":{"required":2,"passCount":1,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"settlement":"platform-counting-path","reviewMovesMoney":false}
+{"ok":true,"review":{"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","reviewerLogin":"revone","reviewerWallet":"0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc","verdict":"pass","different":true,"meaningful":true,"checksPass":true,"effectiveVerdict":"pass","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","submittedAt":"2026-11-27T17:12:25.225Z"},"quorum":{"required":2,"passCount":1,"failCount":0,"duplicateFlagged":false,"met":false,"blocked":false},"settlement":"platform-counting-path","reviewMovesMoney":false}
 PASS: revone PASS on #48 recorded (pre-flag)
 [fixture] GET /repos/testowner/testrepo/pulls/48/files -> 200
-{"ok":true,"review":{"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","reviewerLogin":"revtwo","reviewerWallet":"0x4385f10d2b496d5862acf6ca2fa488412425f8ab","verdict":"fail","different":false,"meaningful":true,"checksPass":true,"effectiveVerdict":"fail","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","note":"duplicate of a previously counted diff","submittedAt":"2026-11-26T17:28:08.106Z"},"quorum":{"required":2,"passCount":1,"failCount":1,"duplicateFlagged":false,"met":false,"blocked":true},"settlement":"platform-counting-path","reviewMovesMoney":false}
+{"ok":true,"review":{"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","reviewerLogin":"revtwo","reviewerWallet":"0x4385f10d2b496d5862acf6ca2fa488412425f8ab","verdict":"fail","different":false,"meaningful":true,"checksPass":true,"effectiveVerdict":"fail","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","note":"duplicate of a previously counted diff","submittedAt":"2026-11-27T17:12:26.908Z"},"quorum":{"required":2,"passCount":1,"failCount":1,"duplicateFlagged":false,"met":false,"blocked":true},"settlement":"platform-counting-path","reviewMovesMoney":false}
 PASS: revtwo FAIL on #48 recorded
 [webhook] push to testowner/testrepo — evaluating
 [fixture] GET /repos/testowner/testrepo/installation -> 200
@@ -608,11 +608,11 @@ PASS: revtwo FAIL on #48 recorded
 [fixture] GET /repos/testowner/testrepo/pulls/48/files -> 200
 [ship-report] testowner/testrepo@48484848 → rejected (rejected)
 [webhook] push rejected: Swarm review: diff fingerprint a44d365f9a68… exactly duplicates a previously counted diff (4747474) — duplicate code never counts
-[webhook:swarm48] HTTP 200 in 45ms
+[webhook:swarm48] HTTP 200 in 39ms
 {"ok":true,"accepted":false,"reason":"Swarm review: diff fingerprint a44d365f9a68… exactly duplicates a previously counted diff (4747474) — duplicate code never counts","swarm":{"quorum":{"required":2,"passCount":1,"failCount":1,"duplicateFlagged":true,"met":false,"blocked":true}}}
 PASS: duplicate push not counted
 PASS: reason flags the duplicate diff
-{"ok":true,"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","candidate":{"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","authorLogin":"testauthor","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","duplicateFlagged":true,"duplicateOf":"4747474747474747474747474747474747474747","firstSeenAt":"2026-11-26T17:28:06.160Z","updatedAt":"2026-11-26T17:28:08.374Z"},"reviews":[{"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","reviewerLogin":"revone","reviewerWallet":"0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc","verdict":"pass","different":true,"meaningful":true,"checksPass":true,"effectiveVerdict":"pass","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","submittedAt":"2026-11-26T17:28:06.161Z"},{"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","reviewerLogin":"revtwo","reviewerWallet":"0x4385f10d2b496d5862acf6ca2fa488412425f8ab","verdict":"fail","different":false,"meaningful":true,"checksPass":true,"effectiveVerdict":"fail","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","note":"duplicate of a previously counted diff","submittedAt":"2026-11-26T17:28:08.106Z"}],"quorum":{"required":2,"passCount":1,"failCount":1,"duplicateFlagged":true,"met":false,"blocked":true},"window":{"state":"none"},"settlement":"platform-counting-path","reviewMovesMoney":false}
+{"ok":true,"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","candidate":{"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","authorLogin":"testauthor","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","duplicateFlagged":true,"duplicateOf":"4747474747474747474747474747474747474747","firstSeenAt":"2026-11-27T17:12:25.223Z","updatedAt":"2026-11-27T17:12:27.129Z"},"reviews":[{"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","reviewerLogin":"revone","reviewerWallet":"0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc","verdict":"pass","different":true,"meaningful":true,"checksPass":true,"effectiveVerdict":"pass","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","submittedAt":"2026-11-27T17:12:25.225Z"},{"repo":"testowner/testrepo","headSha":"4848484848484848484848484848484848484848","reviewerLogin":"revtwo","reviewerWallet":"0x4385f10d2b496d5862acf6ca2fa488412425f8ab","verdict":"fail","different":false,"meaningful":true,"checksPass":true,"effectiveVerdict":"fail","fingerprint":"a44d365f9a68a06c79e22f54a101fc7b4703086c7eb71063e7996f4532766784","note":"duplicate of a previously counted diff","submittedAt":"2026-11-27T17:12:26.908Z"}],"quorum":{"required":2,"passCount":1,"failCount":1,"duplicateFlagged":true,"met":false,"blocked":true},"window":{"state":"none"},"settlement":"platform-counting-path","reviewMovesMoney":false}
 PASS: candidate carries duplicate flag
 [32meth_call[0m
   Contract call:       MockERC20#balanceOf
@@ -643,11 +643,3 @@ PASS: candidate carries duplicate flag
 PASS: author still 10 after duplicate attempt
 PASS: recipient still 500 after duplicate attempt
 === SWARM DRIVER DONE — failures: 0 ===
-[redis] Error: connect ECONNREFUSED 127.0.0.1:6399
-    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16) {
-  errno: -111,
-  code: 'ECONNREFUSED',
-  syscall: 'connect',
-  address: '127.0.0.1',
-  port: 6399
-}

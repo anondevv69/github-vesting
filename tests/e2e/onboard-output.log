@@ -135,7 +135,7 @@ author: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551594 of 16777216
-  Block #1:            0xc25227e92a2c72fa2ef745cdd81970ec54608d84c47f132e6bf9e29828f2e88e
+  Block #1:            0xa5a4ae4768261d4f60abcf7a09017769daa8f5bbbe978ad4979e9a8ecbc1752c
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -149,7 +149,7 @@ PTK: 0x5FbDB2315678afecb367f032d93F642f64180aa3 deployTx: 0x5bebf31074097527093a
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551570 of 16777216
-  Block #2:            0x1ecc90709668136725b2fd9ddc9c61368f216185017a0042a5edb7f17acf2baa
+  Block #2:            0xa0e737e0a96ae76320bca32b0961ea98a610a962e1702e039c43565c55046efe
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -184,7 +184,7 @@ RWD: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 deployTx: 0x5b7587e8cafecb4cb875
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1869326 of 16777216
-  Block #3:            0x097634dd4d36076ad8b9452f23763687a9580b06476194710df50bbfe8e6fdc5
+  Block #3:            0xd037bf9d42bb3164fc44ac7f41b434d4f13350619b952ea38996eb16212448a7
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -219,7 +219,7 @@ GitEscrow: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 deployTx: 0x970c5e6d3b0825
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            793530 of 16777216
-  Block #4:            0x29f1b1e8453a96a43fd9343d92677513ba0f860f477c32b53ea17620fb4a7d59
+  Block #4:            0xcbf4e488bf8aa12fa8a6087848d8e2ef4f347a6cf5fffba43baaf6f8c5c4f68c
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -233,7 +233,7 @@ ShipRewards: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9 deployTx: 0xf9bda7b950d8
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            68421 of 16777216
-  Block #5:            0xce940d64e62277cd1aaf55a6263dd46f7f15bb2c7e31fc2deda9ab0a270605b5
+  Block #5:            0x59773f5f6d65a1d983b0ebf98686c8061973a33139be3b08c8285060ed90d541
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -247,7 +247,7 @@ mint PTK→recipient tx: 0xee6c2808b4002778359d77436ae2d40bdd47bebc0aaf03ad12e28
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            68445 of 16777216
-  Block #6:            0x8d7e2a2c6c099790940f05c9bafa54e7ca232af36725560bf43fb76ac6099f22
+  Block #6:            0x3b674927d37ed9093001fcbd51b263e69b5c388e496095d7dd03dd90eb17783a
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -262,7 +262,7 @@ repoId: 0x533960835c611e0df87b5e154b32ec2a47308eb8f884ae63ed17e330589decb3
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            46383 of 16777216
-  Block #7:            0x318f26131d5c44614524e056bd834f1970e0e0c7fbce88e1ec7b691cae7463e4
+  Block #7:            0xc0c88187e80bc3521a40699dcbb8ffc048fb07f08fafd8535cbb26b09d22f8c0
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -276,7 +276,7 @@ approve tx: 0xf6b889b8b1e548e9c34d69b02d4f882bbd1d0ebdfc622d4e28e35c7e030eab43
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            263864 of 16777216
-  Block #8:            0x49a4a9cc330f60358cd2b2adc1cf5a734b108c71f332e33ae5d79dc0ab7a792d
+  Block #8:            0x107db12cb6e1dc83dbe6ed0f4451b3193b5ee356c86e2967090457c4067ba63d
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -296,7 +296,7 @@ on-chain grant: recipient=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC totalLocked
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            46844 of 16777216
-  Block #9:            0x3062ad30df52ce21d451691ac27baf4186ba204b64ac8bfcbbeac13b6988c2d5
+  Block #9:            0x8a59b18e260e8fbf07f79986ef053408b0fd5c5b74283976f6508f07e6e19a52
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -307,7 +307,7 @@ fund ShipRewards tx: 0x594d3e5bf2fc224984bfc52ff25be012359a0637fb4d59b715348d7e6
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
 
 ShipRewards RWD balance: 10000000000000000000000
-state written to /home/hatch/workspace/claude-ship/github-vesting/tests/e2e/state.json
+state written to /home/hatch/workspace/.scratch-multigrant/repo/tests/e2e/state.json
 === 4. onboarding fixture (escrow owned by the oracle signer; NO vault, NO grant) ===
 [32meth_chainId[0m
 [32meth_accounts[0m
@@ -341,7 +341,7 @@ state written to /home/hatch/workspace/claude-ship/github-vesting/tests/e2e/stat
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            551606 of 16777216
-  Block #10:           0x1c7ee8c1178dfde73ae3b6558a9f1db77b015ae478e15e652c3b7dfcd15117ce
+  Block #10:           0xebd40c44292aea276a6a50dec7706286f7ce669a3dc198cc5971180bfb3ec874
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -354,7 +354,7 @@ state written to /home/hatch/workspace/claude-ship/github-vesting/tests/e2e/stat
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   Value:               0 ETH
   Gas used:            1905421 of 16777216
-  Block #11:           0xd7d81708dfe832a0dd6c25185a31915e4d70e7063ac0f3d1e567b88f113664c7
+  Block #11:           0x065c5c6950ed39af8068eb5d93067649c43408cbd47cf41790bb117300ce790d
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -367,7 +367,7 @@ state written to /home/hatch/workspace/claude-ship/github-vesting/tests/e2e/stat
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            353762 of 16777216
-  Block #12:           0x062f353a9f39c3723b929074fd22537cc650382da650262b941addda017d35bf
+  Block #12:           0x6af29a7ef7d4e5161adfd0afccfe7edb640e37108888d786b358602d02c08dca
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -390,8 +390,8 @@ feeStreamEscrow=0x8464135c8F25Da09e49BC8782676a84730C318bC weth=0xa513E6E4b8f2a9
 [github-vesting] Agent API: http://127.0.0.1:3210/api/agent/briefing
 server up
 === 7. seed: @testauthor wallet links ===
-linked wallets for @testauthor: [{"wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","linkedAt":"2026-11-26T17:36:25.577Z","source":"signed"}]
-linked wallets for @gregory: [{"wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","linkedAt":"2026-11-26T17:36:25.588Z","source":"signed"}]
+linked wallets for @testauthor: [{"wallet":"0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc","linkedAt":"2026-11-27T17:12:45.827Z","source":"signed"}]
+linked wallets for @gregory: [{"wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e13b4","linkedAt":"2026-11-27T17:12:45.842Z","source":"signed"}]
 [31meth_fillTransaction - Method not supported[0m
 [32meth_getTransactionCount[0m
 [32meth_getBlockByNumber[0m
@@ -404,7 +404,7 @@ linked wallets for @gregory: [{"wallet":"0x374d91a5674fa7cf86e725093b5848b97e1e1
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            51321 of 51321
-  Block #13:           0x7e3160af9bb7201770100b62f3c52962c117b42f9c134595f26921e881561230
+  Block #13:           0xbac7247253ca550cc3762d53d8fe322948a9ea2fd0c5e0d0484c9958dda88cd4
 
 minted 100 PTK -> recipient, tx: 0x967700be83bf6b7809f59be561f9751d505af8fc115519149844536e8321c817
 === 8. seed the resumability fixture (vault deployed, grant missing) ===
@@ -440,7 +440,7 @@ minted 100 PTK -> recipient, tx: 0x967700be83bf6b7809f59be561f9751d505af8fc11551
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   Value:               0 ETH
   Gas used:            734540 of 16777216
-  Block #14:           0xe8cf52eb467e892102ed63421429d4e849495f927232aa595677e80e79d1ff51
+  Block #14:           0xa73638d7afeb1f5c6b21f7a81c8c84d35cf6be4b507fcee7cbf1c6352a2b92c3
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -477,15 +477,15 @@ PASS: onboard with a GARBAGE token is refused 403
 [32meth_sendRawTransaction[0m
   Contract deployment: FeeLockVault
   Contract address:    0x948b3c65b89df0b4894abe91e6d02fe579834f8f
-  Transaction:         0x6f61df1cad093613734727dbe6f621f0bb57e7b67c250654f06b1fb794ebd36d
+  Transaction:         0xa15f1088f37d948bc5cbce0bdfe8e845a6055845b5243546d97d2ed6d85f4e4f
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   Value:               0 ETH
-  Gas used:            734540 of 734540
-  Block #15:           0xf70a4d59c161de2aa366db80cdc087a4118f355ba383bedad85eaa7f970deb47
+  Gas used:            734997 of 734997
+  Block #15:           0x9356837e1f3a0c6263dd58556e06e2e421a024d22da839fb8f4c6796b2f7cd8d
 
-[launch-onboard] vault deploying repo=testauthor/onboardrepo launcher=0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc chain=base vault=0x948b3c65b89df0b4894abe91e6d02fe579834f8f deployTx=0x6f61df1cad093613734727dbe6f621f0bb57e7b67c250654f06b1fb794ebd36d
+[launch-onboard] vault deploying repo=testauthor/onboardrepo launcher=0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc chain=base vault=0x948b3c65b89df0b4894abe91e6d02fe579834f8f deployTx=0xa15f1088f37d948bc5cbce0bdfe8e845a6055845b5243546d97d2ed6d85f4e4f
 [32meth_getTransactionReceipt[0m
-[launch-onboard] vault deployed repo=testauthor/onboardrepo launcher=0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc chain=base vault=0x948b3c65b89df0b4894abe91e6d02fe579834f8f deployTx=0x6f61df1cad093613734727dbe6f621f0bb57e7b67c250654f06b1fb794ebd36d
+[launch-onboard] vault deployed repo=testauthor/onboardrepo launcher=0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc chain=base vault=0x948b3c65b89df0b4894abe91e6d02fe579834f8f deployTx=0xa15f1088f37d948bc5cbce0bdfe8e845a6055845b5243546d97d2ed6d85f4e4f
 [32meth_getCode[0m
 [32meth_call[0m
   Contract call:       FeeLockVault#escrow
@@ -523,12 +523,12 @@ PASS: onboard with a GARBAGE token is refused 403
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       FeeStreamEscrow#registerFeeGrant
-  Transaction:         0xd4b34bfa07c949c1a0f7e22f9f55fe49e2a2161bf573a85723fc55464ef26595
+  Transaction:         0xbd7bc2218316a73a78c41e9fd18137e9473a60bc3cdf88216dd197e903221a99
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   To:                  0x8464135c8f25da09e49bc8782676a84730c318bc
   Value:               0 ETH
-  Gas used:            151559 of 151559
-  Block #16:           0x1760c4c91f17ce2ff1d2d19d2a5dfed4ed458c16e9d39183caa1431a0137393c
+  Gas used:            152011 of 152011
+  Block #16:           0x825ed94c2b18197c2b183b0db1cf7a1e1d84eeceb9e808ea015113808f0c73d3
 
 [32meth_getTransactionReceipt[0m
 [32meth_call[0m
@@ -536,7 +536,7 @@ PASS: onboard with a GARBAGE token is refused 403
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x8464135c8f25da09e49bc8782676a84730c318bc
 
-[launch-onboard] grant registered repo=testauthor/onboardrepo launcher=0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc chain=base vault=0x948b3c65b89df0b4894abe91e6d02fe579834f8f deployTx=0x6f61df1cad093613734727dbe6f621f0bb57e7b67c250654f06b1fb794ebd36d registerTx=0xd4b34bfa07c949c1a0f7e22f9f55fe49e2a2161bf573a85723fc55464ef26595 pushesPerTranche=2
+[launch-onboard] grant registered repo=testauthor/onboardrepo launcher=0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc chain=base vault=0x948b3c65b89df0b4894abe91e6d02fe579834f8f deployTx=0xa15f1088f37d948bc5cbce0bdfe8e845a6055845b5243546d97d2ed6d85f4e4f registerTx=0xbd7bc2218316a73a78c41e9fd18137e9473a60bc3cdf88216dd197e903221a99 pushesPerTranche=2
 PASS: first onboard succeeds (200)
 PASS: first onboard returns a vault address
 PASS: first onboard is not flagged alreadyOnboarded
@@ -658,12 +658,12 @@ PASS: onboard with a token bound to another repo is refused 403
 [32meth_estimateGas[0m
 [32meth_sendRawTransaction[0m
   Contract call:       FeeStreamEscrow#registerFeeGrant
-  Transaction:         0x07c04b47d73b0656e4e356100d295a36f521ccf43cd0f8be316215bc8a985efb
+  Transaction:         0x0b7bcd2dd6c544fbc840e5fd64845b839ada42621fa79cfef39a312556d9e947
   From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
   To:                  0x8464135c8f25da09e49bc8782676a84730c318bc
   Value:               0 ETH
-  Gas used:            151559 of 151559
-  Block #17:           0x8322bc0b2cb628e649e7acb870fa8fd97a6378aa49d82d168e1e180c0843f4da
+  Gas used:            152011 of 152011
+  Block #17:           0x9741d0e64a2facc9ec9413c0a647a4901244d22338d41e66f44d2df2e1b6b02a
 
 [32meth_getTransactionReceipt[0m
 [32meth_call[0m
@@ -671,7 +671,7 @@ PASS: onboard with a token bound to another repo is refused 403
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x8464135c8f25da09e49bc8782676a84730c318bc
 
-[launch-onboard] grant registered repo=testauthor/resumerepo launcher=0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc chain=base vault=0x71c95911e9a5d330f4d621842ec243ee1343292e deployTx=0x807165a7a35ea20b26d2b06154b1f0e861e804fc817630f8f0a9784f8fcddc6d registerTx=0x07c04b47d73b0656e4e356100d295a36f521ccf43cd0f8be316215bc8a985efb pushesPerTranche=2
+[launch-onboard] grant registered repo=testauthor/resumerepo launcher=0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc chain=base vault=0x71c95911e9a5d330f4d621842ec243ee1343292e deployTx=0x807165a7a35ea20b26d2b06154b1f0e861e804fc817630f8f0a9784f8fcddc6d registerTx=0x0b7bcd2dd6c544fbc840e5fd64845b839ada42621fa79cfef39a312556d9e947 pushesPerTranche=2
 PASS: resume onboard succeeds (200)
 PASS: resume registers against the EXISTING vault (no second deployment)
 PASS: resume preserves the original deploy tx hash
