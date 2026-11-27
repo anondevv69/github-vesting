@@ -8,6 +8,41 @@ Read `known-escrow.json` for pinned addresses, chain ID, and allowed selectors.
 
 ---
 
+## Escrow identity check (run FIRST, before every other check)
+
+The prepared transactions come from a hosted API. Before validating
+anything else, establish **which escrow this lock would actually use**,
+from the transactions themselves:
+
+1. **Decode the approve spender** (calldata arg 1) if an approve tx is
+   present, and **note the lock tx's `to`**. (If there is no approve —
+   streaming locks — the lock tx's `to` alone is the escrow.)
+2. **They must equal each other.** Approve spender ≠ lock `to` → stop.
+3. **Compare against the pin** for the request chain:
+   `known-escrow.json` → `escrowAddress` (Base) or
+   `chains["4663"].escrowAddress` (Robinhood) — the same values as
+   `references/TRUST-ONCHAIN.md`. No API endpoint publishes the current
+   escrow address; the prepared transactions carry it only inside
+   their calldata/`to`, so this pin comparison **is** the live check.
+4. **On any mismatch: stop, sign nothing, and report BOTH addresses**
+   — the escrow decoded from the prepared transactions AND the pinned
+   escrow — plus the chain. Do not "fix" the transactions and do not
+   proceed with either address.
+   - One cause has a user remedy: if the platform has rotated its
+     escrow, an older installed skill still pins the previous escrow
+     and every new lock will mismatch. Say so in your report — the
+     user should **reinstall this skill** (same install command as
+     the original install) to pick up the current pin, then
+     re-prepare. A mismatch is a stop, but it is not a dead end:
+     name the remedy.
+
+The superseded Base escrows listed in `known-escrow.json`
+(`escrowHistory`) and `TRUST-ONCHAIN.md` are never valid here: they
+serve legacy grants only, and a new prepare response pointing at one
+of them is a mismatch like any other.
+
+---
+
 ## User intent to pin
 
 Before calling the lock API, record from the user's message:
@@ -19,6 +54,15 @@ Before calling the lock API, record from the user's message:
 | `amount` | human units (`855M`, `3.49M`) |
 | `totalPushes` | default `10` if omitted |
 | `pushesPerMilestone` | default = `totalPushes` |
+
+**The milestone request field is exactly `pushesPerMilestone`.**
+There is **no** `releasesPerMilestone` request field — that name
+exists only as a parameter of the on-chain `Locked` event. Sending
+`releasesPerMilestone` is silently ignored and the lock falls back
+to a single release of the full amount after `totalPushes`. When the
+user asks for release "after each push", the body must carry
+`"pushesPerMilestone": 1`, and the response's `pushesPerMilestone`
+must read back `1` before you continue.
 
 After `POST /api/agent/lock`, also pin from the JSON response (structured fields only):
 
@@ -58,7 +102,7 @@ Compute expected `repoId` = `keccak256(bytes(utf8(repo.trim())))` — same as So
 |-------|-------------|
 | Selector | `0x095ea7b3` (`approve(address,uint256)`) |
 | `to` | **token contract** — must equal token address in lock calldata |
-| Spender (arg 1) | exactly escrow for the request chain — `known-escrow.json` → `escrowAddress` (Base) or `chains["4663"].escrowAddress` (Robinhood) |
+| Spender (arg 1) | exactly the escrow established by the **Escrow identity check** above (decoded spender == lock `to` == the pin for the request chain) |
 | Amount (arg 2) | **≤ `amountWei`** from lock API response **and** ≤ amount user requested |
 | No infinite approve | reject `type(uint256).max` unless user explicitly requested max (they did not) |
 
@@ -68,7 +112,7 @@ Compute expected `repoId` = `keccak256(bytes(utf8(repo.trim())))` — same as So
 
 | Check | Requirement |
 |-------|-------------|
-| `to` | exactly `known-escrow.json` → `escrowAddress` (Base) **or** `chains["4663"].escrowAddress` (Robinhood) matching request `chainId` |
+| `to` | exactly the escrow established by the **Escrow identity check** above, matching request `chainId` |
 | Selector | `0xc9c2dca6` (`lock`) **or** `0xf2bc8198` (`lockAllowance`) only |
 | Forbidden selectors | reject `lockWithPermit`, `release`, `cancel`, `setOracle`, transfers, or anything else |
 | Arg 0 `repoId` | matches `keccak256(bytes(userRepo))` |

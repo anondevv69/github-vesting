@@ -2,7 +2,7 @@
 name: claude-vesting
 description: Proof of Dev — GitHub-gated token vesting (proofofdev.xyz). Lock any ERC-20 on Base so verified pushes and merged PRs release it on a milestone schedule, check vesting progress for a wallet or repo, link a GitHub account to a wallet, and earn the per-counted-merge ShipRewards payout as a PR author. Use when the user mentions Proof of Dev, proofofdev, github vesting, locking tokens against a repo, vesting progress / verified pushes / milestones, linking a wallet to GitHub, merge rewards, reporting a ship (attestation) or checking a ship report's state, or asks what a Claude Ship / /ship merge earned. Works entirely over the agent API at https://api.proofofdev.xyz — no website required.
 tags: [github, vesting, claude, base, defi, proofofdev, rewards]
-version: 3
+version: 3.1
 ---
 
 # Proof of Dev — Claude skill (GitHub-gated token vesting)
@@ -390,7 +390,12 @@ against the wallet's holdings on that chain), `amount` (human units —
 release at the end; **`totalPushes` must be an exact multiple of
 `pushesPerMilestone`**), `chain` (optional — `base` default,
 `robinhood`, `base-sepolia`), `verificationToken` (required, from
-Step 1).
+Step 1). **The milestone field is exactly `pushesPerMilestone`.**
+There is no `releasesPerMilestone` request field — that name exists
+only as a parameter of the on-chain `Locked` event; sending it is
+silently ignored and the schedule falls back to a single release.
+After preparing, read the response's `pushesPerMilestone` back and
+confirm it matches the cadence the user asked for before signing.
 
 Success returns `ok: true`, `tokenSymbol`, `amountWei`,
 `tokensPerMilestone`, and `transactions[]` — `approve` first (only
@@ -406,6 +411,21 @@ prepared transaction you have not checked:
   contract, and its calldata must decode as
   `approve(spender, amount)` with **spender == the lock item's `to`**
   (the escrow) and **amount == `amountWei`** from the response.
+- **Then compare that escrow against the pin.** For Base the current
+  escrow is **GitEscrowV2, `0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3`**
+  (the pin of record lives in the Bankr skill's `known-escrow.json` /
+  `TRUST-ONCHAIN.md`, kept in lockstep with this skill). No API
+  endpoint publishes the current escrow — the prepared transactions
+  carry it only inside their calldata/`to`, so internal consistency
+  (spender == lock `to`) plus this pin is the check. The superseded
+  Base escrows `0x3625F879C678306E92E2C27F61b9BcD8015E81A7` and
+  `0x76dd4C6ea986684CDf822eC0832e142A2D5C8165` serve legacy grants
+  only and are never valid for a new lock. On a mismatch, **stop and
+  report both addresses** — the one decoded from the prepared
+  transactions and the pin. If the platform has rotated its escrow,
+  an older installed skill still pins the previous one: say so and
+  tell the user reinstalling this skill is the remedy, then stop —
+  a mismatch is a stop, not a dead end.
 - The lock item's calldata must decode as
   `lock(repoId, token, amount, totalPushes, pushesPerMilestone)`
   (or `lockAllowance(...)` with the same arguments when the response's
