@@ -293,10 +293,11 @@ must target the token contract with calldata
 lock calldata must carry the intended token, `amountWei`, and push
 counts; every `chainId` must match the verified chain and every
 `value` must be `"0x0"`. Then compare the decoded escrow against the
-pin: for Base the current escrow is GitEscrowV2,
-`0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3` (superseded v1 escrows
-`0x3625F879C678306E92E2C27F61b9BcD8015E81A7` and
-`0x76dd4C6ea986684CDf822eC0832e142A2D5C8165` serve legacy grants
+pin: for Base the current escrow is GitEscrowV3,
+`0x71A9848e7Cbd70cB7B660e61B4cAEDd224a16eC5` (the superseded
+GitEscrowV2 `0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3` and the
+v1 escrows `0x3625F879C678306E92E2C27F61b9BcD8015E81A7` and
+`0x76dd4C6ea986684CDf822eC0832e142A2D5C8165` serve existing grants
 only — never valid for a new lock). No endpoint publishes the
 current escrow; the pin plus spender == lock `to` consistency is
 the check. Any mismatch → stop and report **both** addresses; if
@@ -304,9 +305,9 @@ the platform rotated its escrow, an older installed skill still
 pins the previous one, so tell the user reinstalling the skill is
 the remedy. Never edit calldata yourself. The escrow's source is
 publicly verified — Basescan
-([address/0x894e…69c3#code](https://basescan.org/address/0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3#code),
+([address/0x71A9…16eC5#code](https://basescan.org/address/0x71A9848e7Cbd70cB7B660e61B4cAEDd224a16eC5#code),
 "Pass - Verified") and Sourcify
-([repo.sourcify.dev/8453/0x894e…69c3](https://repo.sourcify.dev/8453/0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3),
+([repo.sourcify.dev/8453/0x71A9…16eC5](https://repo.sourcify.dev/8453/0x71A9848e7Cbd70cB7B660e61B4cAEDd224a16eC5),
 exact match) — so any agent can independently verify the contract
 that will custody the tokens before approving.
 

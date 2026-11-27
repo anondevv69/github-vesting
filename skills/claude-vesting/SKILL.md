@@ -412,7 +412,7 @@ prepared transaction you have not checked:
   `approve(spender, amount)` with **spender == the lock item's `to`**
   (the escrow) and **amount == `amountWei`** from the response.
 - **Then compare that escrow against the pin.** For Base the current
-  escrow is **GitEscrowV2, `0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3`**
+  escrow is **GitEscrowV3, `0x71A9848e7Cbd70cB7B660e61B4cAEDd224a16eC5`**
   (the pin of record lives in the Bankr skill's `known-escrow.json` /
   `TRUST-ONCHAIN.md`, kept in lockstep with this skill). No API
   endpoint publishes the current escrow — the prepared transactions

@@ -159,7 +159,7 @@ x-wallet-address: 0x…
   "ok": true,
   "transactions": [
     { "step": "approve", "to": "0x…", "data": "0x…", "value": "0x0", "chainId": 8453 },
-    { "step": "lock", "to": "0x894e…", "data": "0x…", "value": "0x0", "chainId": 8453 }
+    { "step": "lock", "to": "0x71A9…", "data": "0x…", "value": "0x0", "chainId": 8453 }
   ],
   "bankrSubmitUrl": "https://api.bankr.bot/wallet/submit",
   "confirmUrl": "https://api.proofofdev.xyz/api/agent/confirm-lock",

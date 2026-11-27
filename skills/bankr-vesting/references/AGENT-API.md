@@ -171,7 +171,7 @@ x-wallet-address: 0x…
   "lockFunction": "lockAllowance",
   "transactions": [
     { "step": "approve", "to": "0x…", "data": "0x…", "value": "0x0", "chainId": 8453 },
-    { "step": "lock", "to": "0x894e…", "data": "0x…", "value": "0x0", "chainId": 8453 }
+    { "step": "lock", "to": "0x71A9…", "data": "0x…", "value": "0x0", "chainId": 8453 }
   ],
   "confirmUrl": "https://api.proofofdev.xyz/api/agent/confirm-lock",
   "statusUrl": "https://www.proofofdev.xyz/lock/owner/repo"
