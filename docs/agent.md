@@ -310,15 +310,23 @@ publicly verified — Basescan
 exact match) — so any agent can independently verify the contract
 that will custody the tokens before approving.
 
-**One active grant per repo.** GitEscrowV2 keys grants by repoId
-alone: while a grant for the repo is active, every new lock for
-that repo reverts with `GitEscrowV2: repoId already active` —
-any token, any amount, any wallet. If prepare, a simulation, or
-the lock transaction surfaces an existing active grant, **do not
-retry**: read the grant (`GET /api/vesting/lock/{owner}/{repo}`),
-report its progress, and explain that a second concurrent lock on
-the same repo is not possible in this escrow — a new lock needs a
-different repo, or the active grant to complete.
+**Multiple locks per repo (GitEscrowV3, the current escrow).**
+A repo may carry up to 10 concurrent grants — different tokens,
+amounts, recipients, schedules. Each lock has its own `grantId`:
+prepare-lock returns `escrowVersion` and an advisory
+`expectedGrantId`, confirm-lock returns the recorded `grantId`,
+per-grant status is `GET /api/vesting/grant/{grantId}`, and the
+status / lock responses list every grant on the repo in a `grants`
+array beside the primary grant. Each grant vests only on pushes
+counted after its own lock landed. **Legacy escrows only
+(GitEscrowV2 / V1):** those key grants by repoId alone, so while a
+grant is active every new lock reverts with `GitEscrowV2: repoId
+already active` — any token, any amount, any wallet. That refusal
+applies only when the prepared transactions point at a legacy
+escrow: then **do not retry** — read the grant
+(`GET /api/vesting/lock/{owner}/{repo}`), report its progress, and
+explain the options (lock on the current V3 escrow, a different
+repo, or the active grant completing).
 
 **Step 3 — SIGN.** Confirm token, amount, repo, chain, and schedule
 with the user. **Immediately before submitting, re-read the

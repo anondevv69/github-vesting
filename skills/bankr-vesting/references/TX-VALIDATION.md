@@ -82,14 +82,19 @@ amount from the fresh balance (fractions like "half" are recomputed
 on the fresh figure), re-run `POST /api/agent/lock` with the
 corrected amount, and validate the new batch from the top.
 
-**Existing active grant.** If the lock API, a simulation, or the
-submit reports an active grant for the repo (on-chain revert
-`GitEscrowV2: repoId already active`), that is final, not transient:
-GitEscrowV2 allows exactly one active grant per repo. Never retry
-the lock. Read the grant back
-(`GET /api/vesting/lock/{owner}/{repo}`), report its progress, and
-tell the user a second concurrent lock on the same repo needs a
-different repo or the active grant to complete.
+**Existing active grant.** On the current escrow (GitEscrowV3),
+an existing active grant for the repo is normal and blocks nothing:
+the repo may carry up to 10 concurrent grants, each with its own
+`grantId`. The one-grant refusal exists **only on legacy escrows**:
+if the lock API, a simulation, or the submit reports an active
+grant for the repo with the on-chain revert `GitEscrowV2: repoId
+already active` **and the decoded escrow is a legacy (V2/V1)
+address**, that is final, not transient — those escrows allow
+exactly one active grant per repo. Never retry the lock. Read the
+grant back (`GET /api/vesting/lock/{owner}/{repo}`), report its
+progress, and tell the user the options: lock on the current (V3)
+escrow instead, use a different repo, or wait for the active grant
+to complete.
 
 ---
 

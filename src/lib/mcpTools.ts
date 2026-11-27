@@ -191,7 +191,7 @@ export function createProofofdevServer(rawBase: string): McpServer {
 
   reg.tool(
     "vesting_status",
-    "Vesting progress for one repo (owner/repo): verified push count, pushes until next release, locked amount, grant status, recent counted pushes. No wallet needed.",
+    "Vesting progress for one repo (owner/repo): verified push count, pushes until next release, locked amount, grant status, recent counted pushes. No wallet needed. A repo may carry multiple grants: the top-level grant is the primary grant and the `grants` array lists all of them.",
     { repo: z.string().describe("GitHub repo as owner/repo") },
     async ({ repo }) => api("GET", `/api/agent/status?repo=${encodeURIComponent(repo)}`),
   );
@@ -205,7 +205,7 @@ export function createProofofdevServer(rawBase: string): McpServer {
 
   reg.tool(
     "agent_grants",
-    "Detailed vesting grant list for a wallet address, including token, chain, totals, and recent pushes per grant.",
+    "Detailed vesting grant list for a wallet address, including token, chain, totals, and recent pushes per grant. Rows are keyed by grantId when the grant has one (V3 grants); legacy grants key by repo.",
     { wallet: z.string().describe("Wallet address (0x…) whose grants to list") },
     async ({ wallet }) => api("GET", `/api/agent/grants?wallet=${encodeURIComponent(wallet)}`),
   );
@@ -228,7 +228,11 @@ export function createProofofdevServer(rawBase: string): McpServer {
       "confirm with the user: token, amount, repo, chain, total pushes, pushes per milestone. After " +
       "calling, present the prepared transactions for signing via the user's wallet route, then confirm " +
       "with POST /api/agent/confirm-lock using a FRESH verificationToken (re-run verify_github first — " +
-      "the prepare token may have expired while the transactions mined).",
+      "the prepare token may have expired while the transactions mined). MULTI-LOCK: on the current " +
+      "escrow (GitEscrowV3) a repo may hold up to 10 concurrent grants, so an existing active grant " +
+      "is NOT a blocker; the response includes escrowVersion and an advisory expectedGrantId, and " +
+      "confirm-lock returns the recorded grantId. The one-active-grant refusal (repoId already " +
+      "active) applies only to legacy V2/V1 escrows.",
     {
       wallet: z.string().describe("Funding wallet address (0x…) — the lock recipient"),
       repo: z.string().describe("GitHub repo as owner/repo"),

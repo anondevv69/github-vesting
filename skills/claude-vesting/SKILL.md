@@ -2,7 +2,7 @@
 name: claude-vesting
 description: Proof of Dev — GitHub-gated token vesting (proofofdev.xyz). Lock any ERC-20 on Base so verified pushes and merged PRs release it on a milestone schedule, check vesting progress for a wallet or repo, link a GitHub account to a wallet, and earn the per-counted-merge ShipRewards payout as a PR author. Use when the user mentions Proof of Dev, proofofdev, github vesting, locking tokens against a repo, vesting progress / verified pushes / milestones, linking a wallet to GitHub, merge rewards, reporting a ship (attestation) or checking a ship report's state, or asks what a Claude Ship / /ship merge earned. Works entirely over the agent API at https://api.proofofdev.xyz — no website required.
 tags: [github, vesting, claude, base, defi, proofofdev, rewards]
-version: 3.2
+version: 3.3
 ---
 
 # Proof of Dev — Claude skill (GitHub-gated token vesting)
@@ -447,18 +447,26 @@ Other prepare-time failures:
 - **Insufficient balance** — the amount exceeds the wallet's live
   balance for the token; report the balance the error names and ask
   the user for a smaller amount. Never silently reduce the amount.
-- **An active grant already exists for this repo** (`GitEscrowV2:
-  repoId already active` — surfacing at prepare, at simulation, or
-  as the lock transaction's revert). This is a hard escrow rule, not
-  a transient error: GitEscrowV2 keys grants by repoId alone, so
-  while a grant is active, **no** second lock can be created for
-  that repo — any token, any amount, any wallet. **Never retry.**
-  Read the existing grant back
-  (`GET /api/vesting/lock/{owner}/{repo}`), report its progress
-  (status, verified pushes out of total, amount locked,
-  per-milestone release), and explain the options plainly: a new
-  lock needs a **different repo**, or the active grant to complete
-  first.
+- **Multiple locks on one repo are normal on the current escrow**
+  (GitEscrowV3): a repo may carry up to 10 concurrent grants —
+  different tokens, amounts, recipients, schedules. Prepare's
+  response includes `escrowVersion` and an advisory
+  `expectedGrantId`; confirm-lock returns the recorded `grantId`.
+  An existing active grant on the repo is **not** a failure on this
+  escrow — proceed.
+- **Legacy escrows only (GitEscrowV2 / V1): an active grant already
+  exists for this repo** (`GitEscrowV2: repoId already active` —
+  surfacing at prepare, at simulation, or as the lock transaction's
+  revert, **only when the prepared transactions point at a legacy
+  escrow**). That is a hard rule of those escrows, not a transient
+  error: they key grants by repoId alone, so while a grant is
+  active, **no** second lock can be created for that repo — any
+  token, any amount, any wallet. **Never retry.** Read the existing
+  grant back (`GET /api/vesting/lock/{owner}/{repo}`), report its
+  progress (status, verified pushes out of total, amount locked,
+  per-milestone release), and explain the options plainly: lock on
+  the current (V3) escrow instead, use a **different repo**, or wait
+  for the active grant to complete.
 
 ### Step 3 — CONFIRM WITH THE USER, THEN SIGN
 
@@ -513,17 +521,23 @@ curl -s -X POST "https://api.proofofdev.xyz/api/agent/confirm-lock" \
 The server verifies the tx itself (receipt success, a `Locked`
 event, recipient == your wallet) before registering the grant. If it
 answers `alreadyRegistered: true`, the lock was already recorded —
-report that, don't retry the on-chain lock.
+report that, don't retry the on-chain lock. The response returns
+the recorded **`grantId`** (resolved from the `Locked` event) —
+keep it; you may also send the prepare step's `expectedGrantId` in
+the confirm body as a cross-check, and a mismatch is a hard error.
 
 3. Read the grant back and report from the readback, not from memory:
 
 ```bash
 curl -s "https://api.proofofdev.xyz/api/vesting/lock/owner/repo"
+curl -s "https://api.proofofdev.xyz/api/vesting/grant/<grantId>"
 ```
 
-Report the grant as active with `verifiedPushCount` / total pushes,
-the per-push (per-milestone) release amount, and the `statusUrl`
-(`https://www.proofofdev.xyz/lock/owner/repo`).
+The lock readback's top level is the repo's primary grant; its
+`grants` array lists every lock on the repo. Report the new grant
+(matched by its `grantId`) as active with `verifiedPushCount` /
+total pushes, the per-push (per-milestone) release amount, and the
+`statusUrl` (`https://www.proofofdev.xyz/lock/owner/repo`).
 
 ### Phrase handling — turning chat words into parameters
 

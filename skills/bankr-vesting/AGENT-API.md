@@ -177,6 +177,8 @@ x-wallet-address: 0x…
 
 Same as `/api/agent/lock` without the extra `steps` wrapper. Use when you already know the Bankr submit flow.
 
+The response also carries `escrowVersion` (the escrow the prepared transactions target — `3` is the current multi-grant escrow) and `expectedGrantId` (advisory: the grantId the lock will receive if no other lock for the repo lands first).
+
 ---
 
 ## POST /api/agent/confirm-lock
@@ -195,9 +197,9 @@ x-wallet-address: 0x…
 }
 ```
 
-Parses the `Locked` event from the tx, verifies recipient matches wallet, registers push tracking.
+Parses the `Locked` event from the tx, verifies recipient matches wallet, registers push tracking. An optional `grantId` in the body is cross-checked against the event — a mismatch is a hard error.
 
-**Response:** `grant`, `statusUrl`, `tweetReply` (paste verbatim on X).
+**Response:** `grant` (including the recorded `grantId` for V3 locks), `grantId`, `statusUrl`, `tweetReply` (paste verbatim on X). Per-grant status: `GET {API}/api/vesting/grant/{grantId}`.
 
 ---
 
