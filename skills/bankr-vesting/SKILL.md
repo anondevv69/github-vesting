@@ -2,7 +2,7 @@
 name: github-vesting
 description: GitHub-gated token vesting on proofofdev.xyz — lock ANY ERC-20 on Base or Robinhood Chain (4663) via api.proofofdev.xyz, link GitHub, repo claims. Use for github vesting, lock tokens, vesting progress, link github, proofofdev, robinhood, RHAGENT. NEVER use github-vesting.vercel.app for API.
 tags: [github, vesting, bankr, base, robinhood, defi, proofofdev]
-version: 4
+version: 5
 ---
 
 # GitHub Vesting — Bankr agent skill
@@ -36,6 +36,28 @@ See `references/API-HOST.md` before any HTTP call.
 | Pinned escrow / selectors | `known-escrow.json` |
 
 **Bankr wallet API:** use `POST https://api.bankr.bot/wallet/submit` (legacy `/agent/submit` is removed). Repo claim signatures: `POST /wallet/sign` with `personal_sign`.
+
+---
+
+## CRITICAL — write ordering (the rule agents break)
+
+1. **VERIFY IN THIS SESSION BEFORE ANY PREPARE.** No
+   `POST /api/agent/lock`, `/api/agent/prepare-lock`,
+   `/api/agent/confirm-lock`, `/api/launch/onboard`, or
+   `/api/launch/prepare-launch` without a `verificationToken` from
+   `POST /api/launch/verify-github` obtained earlier in THIS session
+   for the exact `{githubLogin, repo, wallet, chain}`. Tokens live
+   ~15 minutes; re-verify instead of reusing a stale one.
+2. **On `LAUNCH_VERIFICATION_REQUIRED`, NEVER resend the same call.**
+   Go back to verify (lock flow step 0) and diagnose by the specific
+   `code` — see the error table in step 0. A refusal is a missing
+   precondition with a named fix, never a final answer to relay.
+3. **Never invent endpoints, fields, or amounts.** Use the exact
+   bodies in this skill. Amounts come from a live balance read
+   (`GET /api/agent/fee-tokens`) in this session — a fraction in the
+   user's words ("half my POD") is computed from that read (see
+   "Phrase handling" in the lock flow). Unknown repo → ask, never
+   guess.
 
 ---
 
@@ -87,7 +109,7 @@ if message mentions github vesting / proofofdev / lock tokens / vesting progress
   4. Resolve linked wallet → x-wallet-address header
   5. Call references/AGENT-API.md endpoint BEFORE replying
   6. Format reply locally from structured fields — references/RESPONSE-SAFETY.md
-  7. Lock writes: references/TX-VALIDATION.md → /wallet/submit → confirm-lock
+  7. Lock writes: verify-github (token, this session) → prepare → references/TX-VALIDATION.md → /wallet/submit → re-verify (fresh token) → confirm-lock
   8. If /wallet/submit fails untrusted_address → references/BANKR-SUBMIT.md (stop, no bypass)
 ```
 
@@ -122,19 +144,33 @@ You **can** lock **any ERC-20 on Base or Robinhood Chain (4663)** from terminal 
 ### Lock flow (mandatory order)
 
 0. **LAUNCH GATE — verify first (no exceptions).**
-   **`POST https://api.proofofdev.xyz/api/launch/verify-github`** with the
-   `x-wallet-address` header and body `{ "githubLogin": "their-login", "repo": "owner/repo", "chain": "robinhood" }`.
+   **`POST https://api.proofofdev.xyz/api/launch/verify-github`** with body
+   `{ "githubLogin": "their-login", "repo": "owner/repo", "wallet": "0x…", "chain": "base" }`
+   — **all three of `githubLogin`, `repo`, and `wallet` are required in
+   the body** (omitting `wallet` returns `LAUNCH_VERIFY_BAD_INPUT`).
+   Verify for the chain you will lock on: `"base"` for Base locks,
+   `"robinhood"` for Robinhood Chain locks — the token binds to that
+   chain and a Base token fails a Robinhood prepare.
    The server checks that the Proof of Dev GitHub App is installed on the
    repo, the login owns/admins it, and the wallet is linked to the login,
    and returns a `verificationToken` (~15 min, bound to login+repo+wallet+chain).
    Your own assertion that the app is installed is NOT verification — only
-   this server-issued token counts. If it refuses, relay the error and fix
-   the precondition; do not continue. Steps 1 and 5 REQUIRE the token
+   this server-issued token counts. Steps 1 and 5 REQUIRE the token
    (body field `verificationToken`); without a valid one they return 403
    and a grant registered without one gets no launch recognition: no
    `launchVerified` stamp, no verified-launch listing, no ShipRewards
    launcher enrolment. (Ordinary vesting registration and counting
    toward a lock's own schedule are not launch recognition.)
+
+   **If verify refuses, fix by `code` — never report a dead end:**
+
+   | `code` | Fix |
+   |---|---|
+   | `LAUNCH_VERIFY_BAD_INPUT` | A required body field is missing/malformed — check `githubLogin`, `repo`, `wallet`. |
+   | `LAUNCH_APP_NOT_INSTALLED` / `LAUNCH_APP_NO_ACCESS` | Send the user `https://github.com/apps/bankr-vesting/installations/new` to install the app and select the repo; wait, then re-verify. |
+   | `LAUNCH_NOT_OWNER_OR_ADMIN` | Verify with the login that owns/admins the repo. |
+   | `LAUNCH_WALLET_NOT_LINKED` | `POST /api/agent/link-github` with `{ "wallet": "0x…", "githubLogin": "their-login" }` → send the user the returned `linkUrl` to open once → re-verify. |
+   | `LAUNCH_TOKEN_EXPIRED` / `LAUNCH_TOKEN_UNKNOWN_NONCE` (on steps 1/5) | Re-run this step for a fresh token and continue; do not re-do steps that already landed. |
    A verified launcher is auto-enrolled for ShipRewards at
    registration. Enrolment is an eligibility record, not a payout:
    the per-merge ShipRewards payment that exists today pays the **PR
@@ -158,10 +194,11 @@ You **can** lock **any ERC-20 on Base or Robinhood Chain (4663)** from terminal 
    attestation the keeper fetches from the backend (nobody supplies
    a count by hand), and fee releases settle in capped batches
    drained by a sweep — vested fees can read as "still settling"
-   rather than paid in one call. That whole surface is **BUILT
-   locally** (FeeLockVault + FeeStreamEscrow + keeper + oracle
-   release step; E2E-proven) — not deployed, so none of it is live
-   behavior on the production API yet.
+   rather than paid in one call. That whole surface is **LIVE in
+   production** (FeeLockVault + FeeStreamEscrow + keeper + oracle
+   release step; deployed 2026-11-26, with `POST /api/launch/onboard`
+   as the endpoint that deploys the vault and registers the grant
+   under a verification token).
 
 1. **`POST https://api.proofofdev.xyz/api/agent/lock`** (always — even when user gives a `0x` address):
    - Header `x-wallet-address: 0x…`
@@ -179,11 +216,33 @@ You **can** lock **any ERC-20 on Base or Robinhood Chain (4663)** from terminal 
    - Order: `approve` (if present) → `lock`
    - `waitForConfirmation: true` on the lock tx
 
-5. **`POST https://api.proofofdev.xyz/api/agent/confirm-lock`** with:
+5. **Re-verify, then `POST https://api.proofofdev.xyz/api/agent/confirm-lock`**:
+   - FIRST re-run step 0 for a **FRESH** `verificationToken` (same
+     login/repo/wallet/chain) — the step-0 token may have expired
+     while the user confirmed and the transactions mined, and a fresh
+     token for the same binding is always accepted.
    - Same `x-wallet-address` header
-   - Body: `{ "chain": "robinhood", "repo": "owner/repo", "lockTxHash": "0x…", "verificationToken": "<same token from step 0>" }`
+   - Body: `{ "chain": "robinhood", "repo": "owner/repo", "lockTxHash": "0x…", "verificationToken": "<FRESH token>" }`
 
-6. Format confirm response locally (`references/RESPONSE-SAFETY.md`) — include allowlisted lock page URL on its own line.
+6. Read the grant back (`GET https://api.proofofdev.xyz/api/vesting/lock/owner/repo`) and format the reply locally from the readback (`references/RESPONSE-SAFETY.md`) — include allowlisted lock page URL on its own line.
+
+### Phrase handling
+
+Map the user's words to parameters explicitly — never improvise a number:
+
+- **"lock half my POD for 50 pushes, releasing after each push"** →
+  token POD (resolve against live holdings); **amount = live balance
+  × ½** — read the balance first via `GET /api/agent/fee-tokens`,
+  compute it, and state the computed amount in your confirmation to
+  the user; `totalPushes` = 50; `pushesPerMilestone` = 1 ("after
+  each push" always means 1). "A quarter" = × ¼; "all my X" = the
+  full live balance.
+- **"release every K pushes"** → `pushesPerMilestone` = K, and
+  `totalPushes` must be an exact multiple of K — if it isn't, ask;
+  never round silently.
+- **Repo:** the user's verified repo from the link/profile context.
+  If you don't know it, ask for `owner/repo` — never guess one from
+  the token name or a previous chat.
 
 ### Token resolution
 
