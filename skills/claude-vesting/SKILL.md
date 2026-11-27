@@ -2,7 +2,7 @@
 name: claude-vesting
 description: Proof of Dev — GitHub-gated token vesting (proofofdev.xyz). Lock any ERC-20 on Base so verified pushes and merged PRs release it on a milestone schedule, check vesting progress for a wallet or repo, link a GitHub account to a wallet, and earn the per-counted-merge ShipRewards payout as a PR author. Use when the user mentions Proof of Dev, proofofdev, github vesting, locking tokens against a repo, vesting progress / verified pushes / milestones, linking a wallet to GitHub, merge rewards, reporting a ship (attestation) or checking a ship report's state, or asks what a Claude Ship / /ship merge earned. Works entirely over the agent API at https://api.proofofdev.xyz — no website required.
 tags: [github, vesting, claude, base, defi, proofofdev, rewards]
-version: 3.1
+version: 3.2
 ---
 
 # Proof of Dev — Claude skill (GitHub-gated token vesting)
@@ -447,12 +447,32 @@ Other prepare-time failures:
 - **Insufficient balance** — the amount exceeds the wallet's live
   balance for the token; report the balance the error names and ask
   the user for a smaller amount. Never silently reduce the amount.
+- **An active grant already exists for this repo** (`GitEscrowV2:
+  repoId already active` — surfacing at prepare, at simulation, or
+  as the lock transaction's revert). This is a hard escrow rule, not
+  a transient error: GitEscrowV2 keys grants by repoId alone, so
+  while a grant is active, **no** second lock can be created for
+  that repo — any token, any amount, any wallet. **Never retry.**
+  Read the existing grant back
+  (`GET /api/vesting/lock/{owner}/{repo}`), report its progress
+  (status, verified pushes out of total, amount locked,
+  per-milestone release), and explain the options plainly: a new
+  lock needs a **different repo**, or the active grant to complete
+  first.
 
 ### Step 3 — CONFIRM WITH THE USER, THEN SIGN
 
 Restate token (symbol + address), amount, repo, chain, and schedule
 (total pushes + pushes per milestone + the per-milestone tranche);
-get an explicit yes (Hard rules). Then sign and broadcast the
+get an explicit yes (Hard rules). **Immediately before signing,
+re-read the wallet's live balance for the token** (`GET
+/api/agent/fee-tokens`) — balances move between prepare and signing
+because releases from the user's earlier grants land in the same
+wallet. If the prepared amount **exceeds** the live balance, do not
+sign: recompute the amount against the fresh balance (a fraction
+like "half" is recomputed on the fresh figure), return to Step 2
+with the corrected amount, and re-check the new preparation.
+Then sign and broadcast the
 prepared transactions **in order** — approve first, lock last —
 **waiting for the approve to confirm before submitting the lock, and
 for the lock to confirm before Step 4.** Signing routes, first
@@ -515,7 +535,10 @@ explicitly; never improvise a number:
   via `GET /api/agent/fee-tokens`; if the symbol is ambiguous, ask
   which contract), **amount = live balance × ½** (read the balance in
   this session, compute the amount, and state the computed figure to
-  the user in the Step 3 confirmation), `totalPushes` = 50,
+  the user in the Step 3 confirmation — and re-read it in Step 3
+  immediately before signing; if it moved, the fraction is
+  recomputed on the fresh balance and the lock re-prepared),
+  `totalPushes` = 50,
   `pushesPerMilestone` = 1 ("releasing after each push" always means
   1). "A quarter" = × ¼, "all my X" = the full live balance.
 - **"for N pushes"** → `totalPushes` = N. **"release every K pushes"**

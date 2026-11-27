@@ -72,6 +72,25 @@ After `POST /api/agent/lock`, also pin from the JSON response (structured fields
 
 Compute expected `repoId` = `keccak256(bytes(utf8(repo.trim())))` — same as Solidity `keccak256(abi.encodePacked(repo))`.
 
+**Balance freshness (run after pinning, before any submit).**
+Balances move between prepare and signing — releases from the
+user's earlier grants land in the same wallet. Re-read the wallet's
+live balance for the token (`GET /api/agent/fee-tokens`) immediately
+before submitting. If `amountWei` **exceeds** the live balance, stop:
+do not submit, do not trim the calldata yourself. Recompute the
+amount from the fresh balance (fractions like "half" are recomputed
+on the fresh figure), re-run `POST /api/agent/lock` with the
+corrected amount, and validate the new batch from the top.
+
+**Existing active grant.** If the lock API, a simulation, or the
+submit reports an active grant for the repo (on-chain revert
+`GitEscrowV2: repoId already active`), that is final, not transient:
+GitEscrowV2 allows exactly one active grant per repo. Never retry
+the lock. Read the grant back
+(`GET /api/vesting/lock/{owner}/{repo}`), report its progress, and
+tell the user a second concurrent lock on the same repo needs a
+different repo or the active grant to complete.
+
 ---
 
 ## Batch rules

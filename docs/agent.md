@@ -302,10 +302,32 @@ current escrow; the pin plus spender == lock `to` consistency is
 the check. Any mismatch → stop and report **both** addresses; if
 the platform rotated its escrow, an older installed skill still
 pins the previous one, so tell the user reinstalling the skill is
-the remedy. Never edit calldata yourself.
+the remedy. Never edit calldata yourself. The escrow's source is
+publicly verified — Basescan
+([address/0x894e…69c3#code](https://basescan.org/address/0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3#code),
+"Pass - Verified") and Sourcify
+([repo.sourcify.dev/8453/0x894e…69c3](https://repo.sourcify.dev/8453/0x894e36CbCD183BF5ad79Eba7B988529f0FA769c3),
+exact match) — so any agent can independently verify the contract
+that will custody the tokens before approving.
+
+**One active grant per repo.** GitEscrowV2 keys grants by repoId
+alone: while a grant for the repo is active, every new lock for
+that repo reverts with `GitEscrowV2: repoId already active` —
+any token, any amount, any wallet. If prepare, a simulation, or
+the lock transaction surfaces an existing active grant, **do not
+retry**: read the grant (`GET /api/vesting/lock/{owner}/{repo}`),
+report its progress, and explain that a second concurrent lock on
+the same repo is not possible in this escrow — a new lock needs a
+different repo, or the active grant to complete.
 
 **Step 3 — SIGN.** Confirm token, amount, repo, chain, and schedule
-with the user, then submit `transactions[]` in order via
+with the user. **Immediately before submitting, re-read the
+wallet's live balance** for the token (`GET /api/agent/fee-tokens`)
+— balances move between prepare and signing (releases from earlier
+grants land in the same wallet). If the prepared amount exceeds
+the live balance, do not submit: recompute the amount on the fresh
+balance, return to Step 2 with the corrected amount, and re-check.
+Then submit `transactions[]` in order via
 `https://api.bankr.bot/wallet/submit` —
 `{ "transaction": { to, data, value, chainId }, "waitForConfirmation": true }`
 (legacy `/agent/submit` is removed and returns 403). Wait for the
