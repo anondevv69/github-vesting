@@ -36,8 +36,8 @@ async function main() {
 
   // Backend modules are imported only after the runner has set the
   // production-shaped env (src/lib/env reads process.env at import).
-  const { resolveGrantEscrowAddress } = await import("../../src/lib/chains");
-  const { saveGrant, getGrant } = await import("../../src/lib/redis");
+  const { resolveGrantEscrowAddress, escrowVersionOf } = await import("../../src/lib/chains");
+  const { saveGrant, getGrant, saveGrantById, getGrantById, listGrantsForRepo } = await import("../../src/lib/redis");
   const { triggerReleaseIfMilestone } = await import("../../src/oracle/releaseOracle");
 
   // ── 1. Resolver unit checks ──────────────────────────────────────
@@ -132,6 +132,73 @@ async function main() {
   );
   const v2After = await getGrant(state.v2RepoId);
   check("v2 grant milestone recorded", v2After?.lastPaidMilestone === 1);
+
+  // ── 4. Multi-lock: V2 + V3 grants on the SAME repo, side by side
+  // across the repoint (configured escrow is now V3).
+  check("version: legacy address → 1", escrowVersionOf("base", state.v1) === 1);
+  check("version: V2 env address → 2", escrowVersionOf("base", state.v2) === 2);
+  check("version: configured (V3) address → 3", escrowVersionOf("base", state.v3) === 3);
+  check("version: unknown address → null", escrowVersionOf("base", state.token) === null);
+
+  const sharedBase = {
+    ...baseRecord,
+    repoId: state.sharedRepoId,
+    repoFullName: "cutover/shared-repo",
+    recipient: state.sharedRecipient,
+  };
+  const sharedV2: GrantRecord = {
+    ...sharedBase,
+    onChainTxHash: state.lockTxSharedV2,
+    escrowAddress: state.v2,
+    escrowVersion: 2,
+  };
+  const sharedA: GrantRecord = {
+    ...sharedBase,
+    onChainTxHash: state.lockTxV3A,
+    escrowAddress: state.v3,
+    escrowVersion: 3,
+    grantId: state.grantIdA,
+    startPushCount: 0,
+  };
+  const sharedB: GrantRecord = {
+    ...sharedBase,
+    onChainTxHash: state.lockTxV3B,
+    escrowAddress: state.v3,
+    escrowVersion: 3,
+    grantId: state.grantIdB,
+    startPushCount: 1,
+  };
+  await saveGrant(sharedV2);
+  await saveGrantById(sharedA);
+  await saveGrantById(sharedB);
+  const listed = await listGrantsForRepo(state.sharedRepoId);
+  check("shared repo lists 3 grants, legacy first", listed.length === 3 && !listed[0]!.grantId && listed[1]!.grantId === state.grantIdA.toLowerCase(), listed.map((g) => g.grantId ?? "legacy").join(","));
+
+  const sharedBefore = await bal(state.sharedRecipient);
+  const v2BalBefore = await bal(state.v2);
+  const v3BalBefore = await bal(state.v3);
+  // Repo total 1: V2 (relative 1) pays, V3 A (elapsed 1) pays, V3 B (elapsed 0) does not.
+  const rV2 = await triggerReleaseIfMilestone(state.sharedRepoId, sharedV2, 1);
+  check("shared V2 release at total 1 triggered", rV2.triggered === true, JSON.stringify(rV2));
+  const rA1 = await triggerReleaseIfMilestone(state.sharedRepoId, sharedA, 1);
+  check("shared V3 A release at repo total 1 triggered", rA1.triggered === true, JSON.stringify(rA1));
+  const rB1 = await triggerReleaseIfMilestone(state.sharedRepoId, sharedB, 1);
+  check("shared V3 B release at repo total 1 NOT triggered (baseline 1)", rB1.triggered === false, JSON.stringify(rB1));
+  check(
+    "shared recipient paid 500 (V2) + 500 (A) at total 1",
+    (await bal(state.sharedRecipient)) - sharedBefore === 1000n * 10n ** 18n,
+  );
+  check("v2 escrow paid the shared milestone", v2BalBefore - (await bal(state.v2)) === 500n * 10n ** 18n);
+  check("v3 escrow paid only A's milestone", v3BalBefore - (await bal(state.v3)) === 500n * 10n ** 18n);
+  // Repo total 2: A completes, B pays its first milestone.
+  const rA2 = await triggerReleaseIfMilestone(state.sharedRepoId, { ...sharedA, lastPaidMilestone: 1 }, 2);
+  check("shared V3 A release at repo total 2 triggered (final)", rA2.triggered === true, JSON.stringify(rA2));
+  const rB2 = await triggerReleaseIfMilestone(state.sharedRepoId, sharedB, 2);
+  check("shared V3 B release at repo total 2 triggered", rB2.triggered === true, JSON.stringify(rB2));
+  const aAfter = await getGrantById(state.grantIdA);
+  check("V3 A bookkeeping by-id: milestone 2 + complete", aAfter?.lastPaidMilestone === 2 && aAfter?.status === "complete");
+  const bAfter = await getGrantById(state.grantIdB);
+  check("V3 B bookkeeping by-id: milestone 1 + active", bAfter?.lastPaidMilestone === 1 && bAfter?.status === "active");
 
   console.log(failures === 0 ? "CUTOVER: ALL PASS" : `CUTOVER: ${failures} FAILURES`);
   process.exit(failures === 0 ? 0 : 1);

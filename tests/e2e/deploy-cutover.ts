@@ -46,6 +46,48 @@ async function main() {
   const lockTxV2 = await v2.connect(v2Recipient).lock(v2RepoId, tokenAddr, amount, 2, 1);
   await lockTxV2.wait();
 
+  // ── Multi-lock extension (Phase 2): GitEscrowV3 + a SHARED repo
+  // carrying a V2 grant AND two V3 grants (the second stamped with
+  // baseline 1 after an oracle reportCount).
+  const V3 = await ethers.getContractFactory("GitEscrowV3");
+  const v3 = await V3.deploy(oracle.address);
+  const v3Addr = await v3.getAddress();
+
+  const sharedRepoId = ethers.keccak256(ethers.toUtf8Bytes("cutover/shared-repo"));
+  const sharedRecipient = legacyRecipient;
+
+  await token.mint(sharedRecipient.address, amount * 3n);
+  // V2 grant on the shared repo (2 pushes, 1 per milestone).
+  await token.connect(sharedRecipient).approve(v2Addr, amount);
+  const lockTxSharedV2 = await v2
+    .connect(sharedRecipient)
+    .lock(sharedRepoId, tokenAddr, amount, 2, 1);
+  await lockTxSharedV2.wait();
+  // V3 grant A on the SAME repo (baseline 0).
+  await token.connect(sharedRecipient).approve(v3Addr, amount);
+  const lockTxV3A = await v3
+    .connect(sharedRecipient)
+    .lock(sharedRepoId, tokenAddr, amount, 2, 1);
+  const receiptA = await lockTxV3A.wait();
+  const lockedLogA = receiptA!.logs
+    .map((l) => { try { return v3.interface.parseLog(l); } catch { return null; } })
+    .find((l) => l?.name === "Locked");
+  const grantIdA = lockedLogA!.args.grantId as string;
+  // Oracle reports counted total 1 → the next V3 lock stamps baseline 1.
+  await (await v3.reportCount(sharedRepoId, 1)).wait();
+  // V3 grant B on the same repo (baseline 1).
+  await token.connect(sharedRecipient).approve(v3Addr, amount);
+  const lockTxV3B = await v3
+    .connect(sharedRecipient)
+    .lock(sharedRepoId, tokenAddr, amount, 2, 1);
+  const receiptB = await lockTxV3B.wait();
+  const lockedLogB = receiptB!.logs
+    .map((l) => { try { return v3.interface.parseLog(l); } catch { return null; } })
+    .find((l) => l?.name === "Locked");
+  const grantIdB = lockedLogB!.args.grantId as string;
+  const grantB = await v3.getGrant(grantIdB);
+  console.log(`SHARED V3 grant A=${grantIdA} B=${grantIdB} B.startPushCount=${grantB.startPushCount}`);
+
   const state = {
     token: tokenAddr,
     v1: v1Addr,
@@ -57,6 +99,14 @@ async function main() {
     v2Recipient: v2Recipient.address,
     lockTxV1: lockTxV1.hash,
     lockTxV2: lockTxV2.hash,
+    v3: v3Addr,
+    sharedRepoId: sharedRepoId.slice(2),
+    sharedRecipient: sharedRecipient.address,
+    grantIdA,
+    grantIdB,
+    lockTxSharedV2: lockTxSharedV2.hash,
+    lockTxV3A: lockTxV3A.hash,
+    lockTxV3B: lockTxV3B.hash,
   };
   writeFileSync(join(__dirname, "state-cutover.json"), JSON.stringify(state, null, 2));
   console.log("CUTOVER STATE:", JSON.stringify(state));

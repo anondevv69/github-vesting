@@ -3,8 +3,8 @@
  */
 
 import type { Request, Response } from "express";
-import { listAllGrants, getGrantByRepoFullName, getRedis, KEYS, updateGrant, type GrantRecord } from "../lib/redis";
-import { buildProgress, formatTokenAmount } from "../lib/grantsHelper";
+import { listAllGrants, getGrantByRepoFullName, getGrantById, listGrantsForRepo, getRedis, KEYS, updateGrant, type GrantRecord } from "../lib/redis";
+import { buildGrantEntries, buildProgress, formatTokenAmount, grantRelativeCount, repoPushTotal } from "../lib/grantsHelper";
 import { splitRepo, repoIdFromFullName } from "../lib/repoId";
 import { parseWei } from "../lib/wei";
 import { getDevProfile } from "./devProfile";
@@ -211,7 +211,19 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
     return;
   }
 
-  const grant = await getGrantByRepoFullName(repoFullName);
+  // Multi-lock (§4.5): ?grantId= selects which of the repo's grants
+  // is the detailed one; without it, the primary grant is detailed
+  // (exactly the pre-multi-lock behaviour).
+  const requestedGrantId = String(req.query["grantId"] ?? "").trim().toLowerCase();
+  let grant = await getGrantByRepoFullName(repoFullName);
+  if (requestedGrantId) {
+    const selected = await getGrantById(requestedGrantId);
+    if (!selected || (grant && selected.repoId !== grant.repoId)) {
+      res.status(404).json({ ok: false, error: "No lock found for this grantId on this repo" });
+      return;
+    }
+    grant = selected;
+  }
   if (!grant) {
     res.status(404).json({ ok: false, error: "No lock found for this repo" });
     return;
@@ -232,7 +244,12 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
     })
     .filter(Boolean);
 
-  const progress = buildProgress(resolvedGrant);
+  const repoTotalForProgress = await repoPushTotal(resolvedGrant.repoId);
+  const progress = buildProgress(resolvedGrant, grantRelativeCount(resolvedGrant, repoTotalForProgress));
+  const grants = await buildGrantEntries(
+    resolvedGrant.repoId,
+    await listGrantsForRepo(resolvedGrant.repoId),
+  );
   const [githubOwner] = splitRepo(resolvedGrant.repoFullName, resolvedGrant.platform ?? "github");
 
   const releasedWei = parseWei(resolvedGrant.tokensPerMilestone) * BigInt(resolvedGrant.lastPaidMilestone);
@@ -292,6 +309,7 @@ export async function handleLockDetail(req: Request, res: Response): Promise<voi
     releasedFormatted: formatTokenAmount(releasedWei.toString()),
     remaining: remainingWei.toString(),
     remainingFormatted: formatTokenAmount(remainingWei.toString()),
+    grants,
     tokenHolders,
     totalTokenLocked: totalTokenLocked.toString(),
     totalTokenLockedFormatted: formatTokenAmount(totalTokenLocked.toString()),

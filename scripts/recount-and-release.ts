@@ -33,6 +33,11 @@ const ESCROW_ABI = parseAbi([
   "event Released(bytes32 indexed repoId, address indexed recipient, uint256 amount, uint256 pushMilestone, uint256 totalReleasedSoFar)",
 ]);
 
+const ESCROW_V3_ABI = parseAbi([
+  "function release(bytes32 grantId, uint256 totalVerifiedPushes) external",
+  "event Released(bytes32 indexed grantId, bytes32 indexed repoId, address indexed recipient, uint256 amount, uint256 pushMilestone, uint256 totalReleasedSoFar)",
+]);
+
 async function main() {
   const repo = process.argv[2];
   if (!repo) throw new Error("usage: recount-and-release.ts <owner/repo>");
@@ -80,22 +85,77 @@ async function main() {
     dataSuffix: BUILDER_DATA_SUFFIX,
   });
 
-  let releaseTx: Hash | null = null;
+  // Multi-lock (§4.4): settle EVERY grant on the repo against the
+  // certified total, each on its own basis — V3 grants by grantId
+  // against the repo cumulative total (the contract derives from
+  // the grant's baseline), legacy grants against their
+  // grant-relative total (certified total minus the pushes counted
+  // before that grant registered, derived from the recorded
+  // counter vs the grant record's own count). When no grant records
+  // are readable, fall back to the pre-multi-lock single release
+  // against GIT_ESCROW_ADDRESS.
+  const releases: Array<{ grantId: string | null; escrow: string; tx: Hash | null; error?: string }> = [];
+  let grants: Awaited<ReturnType<typeof import("../src/lib/redis").listGrantsForRepo>> = [];
   try {
-    releaseTx = await walletClient.writeContract({
-      address: escrowAddress as Address,
-      abi: ESCROW_ABI,
-      functionName: "release",
-      args: [repoIdToBytes32(repoId), BigInt(recount.recountedCount)],
-      account,
-    });
-    const receipt = await publicClient.waitForTransactionReceipt({ hash: releaseTx });
-    console.log(`RELEASE tx=${releaseTx} status=${receipt.status}`);
+    const { listGrantsForRepo } = await import("../src/lib/redis");
+    const { resolveGrantEscrowAddress } = await import("../src/lib/chains");
+    grants = await listGrantsForRepo(repoId);
+    for (const grant of grants) {
+      if (grant.status !== "active") continue;
+      const grantEscrow = resolveGrantEscrowAddress(grant) ?? escrowAddress;
+      try {
+        let tx: Hash;
+        if (grant.escrowVersion === 3 && grant.grantId) {
+          tx = await walletClient.writeContract({
+            address: grantEscrow as Address,
+            abi: ESCROW_V3_ABI,
+            functionName: "release",
+            args: [grant.grantId as `0x${string}`, BigInt(recount.recountedCount)],
+            account,
+          });
+        } else {
+          const offset = Math.max(0, recount.recordedCount - grant.verifiedPushCount);
+          const relativeTotal = Math.max(0, recount.recountedCount - offset);
+          tx = await walletClient.writeContract({
+            address: grantEscrow as Address,
+            abi: ESCROW_ABI,
+            functionName: "release",
+            args: [repoIdToBytes32(repoId), BigInt(relativeTotal)],
+            account,
+          });
+        }
+        const receipt = await publicClient.waitForTransactionReceipt({ hash: tx });
+        console.log(`RELEASE grant=${grant.grantId ?? repoId} tx=${tx} status=${receipt.status}`);
+        releases.push({ grantId: grant.grantId ?? null, escrow: grantEscrow, tx });
+      } catch (err) {
+        // "No new milestones" is a valid end state (already paid).
+        const msg = err instanceof Error ? err.message.slice(0, 200) : String(err);
+        console.log(`RELEASE grant=${grant.grantId ?? repoId} skipped/failed: ${msg}`);
+        releases.push({ grantId: grant.grantId ?? null, escrow: grantEscrow, tx: null, error: msg });
+      }
+    }
   } catch (err) {
-    // A release with no new milestone reverts on-chain ("no new
-    // milestones") — that is a valid end state when the recount backs
-    // nothing beyond what was already paid.
-    console.log(`RELEASE skipped/failed: ${err instanceof Error ? err.message.slice(0, 200) : String(err)}`);
+    console.log(`GRANT LOOKUP failed (falling back to single release): ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  let releaseTx: Hash | null = releases.find((r) => r.tx)?.tx ?? null;
+  if (grants.length === 0) {
+    try {
+      releaseTx = await walletClient.writeContract({
+        address: escrowAddress as Address,
+        abi: ESCROW_ABI,
+        functionName: "release",
+        args: [repoIdToBytes32(repoId), BigInt(recount.recountedCount)],
+        account,
+      });
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: releaseTx });
+      console.log(`RELEASE tx=${releaseTx} status=${receipt.status}`);
+    } catch (err) {
+      // A release with no new milestone reverts on-chain ("no new
+      // milestones") — that is a valid end state when the recount backs
+      // nothing beyond what was already paid.
+      console.log(`RELEASE skipped/failed: ${err instanceof Error ? err.message.slice(0, 200) : String(err)}`);
+    }
   }
 
   console.log(
@@ -105,6 +165,7 @@ async function main() {
       recordedCount: recount.recordedCount,
       equal: recount.recountedCount === recount.recordedCount,
       releaseTx,
+      releases,
     }),
   );
   process.exit(0);

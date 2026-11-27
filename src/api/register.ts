@@ -8,11 +8,18 @@ import type { Request, Response } from "express";
 import { createPublicClient, http, parseAbi, parseEventLogs, type Hash } from "viem";
 import { env } from "../lib/env";
 import {
+  escrowVersionOf,
   getVestingChainConfig,
   knownEscrowAddresses,
   type VestingChainKey,
 } from "../lib/chains";
-import { saveGrant, getGrant, type GrantRecord } from "../lib/redis";
+import {
+  saveGrant,
+  saveGrantById,
+  getGrant,
+  listGrantsForRepo,
+  type GrantRecord,
+} from "../lib/redis";
 import { validateRepoAccess, resolveInstallationForRepo } from "../github/githubApp";
 import { getRedis, KEYS } from "../lib/redis";
 import {
@@ -36,6 +43,11 @@ const ESCROW_ABI = parseAbi([
   "event Locked(bytes32 indexed repoId, address indexed recipient, address indexed token, uint256 amount, uint256 totalPushesRequired, uint256 releasesPerMilestone, uint256 tokensPerMilestone)",
 ]);
 
+const ESCROW_V3_ABI = parseAbi([
+  "event Locked(bytes32 indexed grantId, bytes32 indexed repoId, address indexed recipient, address token, uint256 amount, uint256 totalPushesRequired, uint256 releasesPerMilestone, uint256 tokensPerMilestone, uint256 startPushCount)",
+  "function getGrant(bytes32 grantId) view returns ((bytes32 repoId, address recipient, address token, uint256 totalLocked, uint256 totalReleased, uint256 totalPushesRequired, uint256 pushesPerMilestone, uint256 tokensPerMilestone, uint256 lastPaidMilestone, bool active, bool streaming, uint64 lockedAt, uint256 startPushCount))",
+]);
+
 async function lockTxInfo(
   txHash: string,
   chain: VestingChainKey,
@@ -56,6 +68,12 @@ async function lockTxInfo(
    *  recorded on the grant so the release path services the grant
    *  through the escrow it was created under (v1→v2 cutover). */
   eventEscrow: string | null;
+  /** Multi-lock: the V3 Locked event's grantId (V3 escrows only). */
+  grantId: string | null;
+  /** Multi-lock: startPushCount carried by the V3 Locked event. */
+  eventStartPushCount: number | null;
+  /** Escrow generation of the emitting contract, by address identity. */
+  escrowVersion: 1 | 2 | 3 | null;
 }> {
   const empty = {
     repoId: null,
@@ -64,12 +82,47 @@ async function lockTxInfo(
     eventRecipient: null,
     eventToken: null,
     eventEscrow: null,
+    grantId: null,
+    eventStartPushCount: null,
+    escrowVersion: null,
   };
   const cfg = getVestingChainConfig(chain);
   if (!cfg.escrowAddress) return empty;
   try {
     const client = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
     const receipt = await client.getTransactionReceipt({ hash: txHash as Hash });
+    // Multi-lock: a V3 escrow's Locked event has a different
+    // signature (grantId first) — try the V3 ABI first; a log that
+    // parses under it IS a V3 lock. Fall back to the V1/V2 ABI.
+    const v3Logs = parseEventLogs({ abi: ESCROW_V3_ABI, logs: receipt.logs, eventName: "Locked" });
+    if (v3Logs.length > 0) {
+      const known = knownEscrowAddresses(chain);
+      const logs = v3Logs.filter((l) => known.includes(l.address.toLowerCase()));
+      const inConfigured = logs.some(
+        (l) => l.address.toLowerCase() === cfg.escrowAddress!.toLowerCase(),
+      );
+      const lockedInWrongEscrow = !inConfigured && v3Logs.length > 0;
+      const first = logs[0];
+      if (!first?.args?.repoId) return { ...empty, lockedInWrongEscrow };
+      let blockTimestampSec: number | null = null;
+      try {
+        const block = await client.getBlock({ blockNumber: receipt.blockNumber });
+        blockTimestampSec = Number(block.timestamp);
+      } catch { /* timestamp stays null */ }
+      const eventEscrow = first.address.toLowerCase();
+      return {
+        repoId: first.args.repoId.slice(2),
+        blockTimestampSec,
+        lockedInWrongEscrow,
+        eventRecipient: first.args.recipient?.toLowerCase() ?? null,
+        eventToken: first.args.token?.toLowerCase() ?? null,
+        eventEscrow,
+        grantId: first.args.grantId?.toLowerCase() ?? null,
+        eventStartPushCount:
+          first.args.startPushCount !== undefined ? Number(first.args.startPushCount) : null,
+        escrowVersion: escrowVersionOf(chain, eventEscrow),
+      };
+    }
     const allLogs = parseEventLogs({ abi: ESCROW_ABI, logs: receipt.logs, eventName: "Locked" });
     // The lock counts only when the Locked event was emitted BY one
     // of the platform's escrows on this chain (address equality): the
@@ -99,13 +152,17 @@ async function lockTxInfo(
       const block = await client.getBlock({ blockNumber: receipt.blockNumber });
       blockTimestampSec = Number(block.timestamp);
     } catch { /* timestamp stays null → ordering unprovable for this tx */ }
+    const eventEscrow = logs[0]?.address?.toLowerCase() ?? null;
     return {
       repoId: repoId.slice(2),
       blockTimestampSec,
       lockedInWrongEscrow,
       eventRecipient: logs[0]?.args?.recipient?.toLowerCase() ?? null,
       eventToken: logs[0]?.args?.token?.toLowerCase() ?? null,
-      eventEscrow: logs[0]?.address?.toLowerCase() ?? null,
+      eventEscrow,
+      grantId: null,
+      eventStartPushCount: null,
+      escrowVersion: escrowVersionOf(chain, eventEscrow),
     };
   } catch (err) {
     console.warn("[register] Could not read Locked event from tx:", err);
@@ -133,6 +190,10 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
       feeLockVault?: string;
       /** Fee-stream schedule (pushes over which each fee tranche vests). */
       feePushesPerTranche?: number;
+      /** Multi-lock (§6): optional grantId the caller expects this
+       *  lock to have received — cross-checked against the Locked
+       *  event; a mismatch is a hard error, never a silent re-key. */
+      grantId?: string;
     }
   >;
 
@@ -203,6 +264,40 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
   const chainKey = (detectedChain ?? chain) as VestingChainKey;
   const lockInfo = await lockTxInfo(onChainTxHash, chainKey);
   const repoId = lockInfo.repoId ?? repoIdFromPlatform(platform, repoFullName);
+
+  // Multi-lock (§6): an expected grantId in the request must match
+  // the Locked event's grantId exactly.
+  if (body.grantId && lockInfo.grantId && body.grantId.toLowerCase() !== lockInfo.grantId) {
+    res.status(400).json({
+      ok: false,
+      error: `grantId mismatch: request names ${body.grantId} but the lock transaction's Locked event carries ${lockInfo.grantId}`,
+      code: "GRANT_ID_MISMATCH",
+    });
+    return;
+  }
+
+  // Multi-lock (§4.3): for a V3 lock, the grant's baseline comes
+  // from CHAIN (getGrant(grantId).startPushCount) — never from the
+  // request. The Locked event's value is the fallback if the read
+  // fails.
+  let v3StartPushCount: number | undefined;
+  if (lockInfo.escrowVersion === 3 && lockInfo.grantId && lockInfo.eventEscrow) {
+    v3StartPushCount = lockInfo.eventStartPushCount ?? undefined;
+    try {
+      const cfg = getVestingChainConfig(chainKey);
+      const client = createPublicClient({ chain: cfg.chain, transport: http(cfg.rpcUrl) });
+      const onChain = await client.readContract({
+        address: lockInfo.eventEscrow as `0x${string}`,
+        abi: ESCROW_V3_ABI,
+        functionName: "getGrant",
+        args: [lockInfo.grantId as `0x${string}`],
+      });
+      v3StartPushCount = Number(onChain.startPushCount);
+    } catch (err) {
+      console.warn("[register] V3 getGrant read failed; using Locked event baseline:", err);
+    }
+  }
+  const isV3Lock = lockInfo.escrowVersion === 3 && Boolean(lockInfo.grantId);
 
   // Launch-gate checks (Codex rounds 1–3). A stamp asserts "verified
   // FIRST, then locked/launched, with the PREPARED launch input".
@@ -422,10 +517,15 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
       }
     }
   }
-  const existing = await getGrant(repoId);
-  if (existing && existing.status === "active") {
-    res.status(409).json({ ok: false, error: "Active vesting grant already exists for this repo" });
-    return;
+  // Multi-lock (§4.3): the one-active-grant rule binds only V1/V2
+  // escrows, where a second lock would have reverted on-chain
+  // anyway. A V3 lock registers freely beside any existing grants.
+  if (!isV3Lock) {
+    const existingGrants = await listGrantsForRepo(repoId);
+    if (existingGrants.some((g) => g.status === "active")) {
+      res.status(409).json({ ok: false, error: "Active vesting grant already exists for this repo" });
+      return;
+    }
   }
 
   let githubInstallId = Number(installationId ?? 0);
@@ -478,7 +578,11 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
   }
 
   const redis = getRedis();
-  await redis.set(KEYS.pushCount(repoId), "0");
+  // Multi-lock (§4.3): the push counter is repo-owned history —
+  // initialise it only when absent (SET NX), never reset it. A repo
+  // with prior grants keeps its counted total as the new grant's
+  // counting context.
+  await redis.set(KEYS.pushCount(repoId), "0", "NX");
 
   let ownerDid = gitlawbOwnerDid;
   if (platform === "gitlawb" && !ownerDid) {
@@ -501,6 +605,15 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     tokensPerMilestone,
     verifiedPushCount: 0,
     lastPaidMilestone: 0,
+    ...(isV3Lock
+      ? {
+          grantId: lockInfo.grantId!,
+          startPushCount: v3StartPushCount ?? 0,
+          escrowVersion: 3 as const,
+        }
+      : lockInfo.escrowVersion
+        ? { escrowVersion: lockInfo.escrowVersion }
+        : {}),
     onChainTxHash,
     // Per-grant escrow (v1→v2 cutover): the escrow that emitted this
     // grant's Locked event. The release path services the grant
@@ -526,7 +639,11 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
     updatedAt: now,
   };
 
-  await saveGrant(grant);
+  if (isV3Lock) {
+    await saveGrantById(grant);
+  } else {
+    await saveGrant(grant);
+  }
   console.log(`[register] New ${platform} vesting grant for ${normalizedRepo} by ${recipient}`);
 
   // Dual reward (§8B): a VERIFIED launcher (valid gate token validated
@@ -561,6 +678,7 @@ export async function handleRegister(req: Request, res: Response): Promise<void>
   res.json({
     ok: true,
     repoId,
+    ...(grant.grantId ? { grantId: grant.grantId } : {}),
     grant,
     lockPath,
     lockUrl: `${env.FRONTEND_URL}${lockPath}`,

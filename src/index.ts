@@ -6,7 +6,7 @@ import { env, getMissingEnvVars, getAllowedCorsOrigins } from "./lib/env";
 import { handleMcpHttp } from "./mcpHttp";
 import { handleWebhook } from "./github/webhookHandler";
 import { handleRegister } from "./api/register";
-import { handleStatus, handleList } from "./api/status";
+import { handleStatus, handleList, handleGrantById } from "./api/status";
 import {
   handleAgentBriefing,
   handleAgentGrants,
@@ -191,6 +191,7 @@ app.post("/api/admin/delete-grant", (req, res) => void handleAdminDeleteGrant(re
 app.post("/api/admin/backfill-pushes", (req, res) => void handleAdminBackfillPushes(req, res));
 app.get("/api/vesting/grants", (req, res) => void handleGrantsByRecipient(req, res));
 app.get("/api/vesting/status/:repoId", (req, res) => void handleStatus(req, res));
+app.get("/api/vesting/grant/:grantId", (req, res) => void handleGrantById(req, res));
 app.get("/api/vesting/status", (req, res) => void handleStatus(req, res));
 app.get("/api/vesting/list", (req, res) => void handleList(req, res));
 app.post("/api/dev/simulate-push", (req, res) => void handleDevSimulatePush(req, res));

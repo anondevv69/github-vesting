@@ -4,10 +4,12 @@
 
 import {
   createPublicClient,
+  encodeAbiParameters,
   encodeFunctionData,
   http,
   keccak256,
   parseAbi,
+  parseAbiParameters,
   parseUnits,
   toBytes,
   type Address,
@@ -16,6 +18,7 @@ import {
 import { env } from "./env";
 import {
   defaultVestingChain,
+  escrowVersionOf,
   getVestingChainConfig,
   parseVestingChain,
   type VestingChainKey,
@@ -25,6 +28,7 @@ import { detectStreamingToken } from "./detectLockMode";
 const ESCROW_ABI = parseAbi([
   "function lock(bytes32 repoId, address token, uint256 amount, uint256 totalPushes, uint256 pushesPerMile) external",
   "function lockAllowance(bytes32 repoId, address token, uint256 amount, uint256 totalPushes, uint256 pushesPerMile) external",
+  "function grantNonce(bytes32 repoId) view returns (uint256)",
 ]);
 
 const ERC20_ABI = parseAbi([
@@ -58,6 +62,15 @@ export type PrepareLockParams = {
 
 export type PrepareLockResult = {
   chain: VestingChainKey;
+  /** Escrow generation the prepared lock targets (design §4.3). */
+  escrowVersion: 1 | 2 | 3 | null;
+  /** Multi-lock (design §4.3): the grantId the lock WILL get if it
+   *  lands next, computed from the escrow's current on-chain
+   *  grantNonce for this repo + caller wallet + token. Advisory
+   *  only — a competing lock can consume the nonce first;
+   *  confirm-lock resolves the real grantId from the Locked event.
+   *  V3 escrows only. */
+  expectedGrantId?: string;
   tokenSymbol: string;
   tokenDecimals: number;
   amountWei: string;
@@ -155,8 +168,35 @@ export async function prepareLockTransactions(params: PrepareLockParams): Promis
     chainId,
   });
 
+  // Multi-lock: escrow version + advisory expected grantId (V3).
+  const escrowVersion = escrowVersionOf(chainKey, escrow);
+  let expectedGrantId: string | undefined;
+  if (escrowVersion === 3) {
+    try {
+      const nonce = await client.readContract({
+        address: escrow,
+        abi: ESCROW_ABI,
+        functionName: "grantNonce",
+        args: [repoIdBytes32(params.repoFullName)],
+      });
+      expectedGrantId = keccak256(
+        encodeAbiParameters(parseAbiParameters("bytes32, address, address, uint256"), [
+          repoIdBytes32(params.repoFullName),
+          params.wallet,
+          params.token,
+          nonce,
+        ]),
+      );
+    } catch {
+      // Advisory only — a failed nonce read never blocks a prepare.
+      expectedGrantId = undefined;
+    }
+  }
+
   return {
     chain: chainKey,
+    escrowVersion,
+    ...(expectedGrantId ? { expectedGrantId } : {}),
     tokenSymbol: symbol,
     tokenDecimals: decimals,
     amountWei: amountWei.toString(),

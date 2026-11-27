@@ -94,6 +94,12 @@ export const env = {
    *  (0x3625F879C678306E92E2C27F61b9BcD8015E81A7). Unset → no legacy
    *  resolution; unstored grants use the configured escrow. */
   GIT_ESCROW_LEGACY_ADDRESS: get("GIT_ESCROW_LEGACY_ADDRESS"),
+  /** GitEscrowV2 on Base — the escrow that was "current" before the
+   *  V3 repoint (multi-lock cutover). After GIT_ESCROW_ADDRESS points
+   *  at GitEscrowV3, this keeps the V2 deployment in the chain's known
+   *  escrow list (registration parsing) and pins escrowVersionOf's
+   *  version-2 identity. Unset pre-cutover. */
+  GIT_ESCROW_V2_ADDRESS: get("GIT_ESCROW_V2_ADDRESS"),
   /** FeeStreamEscrow (launcher fee-lock grants) on Base — see
    *  contracts/FeeStreamEscrow.sol. Unset disables fee-tranche releases. */
   FEE_STREAM_ESCROW_ADDRESS: get("FEE_STREAM_ESCROW_ADDRESS"),
