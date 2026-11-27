@@ -1,3 +1,1 @@
-{
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
-}
+{"rewrites":[{"destination":"https://api.proofofdev.xyz/agent.md","source":"/agent.md"},{"destination":"/index.html","source":"/(.*)"}]}

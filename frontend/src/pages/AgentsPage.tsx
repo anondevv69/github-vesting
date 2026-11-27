@@ -68,7 +68,7 @@ export function AgentsPage() {
           <h3>What the skill provides</h3>
           <ul className="help-list">
             <li>Intent routing (my vesting, status on repo, lock tokens on a repo)</li>
-            <li>Full lock flow: prepare txs → Bankr submit → confirm-lock</li>
+            <li>Full lock flow: verify → prepare txs → Bankr submit → confirm-lock</li>
             <li>Tweet-friendly <code>tweetReply</code> from the API</li>
             <li>Linked wallet via <code>x-wallet-address</code> header</li>
             <li>Web fallback → <code>/create</code> · status → <code>/lock/owner/repo</code></li>
@@ -103,7 +103,7 @@ export function AgentsPage() {
           <ul className="help-list">
             <li>Step 0 GitHub App verification — required before any launch or lock prep</li>
             <li>Platform launch: verify → prepare → launch → auto-lock → register</li>
-            <li>Lock flow: prepare txs → sign → confirm-lock</li>
+            <li>Lock flow: verify → prepare txs → sign → confirm-lock</li>
             <li>ShipRewards: what a counted merge earned, pending rewards on link</li>
             <li>Ship reports (attestation) and reviewer-swarm enrolment</li>
           </ul>
