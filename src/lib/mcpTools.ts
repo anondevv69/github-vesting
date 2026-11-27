@@ -9,7 +9,7 @@
  * transports so they cannot drift.
  *
  * The tools wrap the Proof of Dev agent API:
- *   verify_github      POST /api/launch/verify-github (LAUNCH GATE — Step 0)
+ *   verify_github      POST /api/launch/verify-github (LAUNCH GATE — Step 1)
  *   prepare_launch     POST /api/launch/prepare-launch (launch-SDK input;
  *                                                    REQUIRES the gate token;
  *                                                    launcher fee share → the
@@ -30,7 +30,7 @@
  *
  * Trust notes (same as the API itself — the MCP layer adds no privilege):
  * - Reads are unauthenticated; a wallet address is public information.
- * - LAUNCH GATE: verify_github is Step 0 of any launch/deploy. The server
+ * - LAUNCH GATE: verify_github is Step 1 of any launch/deploy or lock. The server
  *   checks (with the GitHub App's own credentials) that the App is
  *   installed on the repo, the GitHub login owns/admins it, and the wallet
  *   is linked to that login, then issues a short-lived token bound to
@@ -128,13 +128,20 @@ export function createProofofdevServer(rawBase: string): McpServer {
 
   reg.tool(
     "verify_github",
-    "LAUNCH GATE — Step 0 before ANY launch/deploy: run the server-side GitHub App verification for " +
-      "{githubLogin, repo, wallet, chain}. The server (never the agent) checks that the Proof of Dev " +
-      "GitHub App is installed on the repo, that the login owns or admins the repo, and that the wallet " +
-      "is linked to that login. On success it returns a verificationToken (valid ~15 minutes, bound to " +
-      "exactly that login/repo/wallet/chain) which prepare_lock and confirm-lock REQUIRE. If this " +
-      "refuses, stop: relay the error (app not installed / not owner or admin / wallet not linked) and " +
-      "fix that precondition — do not proceed to prepare a launch unverified.",
+    "LAUNCH GATE — Step 1 before ANY launch/deploy or lock: run this FIRST, in the same session, " +
+      "before prepare_lock / prepare_launch / confirm-lock. Runs the server-side GitHub App " +
+      "verification for {githubLogin, repo, wallet, chain} — all three are required. The server " +
+      "(never the agent) checks that the Proof of Dev GitHub App is installed on the repo, that the " +
+      "login owns or admins the repo, and that the wallet is linked to that login. On success it " +
+      "returns a verificationToken (valid ~15 minutes, bound to exactly that login/repo/wallet/chain) " +
+      "which prepare_lock and confirm-lock REQUIRE. If a later call refuses with " +
+      "LAUNCH_VERIFICATION_REQUIRED, never retry the same call — run this tool. If THIS refuses, fix " +
+      "by code, then re-run: LAUNCH_APP_NOT_INSTALLED -> the user installs the GitHub App on the repo " +
+      "(https://github.com/apps/bankr-vesting/installations/new); LAUNCH_WALLET_NOT_LINKED -> POST " +
+      "/api/agent/link-github {wallet, githubLogin} and the user opens the returned linkUrl once; " +
+      "LAUNCH_NOT_OWNER_OR_ADMIN -> verify with the login that owns/admins the repo; " +
+      "LAUNCH_TOKEN_EXPIRED on a later call -> re-run this tool for a fresh token. Do not proceed " +
+      "to prepare anything unverified.",
     {
       githubLogin: z.string().describe("GitHub login that owns/admins the repo"),
       repo: z.string().describe("GitHub repo as owner/repo"),
@@ -150,8 +157,10 @@ export function createProofofdevServer(rawBase: string): McpServer {
 
   reg.tool(
     "prepare_launch",
-    "PREPARE a platform token launch (Bankr launch-SDK input): REQUIRES a verificationToken from " +
-      "verify_github (Step 0) bound to this exact repo + wallet + chain — without a valid one the server " +
+    "PREPARE a platform token launch (Bankr launch-SDK input): strict order — (1) verify_github in " +
+      "this session, (2) POST /api/launch/onboard with that token (the platform deploys the project's " +
+      "feeLockVault and registers its fee grant), (3) this tool. REQUIRES a verificationToken from " +
+      "verify_github (Step 1) bound to this exact repo + wallet + chain — without a valid one the server " +
       "refuses (403) and nothing is prepared. Returns the launch input with the production fee split " +
       "(2500 bps of the creator slice to the platform reward treasury, 7500 bps to the project's " +
       "feeLockVault — the launcher's fee share NEVER goes to a raw wallet; fees auto-lock and unlock by " +
@@ -213,11 +222,13 @@ export function createProofofdevServer(rawBase: string): McpServer {
     "prepare_lock",
     "PREPARE a vesting lock: returns the unsigned approve+lock transactions for a wallet to sign. " +
       "This tool NEVER signs or submits anything and cannot move funds. LAUNCH GATE: a verificationToken " +
-      "from verify_github (Step 0) is REQUIRED, bound to this exact repo + wallet + chain — without a " +
-      "valid one the server refuses (403) and nothing is prepared. Before calling, confirm with the user: " +
-      "token, amount, repo, chain, total pushes, pushes per milestone. After calling, present the prepared " +
-      "transactions for signing via the user's wallet route, then confirm with POST /api/agent/confirm-lock " +
-      "(which requires the same verificationToken).",
+      "from verify_github (Step 1) obtained earlier in THIS session is REQUIRED, bound to this exact " +
+      "repo + wallet + chain — never call this tool before verify_github; without a valid token the " +
+      "server refuses (403, LAUNCH_VERIFICATION_REQUIRED) and nothing is prepared. Before calling, " +
+      "confirm with the user: token, amount, repo, chain, total pushes, pushes per milestone. After " +
+      "calling, present the prepared transactions for signing via the user's wallet route, then confirm " +
+      "with POST /api/agent/confirm-lock using a FRESH verificationToken (re-run verify_github first — " +
+      "the prepare token may have expired while the transactions mined).",
     {
       wallet: z.string().describe("Funding wallet address (0x…) — the lock recipient"),
       repo: z.string().describe("GitHub repo as owner/repo"),

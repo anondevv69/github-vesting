@@ -101,6 +101,29 @@ x-wallet-address: 0x…
 
 ---
 
+## POST /api/launch/verify-github — ALWAYS FIRST for any write
+
+Obtain the session's `verificationToken` before lock / confirm-lock /
+onboard / prepare-launch. All three body fields are required.
+
+```http
+POST {API}/api/launch/verify-github
+Content-Type: application/json
+
+{
+  "githubLogin": "their-login",
+  "repo": "owner/repo",
+  "wallet": "0x…",
+  "chain": "base"
+}
+```
+
+**Response (200):** `{ "ok": true, "verified": true, "verificationToken": "…", "expiresAt": "…" }` — token lives ~15 min, bound to login+repo+wallet+chain.
+
+**Refusals (fix by `code`, then re-verify):** `LAUNCH_VERIFY_BAD_INPUT` (a required field is missing) · `LAUNCH_APP_NOT_INSTALLED` / `LAUNCH_APP_NO_ACCESS` (user installs the app: `https://github.com/apps/bankr-vesting/installations/new`) · `LAUNCH_NOT_OWNER_OR_ADMIN` · `LAUNCH_WALLET_NOT_LINKED` (`POST /api/agent/link-github` `{wallet, githubLogin}` → user opens the returned `linkUrl` once). Without a token, lock/prepare/confirm return 403 `LAUNCH_VERIFICATION_REQUIRED` — never resend the same call; verify instead.
+
+---
+
 ## POST /api/agent/lock
 
 Prepare lock transactions + Bankr execution instructions (one-shot).
@@ -115,7 +138,8 @@ x-wallet-address: 0x…
   "token": "Space",
   "amount": "3.49M",
   "totalPushes": 10,
-  "pushesPerMilestone": 10
+  "pushesPerMilestone": 10,
+  "verificationToken": "<token from verify-github, this session>"
 }
 ```
 
@@ -126,6 +150,7 @@ x-wallet-address: 0x…
 | `amount` | yes | Human units: `3490000`, `3.49M`, `1.5K` |
 | `totalPushes` | no | Default `10` |
 | `pushesPerMilestone` | no | Default = `totalPushes` (single release) |
+| `verificationToken` | **yes** | From `POST /api/launch/verify-github` in this session; without it the call returns 403 `LAUNCH_VERIFICATION_REQUIRED` |
 
 **Response (200):**
 
@@ -165,7 +190,8 @@ x-wallet-address: 0x…
 
 {
   "repo": "owner/repo",
-  "lockTxHash": "0x…"
+  "lockTxHash": "0x…",
+  "verificationToken": "<FRESH token — re-run verify-github first>"
 }
 ```
 

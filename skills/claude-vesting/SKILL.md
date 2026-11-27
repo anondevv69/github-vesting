@@ -2,7 +2,7 @@
 name: claude-vesting
 description: Proof of Dev — GitHub-gated token vesting (proofofdev.xyz). Lock any ERC-20 on Base so verified pushes and merged PRs release it on a milestone schedule, check vesting progress for a wallet or repo, link a GitHub account to a wallet, and earn the per-counted-merge ShipRewards payout as a PR author. Use when the user mentions Proof of Dev, proofofdev, github vesting, locking tokens against a repo, vesting progress / verified pushes / milestones, linking a wallet to GitHub, merge rewards, reporting a ship (attestation) or checking a ship report's state, or asks what a Claude Ship / /ship merge earned. Works entirely over the agent API at https://api.proofofdev.xyz — no website required.
 tags: [github, vesting, claude, base, defi, proofofdev, rewards]
-version: 2
+version: 3
 ---
 
 # Proof of Dev — Claude skill (GitHub-gated token vesting)
@@ -46,6 +46,42 @@ directory (e.g. `~/.claude/skills/claude-vesting/` for Claude Code) so the
 skill triggers on the phrases in the description.
 
 ---
+
+## READ FIRST — hard rules for every write (lock, launch, onboard)
+
+These rules exist because the most common agent failure on this API is
+calling a prepare endpoint with no verification token and reporting a
+dead end. Do not be that agent.
+
+1. **VERIFY IN THIS SESSION, BEFORE ANY PREPARE.** No
+   `POST /api/agent/prepare-lock`, `POST /api/agent/lock`,
+   `POST /api/agent/confirm-lock`, `POST /api/launch/onboard`, or
+   `POST /api/launch/prepare-launch` call may be made unless you hold a
+   `verificationToken` returned by `POST /api/launch/verify-github`
+   **earlier in this same session**, bound to the exact
+   `{githubLogin, repo, wallet, chain}` you are about to act on. A
+   token from another session, another repo, another wallet, or
+   another chain does not count. Tokens live ~15 minutes — if yours
+   may have expired, verify again; verifying is free and instant.
+2. **ON `LAUNCH_VERIFICATION_REQUIRED`, NEVER RETRY THE SAME CALL.**
+   That error means rule 1 was broken (or the token lapsed). Go to
+   Step 1 (verify) and run it, then diagnose any refusal by its
+   specific `code` using the error table in Step 1. Resending the
+   prepare/confirm call unchanged will fail identically.
+3. **NEVER INVENT ENDPOINTS, FIELDS, OR VALUES.** Every call in the
+   procedures below is given with its exact method, path, and JSON
+   body. Use them verbatim. If a value the body needs is not known
+   (the repo, the wallet, the login), ask the user — never guess,
+   never substitute a similar-looking repo or an address from memory.
+4. **AMOUNTS COME FROM LIVE READS, NEVER FROM MEMORY.** Before
+   preparing any lock, read the wallet's current balance for the
+   token (`GET /api/agent/fee-tokens`, wallet header) in this
+   session. A fraction in the user's words ("half my POD") is
+   computed from that live balance — see "Phrase handling" in the
+   lock procedure.
+5. **YOUR SELF-ASSERTION IS NOT VERIFICATION.** Only the server
+   issuing a `verificationToken` counts. Never tell the user "we're
+   verified" because the app looks installed or the user says so.
 
 ## Hard rules (read before any write)
 
@@ -123,59 +159,94 @@ for the web fallback).
 
 ---
 
-## Step 0 — GitHub App verification (REQUIRED before any launch/deploy)
+## Step 1 — VERIFY (required before any lock, launch, or onboard)
 
-**No launch, lock preparation, or grant registration happens before this
-step passes.** Whether the user is deploying on the Proof of Dev
-platform or you are acting as their agent, the launch is gated on a
-**server-side** GitHub App verification:
+**No lock preparation, launch preparation, onboarding, or grant
+registration happens before this step passes in this session.** The
+gate is a **server-side** GitHub App verification. Run it exactly like
+this — all three body fields are required (`wallet` included; omitting
+it returns `LAUNCH_VERIFY_BAD_INPUT`):
 
 ```bash
 curl -s -X POST "https://api.proofofdev.xyz/api/launch/verify-github" \
-  -H "x-wallet-address: 0xWALLET" -H "content-type: application/json" \
-  -d '{ "githubLogin": "their-login", "repo": "owner/repo", "chain": "base" }'
+  -H "content-type: application/json" \
+  -d '{
+    "githubLogin": "their-login",
+    "repo": "owner/repo",
+    "wallet": "0xWALLET",
+    "chain": "base"
+  }'
 ```
+
+`chain` is optional and defaults to `"base"` (`"robinhood"` and
+`"base-sepolia"` are the other accepted values) — but the token binds
+to the chain you verify for, so verify for the chain you will act on.
 
 The **server** (never you) checks all three, with the GitHub App's own
 credentials: (a) the Proof of Dev GitHub App is **installed** on the
 repo, (b) the GitHub login **owns the repo or is an admin** on it,
-(c) the wallet is **linked** to that GitHub login. On success it returns
-a `verificationToken` — signed, valid ~15 minutes, bound to exactly
-that login + repo + wallet + chain. Present it (body field
-`verificationToken`) to `POST /api/agent/lock`, `prepare-lock`, and
-`confirm-lock`; they refuse with 403 without a valid one.
+(c) the wallet is **linked** to that GitHub login. On success the
+response is `{ ok: true, verified: true, verificationToken,
+expiresAt, ... }`. **Save the `verificationToken`** — signed, valid
+~15 minutes, bound to exactly that login + repo + wallet + chainId.
+Present it as the body field `verificationToken` on every prepare and
+confirm call that follows.
 
-Hard rules for this step:
+### Verify error table — diagnose by `code`, fix, re-verify
 
-- **Your self-assertion is not verification.** Never tell the user "the
-  app is installed, we're verified" based on your own check, a repo
-  claim, or the user saying so. The only verification that counts is a
-  `verificationToken` issued by `POST /api/launch/verify-github`.
-- If verification refuses, relay the `code`/`error` as-is
-  (`LAUNCH_APP_NOT_INSTALLED`, `LAUNCH_NOT_OWNER_OR_ADMIN`,
-  `LAUNCH_WALLET_NOT_LINKED`) and fix that precondition first — install
-  the app, use the owner/admin login, or link the wallet — then verify
-  again. Do not proceed to prepare a launch unverified.
-- Tokens are single-purpose: a token for repo A fails on repo B, a
-  token for wallet X fails with wallet Y, an expired token fails.
-  Re-verify instead of working around any of these.
-- **Recognition rule:** a grant with no verification stamp gets **no**
-  launch recognition — no `launchVerified` stamp, no verified-launch
-  listing, no ShipRewards launcher enrolment. Ordinary vesting locks
-  (web wizard, no token) still register and count toward their own
-  schedule; that is vesting, not launch recognition. (The Bankr SDK
-  itself is permissionless; a launch done entirely outside Proof of
-  Dev cannot be stopped on-chain — it simply earns none of that
-  recognition.) A platform launch-prep surface
-  (`POST /api/launch/prepare-launch`, MCP `prepare_launch`) DOES
-  build SDK launch inputs — it is built and tested locally, but the
-  production API does not have these endpoints until the platform
-  redeploys; until then the gate enforces on lock preparation and
-  on recognition, not on an SDK launch itself.
+A refusal is never a dead end; each code has exactly one fix. Relay
+the `code`/`error` to the user as-is while you apply the fix.
+
+| `code` | Meaning | Your next action |
+|---|---|---|
+| `LAUNCH_VERIFY_BAD_INPUT` | A required field is missing or malformed. | Check the body: `githubLogin`, `repo` (`owner/name`), and `wallet` (`0x…`) must all be present. Fix and re-run. |
+| `LAUNCH_APP_NOT_INSTALLED` | The Proof of Dev GitHub App is not installed on the repo (or cannot access it — also `LAUNCH_APP_NO_ACCESS`). | Give the user the install URL `https://github.com/apps/bankr-vesting/installations/new` and ask them to install the app and select this repo. Wait for them, then re-run verify. |
+| `LAUNCH_NOT_OWNER_OR_ADMIN` | The login does not own the repo and is not an admin on it. | Ask the user which login owns/admins the repo; verify with that login instead. Do not proceed with a non-owner login. |
+| `LAUNCH_WALLET_NOT_LINKED` | The wallet is not linked to that GitHub login. | Run the link step below, give the user the returned `linkUrl` to open once, then re-run verify. |
+| `LAUNCH_VERIFY_UNCONFIGURED` | The server cannot issue tokens. | Stop and report it as a platform fault — nothing the user did. |
+
+**Link step (for `LAUNCH_WALLET_NOT_LINKED`)** — create a one-time
+magic link and hand it to the user:
+
+```bash
+curl -s -X POST "https://api.proofofdev.xyz/api/agent/link-github" \
+  -H "content-type: application/json" \
+  -d '{ "wallet": "0xWALLET", "githubLogin": "their-login" }'
+```
+
+The response carries `linkUrl` (valid ~15 minutes). Give it to the
+user **exactly as returned** — never construct or shorten a URL. The
+user opens it once and completes GitHub sign-in; that is the one
+human-shaped step in the whole flow, and you cannot do it for them.
+After they confirm, re-run verify. Check link state any time with
+`GET /api/dev/link-wallet/<github-login>`.
+
+**Token errors on later calls** (prepare/confirm refuse with 403):
+`LAUNCH_VERIFICATION_REQUIRED` → you sent no token; go back to Step 1.
+`LAUNCH_TOKEN_EXPIRED` or `LAUNCH_TOKEN_UNKNOWN_NONCE` → re-run
+Step 1 for a fresh token and continue (never re-prepare a lock just
+because a token lapsed — for confirm, a fresh token for the same
+login + repo + wallet + chain is accepted). `LAUNCH_TOKEN_REPO_MISMATCH`,
+`LAUNCH_TOKEN_WALLET_MISMATCH`, `LAUNCH_TOKEN_CHAIN_MISMATCH` → you
+verified for different parameters than you are acting on; re-run
+Step 1 with the exact parameters of the action. `LAUNCH_TOKEN_MALFORMED`
+/ `LAUNCH_TOKEN_BAD_SIGNATURE` → the token was truncated or altered in
+transit; re-run Step 1 and pass the new token through untouched.
+
+**Recognition rule:** a grant with no verification stamp gets **no**
+launch recognition — no `launchVerified` stamp, no verified-launch
+listing, no ShipRewards launcher enrolment. Ordinary vesting locks
+registered through the web wizard still count toward their own
+schedule; that is vesting, not launch recognition. (The Bankr SDK
+itself is permissionless; a launch done entirely outside Proof of
+Dev cannot be stopped on-chain — it simply earns none of that
+recognition.) The launch-prep surface (`POST /api/launch/prepare-launch`,
+`POST /api/launch/onboard`, MCP `prepare_launch`) is **live in
+production** and gated by the same token.
 
 ### Launcher enrolment (what verification records)
 
-A launcher who passes Step 0 and auto-locks is a **verified launcher**
+A launcher who passes Step 1 (verify) and auto-locks is a **verified launcher**
 and is enrolled automatically at grant registration, on top of the
 milestone unlocks of *their own* token. **State this precisely:
 enrolment is an eligibility record, not a payout.** The per-merge
@@ -184,18 +255,17 @@ counted merge (one payment per merge hash) — that author reward is
 separate and already works. **Never promise a launcher the platform
 reward token for someone else's merges.**
 
-**Launcher trading fees — decided rule, BUILT locally (not deployed):**
-(a) today, SDK fee recipients claim **liquid WETH** via `buildClaim`
-and nothing auto-locks fees; (b) Gregory's decided rule is that on a
-Proof of Dev launch the launcher's fee recipient is a **per-project
-fee-lock vault** (a claim-capable smart account; not the raw wallet,
-not the escrow contract, which cannot claim), and a keeper cycle
-claims accrued fees and locks them into a **fee-stream grant** whose
+**Launcher trading fees — decided rule, LIVE in production
+(deployed 2026-11-26):**
+(a) outside this platform, SDK fee recipients claim **liquid WETH**
+via `buildClaim` and nothing auto-locks fees; (b) on a Proof of Dev
+launch the launcher's fee recipient is a **per-project fee-lock
+vault** (a claim-capable smart account; not the raw wallet, not the
+escrow contract, which cannot claim), and a keeper cycle claims
+accrued fees and locks them into a **fee-stream grant** whose
 tranches unlock over subsequent counted pushes, like the supply
 lock — denomination DECIDED: WETH for the first launch (a swap to
-the project token via PodSettler stays deferred); (c) this is **BUILT locally** (E2E-proven, not deployed), not
-existing behavior — describe it as the decided design, never as
-live. Two mechanics inside it are backend/keeper concerns — never
+the project token via PodSettler stays deferred). Two mechanics inside it are backend/keeper concerns — never
 yours: a tranche's vesting baseline is set from an **oracle-signed
 count attestation** the keeper fetches from the backend at lock
 time (you never supply, estimate, or relay a push count for a fee
@@ -242,114 +312,236 @@ Rules when you build or describe a platform launch:
   to a 15% Bankr time-vest — never omit it. Unlocking on this
   platform is by verified pushes (GitEscrow), not by calendar.
 
-**Launcher flow, end to end (round-4 order):** Step 0 verify → the
-**platform deploys your per-project fee-lock vault** from the
-approved implementation (you never deploy or supply a vault) → the
-**platform registrar registers the fee grant** for your repo in the
-FeeStreamEscrow → **prepare the launch**
-(`POST /api/launch/prepare-launch` or MCP `prepare_launch` — gate
-token required; before returning anything signable it validates
-**every vault binding on-chain** — repo, launcher, escrow, WETH fee
-token, Bankr claim ledger — **and** that the matching fee grant is
-registered; any mismatch refuses with a specific `LAUNCH_VAULT_*` /
-`LAUNCH_FEE_GRANT_*` code and no input is returned) → launch with
-the returned input (25/75 split, the fee-lock vault as your fee
-recipient, vesting `{ bps: 0 }`) → supply auto-lock → register →
-ship → unlock yours at milestones. Counted merges pay the platform
-reward token to the **merge author** (separate, already working).
-Your own trading-fee share auto-locks into a fee-stream grant
-unlocking by counted pushes — the whole launch-prep surface is
-**BUILT locally and E2E-proven, but not deployed**; the production
-API does not have these endpoints until the platform redeploys,
-and until then fee recipients on live SDK launches still claim
-liquid WETH.
+**Launcher flow, end to end (strict order — same verify discipline
+as the lock flow):**
+
+1. **VERIFY** — Step 1 above; save the `verificationToken`.
+2. **ONBOARD** — `POST /api/launch/onboard` with body
+   `{ "repo": "owner/repo", "wallet": "0xWALLET", "chain": "base",
+   "verificationToken": "<token from Step 1>",
+   "feePushesPerTranche": 2 }` (`feePushesPerTranche` optional).
+   The platform deploys your per-project fee-lock vault from the
+   approved implementation (you never deploy or supply a vault) and
+   the platform registrar registers the fee grant for your repo in
+   the FeeStreamEscrow. Onboard derives everything from the token's
+   validated claims and server config — you supply no vault, escrow,
+   token, or ledger addresses. It is idempotent: a repeat call
+   returns the existing vault (`alreadyOnboarded: true`); a failed
+   grant registration returns `resumable: true` and a retry registers
+   against the same vault. Save the returned `feeLockVault`.
+3. **PREPARE-LAUNCH** — `POST /api/launch/prepare-launch` (or MCP
+   `prepare_launch`) with the token, the `feeLockVault` from Step 2,
+   and your launch parameters. Before returning anything signable it
+   validates **every vault binding on-chain** — repo, launcher,
+   escrow, WETH fee token, Bankr claim ledger — **and** that the
+   matching fee grant is registered; any mismatch refuses with a
+   specific `LAUNCH_VAULT_*` / `LAUNCH_FEE_GRANT_*` code and no input
+   is returned.
+4. **LAUNCH** — execute the returned input exactly (25/75 split, the
+   fee-lock vault as your fee recipient, vesting `{ bps: 0 }`) with
+   your wallet's signing route.
+5. **LOCK + REGISTER** — run the lock procedure below for the supply
+   you are locking (fresh verify → prepare-lock → sign → confirm),
+   which registers the grant and stamps it as a verified launch.
+6. **SHIP** — counted merges pay the platform reward token to the
+   **merge author** (separate, already working); your locked supply
+   unlocks at milestones and your trading-fee share auto-locks into
+   a fee-stream grant unlocking by counted pushes.
 
 ---
 
-## Lock flow (writes — moves real funds)
+## Lock procedure (writes — moves real funds; follow the steps in order)
 
-### 1. Prepare (Step 0 token required — see above)
+Do not skip steps, do not reorder them, and do not start Step 2
+without a token from Step 1 **in this session**.
+
+### Step 1 — VERIFY
+
+Run the verify call from "Step 1 — VERIFY" above with the exact
+`{githubLogin, repo, wallet, chain}` of this lock and save the
+returned `verificationToken`. On any refusal, work the error table —
+do not proceed.
+
+### Step 2 — PREPARE (token required)
 
 ```bash
-curl -s -X POST "https://api.proofofdev.xyz/api/agent/lock" \
+curl -s -X POST "https://api.proofofdev.xyz/api/agent/prepare-lock" \
   -H "x-wallet-address: 0xWALLET" -H "content-type: application/json" \
   -d '{
     "repo": "owner/repo",
     "token": "0xTOKEN_OR_SYMBOL",
     "amount": "1000",
     "totalPushes": 10,
-    "pushesPerMilestone": 2,
+    "pushesPerMilestone": 1,
     "chain": "base",
-    "verificationToken": "<token from Step 0>"
+    "verificationToken": "<token from Step 1>"
   }'
 ```
 
-Body fields (verified against the API): `repo` (required, `owner/name`),
-`token` (a `0x` contract address, or a symbol resolved against the wallet's
-holdings on that chain), `amount` (human units — `3490000`, `3.49M`, `1.5K`
-all parse), `totalPushes` (default 10), `pushesPerMilestone` (optional —
-defaults to `totalPushes`, i.e. one release at the end), `chain` (optional —
-`base` default, `robinhood`, `base-sepolia`).
+(`POST /api/agent/lock` is the same preparation plus an instructions
+wrapper; either is acceptable, but the body is identical and the
+token is required on both.)
 
-Success returns `ok: true` and `transactions[]` — usually `approve` (if
-needed) then `lock` — each with `to`, `data`, `value`, `chainId`,
-`description`, plus `statusUrl`, `confirmUrl`, and `bankrPrompt`.
+Body fields (verified against the API): `repo` (required,
+`owner/name`), `token` (a `0x` contract address, or a symbol resolved
+against the wallet's holdings on that chain), `amount` (human units —
+`3490000`, `3.49M`, `1.5K` all parse), `totalPushes` (default 10),
+`pushesPerMilestone` (optional — defaults to `totalPushes`, i.e. one
+release at the end; **`totalPushes` must be an exact multiple of
+`pushesPerMilestone`**), `chain` (optional — `base` default,
+`robinhood`, `base-sepolia`), `verificationToken` (required, from
+Step 1).
 
-Possible prepare-time failures:
+Success returns `ok: true`, `tokenSymbol`, `amountWei`,
+`tokensPerMilestone`, and `transactions[]` — `approve` first (only
+when `needsApprove` is true), then `lock` — each item with `step`,
+`to`, `data`, `value`, `chainId`, `description`, plus `statusUrl` and
+`confirmUrl`.
+
+**Decode and sanity-check before anything is signed.** Do not sign a
+prepared transaction you have not checked:
+
+- The **lock** item's `to` is the escrow. Every other check keys off
+  it: the **approve** item (if present) must have `to` = the token
+  contract, and its calldata must decode as
+  `approve(spender, amount)` with **spender == the lock item's `to`**
+  (the escrow) and **amount == `amountWei`** from the response.
+- The lock item's calldata must decode as
+  `lock(repoId, token, amount, totalPushes, pushesPerMilestone)`
+  (or `lockAllowance(...)` with the same arguments when the response's
+  `lockFunction` says so) with **token** == the token you intended,
+  **amount == `amountWei`**, and the push counts == the schedule the
+  user confirmed.
+- Every item's `chainId` must match the chain you verified for
+  (8453 = Base) and `value` must be `"0x0"`.
+- If any check fails, **stop**: do not sign, do not "fix" the calldata
+  yourself — report the mismatch and re-prepare.
+
+Other prepare-time failures:
 
 - **`installUrl` in the response / "GitHub App not installed on this
-  repo"** — the Proof of Dev GitHub App must be installed on the repo
-  first. Give the user the `installUrl`, wait for them to install it and
-  select the repo, then retry the prepare call.
-- **Repo not found** — relay the error and any `suggestions`; don't guess a
-  different repo name.
+  repo"** — give the user the `installUrl`, wait for them to install
+  the app and select the repo, then re-run Step 1 and Step 2.
+- **Repo not found** — relay the error and any `suggestions`; don't
+  guess a different repo name.
+- **Insufficient balance** — the amount exceeds the wallet's live
+  balance for the token; report the balance the error names and ask
+  the user for a smaller amount. Never silently reduce the amount.
 
-### 2. Confirm with the user, then sign
+### Step 3 — CONFIRM WITH THE USER, THEN SIGN
 
-Restate token, amount, repo, chain, and schedule; get an explicit yes
-(Hard rules). Then sign and broadcast the prepared transactions **in
-order** (approve first, lock last), waiting for the **lock** transaction
-to confirm. Claude has **no built-in wallet** — use the first route
+Restate token (symbol + address), amount, repo, chain, and schedule
+(total pushes + pushes per milestone + the per-milestone tranche);
+get an explicit yes (Hard rules). Then sign and broadcast the
+prepared transactions **in order** — approve first, lock last —
+**waiting for the approve to confirm before submitting the lock, and
+for the lock to confirm before Step 4.** Signing routes, first
 available:
 
-1. **Your own wallet tooling.** If you (the agent) have a wallet tool that
-   can sign and broadcast arbitrary transactions on Base, submit each
-   prepared `{to, data, value, chainId}` through it.
-2. **Bankr, if you're running inside Bankr.** Submit each transaction via
-   `POST https://api.bankr.bot/wallet/submit` with
-   `{ "transaction": { to, data, value, chainId }, "waitForConfirmation": true }`.
+1. **Your own wallet tooling.** If you (the agent) control a wallet
+   that can sign and broadcast arbitrary transactions on the chain,
+   submit each prepared `{to, data, value, chainId}` through it.
+   (Bankr: see "Bankr notes" below — this is your route.)
+2. **Bankr wallet API, when the user's wallet is a Bankr wallet.**
+   Submit each transaction via `POST https://api.bankr.bot/wallet/submit`
+   with `{ "transaction": { to, data, value, chainId }, "waitForConfirmation": true }`.
    (`/wallet/submit` is the current Bankr route; the legacy
-   `/agent/submit` route is removed.) If Bankr's scanner blocks the `approve`
-   with `untrusted_address`, **stop and surface the risk to the user** —
-   never route around a scanner block.
-3. **Hand off to the human.** If neither route exists, present the prepared
-   transactions (to / data / value / chainId, in order) for the user to
-   sign in their own wallet, and ask them for the resulting lock tx hash.
-   This is a normal path, not a failure.
+   `/agent/submit` route is removed.) If Bankr's scanner blocks the
+   `approve` with `untrusted_address`, **stop and surface the risk to
+   the user** — never route around a scanner block.
+3. **Hand off to the human.** If neither route exists, present the
+   prepared transactions (to / data / value / chainId, in order) for
+   the user to sign in their own wallet, and ask them for the
+   resulting lock tx hash. This is a normal path, not a failure.
 
-### 3. Confirm the lock
+### Step 4 — CONFIRM THE LOCK (fresh token), THEN READ BACK
 
 Only after the lock tx has **confirmed on-chain**:
+
+1. **Re-run Step 1 (verify)** for the same
+   `{githubLogin, repo, wallet, chain}` and take the **fresh**
+   `verificationToken` — the Step 1 token from before signing may
+   have expired while the user confirmed and the transactions mined.
+2. Register the grant:
 
 ```bash
 curl -s -X POST "https://api.proofofdev.xyz/api/agent/confirm-lock" \
   -H "x-wallet-address: 0xWALLET" -H "content-type: application/json" \
-  -d '{ "repo": "owner/repo", "lockTxHash": "0x…", "chain": "base", "verificationToken": "<token from Step 0>" }'
+  -d '{ "repo": "owner/repo", "lockTxHash": "0x…", "chain": "base", "verificationToken": "<FRESH token from the re-run>" }'
 ```
 
-The server verifies the tx itself (receipt success, a `Locked` event,
-recipient == your wallet) before registering the grant. If it answers
-`alreadyRegistered: true`, the lock was already recorded — report that,
-don't retry the on-chain lock.
+The server verifies the tx itself (receipt success, a `Locked`
+event, recipient == your wallet) before registering the grant. If it
+answers `alreadyRegistered: true`, the lock was already recorded —
+report that, don't retry the on-chain lock.
 
-### 4. Verify
+3. Read the grant back and report from the readback, not from memory:
 
 ```bash
-curl -s "https://api.proofofdev.xyz/api/agent/status?repo=owner/repo"
+curl -s "https://api.proofofdev.xyz/api/vesting/lock/owner/repo"
 ```
 
-Report the grant as active with its schedule and the `statusUrl` from the
-confirm response.
+Report the grant as active with `verifiedPushCount` / total pushes,
+the per-push (per-milestone) release amount, and the `statusUrl`
+(`https://www.proofofdev.xyz/lock/owner/repo`).
+
+### Phrase handling — turning chat words into parameters
+
+Map the user's natural phrasing onto the procedure's parameters
+explicitly; never improvise a number:
+
+- **"lock half my POD for 50 pushes, releasing after each push"** →
+  token = POD (resolve the symbol against the wallet's live holdings
+  via `GET /api/agent/fee-tokens`; if the symbol is ambiguous, ask
+  which contract), **amount = live balance × ½** (read the balance in
+  this session, compute the amount, and state the computed figure to
+  the user in the Step 3 confirmation), `totalPushes` = 50,
+  `pushesPerMilestone` = 1 ("releasing after each push" always means
+  1). "A quarter" = × ¼, "all my X" = the full live balance.
+- **"for N pushes"** → `totalPushes` = N. **"release every K pushes"**
+  → `pushesPerMilestone` = K (and N must be a multiple of K — if it
+  isn't, ask; do not round silently). No release cadence mentioned →
+  ask, or default to `pushesPerMilestone` = `totalPushes` (one
+  release at the end) **and say that is what you assumed** in the
+  confirmation.
+- **The repo** is the user's verified repo for this wallet — the one
+  from the verify/profile context (`GET /api/dev/link-wallet/<login>`
+  shows linked wallets; the grant/status reads show repos). If you
+  do not know the repo from that context, **ask the user for
+  `owner/repo`** — never guess a repo from the token name or from a
+  previous session.
+- **The chain** defaults to `base`; only use another chain when the
+  user names it — and then verify for that same chain in Step 1.
+
+---
+
+## Bankr notes (executing from Bankr chat)
+
+This skill assumes the executing agent controls the user's signing
+wallet. In Bankr chat that agent is Bankr itself: the wallet is
+Bankr's, signing is Bankr's `/wallet/submit` route (Step 3, route 2),
+and **the whole flow after the one-time wallet link is
+machine-to-machine** — verify, prepare, submit, confirm, read back,
+all from chat, no website visit.
+
+- If you are asked to lock or launch and the `{login, repo, wallet}`
+  pair is **not yet verified**, that is a starting condition, not a
+  failure: run Step 1, and if it refuses, walk the error table —
+  install the app (user opens the install URL), link the wallet
+  (user opens the `linkUrl` once), then verify again. The only step
+  that needs the human's hands is opening a URL once per fix;
+  everything else is yours.
+- **Never report "Proof of Dev rejected the request" as a final
+  answer.** A refusal always carries a `code`; the code names the
+  precondition, the error table names the fix, and the fix is almost
+  always another call you can make. Report a dead end only for
+  `LAUNCH_VERIFY_UNCONFIGURED` or a failed on-chain transaction.
+- Bankr's scanner is a hard stop, not an obstacle: if `/wallet/submit`
+  blocks the approve with `untrusted_address`, surface it to the user
+  verbatim and stop (see the Bankr skill's `references/BANKR-SUBMIT.md`).
+- Compose replies from the structured response fields; never paste
+  `replyText` / `tweetReply` verbatim (see the Bankr skill's
+  `references/RESPONSE-SAFETY.md`).
 
 ---
 
@@ -625,7 +817,7 @@ authority. **Your report is a claim; the webhook is the verdict.**
 ### MCP server (first-class tools instead of raw curl)
 
 Proof of Dev exposes an MCP server named `proofofdev` wrapping this API:
-`verify_github` (the Step 0 launch gate — `prepare_lock` requires its
+`verify_github` (the Step 1 launch gate — `prepare_lock` requires its
 token), `vesting_status`, `agent_briefing`, `agent_grants`,
 `repo_recent_pushes`, `prepare_lock`, `report_ship`, `ship_report`,
 `link_status`, `enrol_reviewer`, `review_queue`, `review_push`. If it's
@@ -877,8 +1069,8 @@ and say so — past forwards are never re-routed.
 | "my vesting / my locks" | `GET /api/agent/briefing?wallet=` → summarize |
 | "vesting on owner/repo" | `GET /api/agent/status?repo=owner/repo` |
 | "what can I lock?" | `GET /api/agent/fee-tokens` (wallet header) |
-| "lock 500 TOKEN on owner/repo for 10 pushes" | **Step 0 verify** → prepare → confirm with user → sign → confirm-lock → verify |
-| "launch a token through Proof of Dev" | **Step 0 verify** (`POST /api/launch/verify-github` or MCP `verify_github`) → platform deploys the fee-lock vault + registrar registers the fee grant → **prepare** (`prepare_launch` validates all vault bindings + the registered grant, then returns the input) → launch → auto-lock → register → ship; launcher earns milestone unlocks of their own token and is **enrolled** for ShipRewards (per-merge platform-token payouts today go to the PR author; the launcher's trading-fee share auto-locks into a fee-stream grant unlocking by counted pushes — FeeLockVault + FeeStreamEscrow + the launch-prep surface are BUILT locally, E2E-proven, NOT deployed — until the platform redeploys, the production API has no prepare-launch endpoint and fee recipients still claim liquid WETH) |
+| "lock 500 TOKEN on owner/repo for 10 pushes" | **Lock procedure**: Step 1 verify → Step 2 prepare-lock → Step 3 confirm with user → sign → Step 4 confirm-lock (fresh token) → read back |
+| "launch a token through Proof of Dev" | **Launcher flow**: Step 1 verify (`POST /api/launch/verify-github` or MCP `verify_github`) → **onboard** (`POST /api/launch/onboard` — platform deploys the fee-lock vault + registrar registers the fee grant) → **prepare-launch** (`prepare_launch` validates all vault bindings + the registered grant, then returns the input) → launch → lock + register via the lock procedure → ship; launcher earns milestone unlocks of their own token and is **enrolled** for ShipRewards (per-merge platform-token payouts today go to the PR author; the launcher's trading-fee share auto-locks into a fee-stream grant unlocking by counted pushes — FeeLockVault + FeeStreamEscrow + the launch-prep surface are LIVE in production since 2026-11-26) |
 | "link my wallet to my GitHub" | Flow B magic link (agent) or Flow A (if they have a site session) |
 | "did that merge earn anything?" | repo status + author's link state; answer per the counting rules |
 | "I just shipped / merged — what's happening with it?" | `POST /api/agent/report-ship` for the head SHA (or the MCP `report_ship` tool), then poll `GET /api/agent/ship-report` and narrate the state exactly (`reported` ≠ `paid`) |
